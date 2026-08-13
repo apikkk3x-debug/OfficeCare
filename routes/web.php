@@ -14,16 +14,24 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Rute yang Harus Login Dulu
 Route::middleware(['auth'])->group(function () {
-    // Dashboard Karyawan
+    // A. Dashboard Karyawan
     Route::get('/karyawan/dashboard', [KaryawanController::class, 'dashboard'])->name('karyawan.dashboard');
 
     // Laporan Karyawan
     Route::post('/karyawan/laporan', [KaryawanController::class, 'storeLaporan'])->name('laporan.store');
 
-    // Dashboard Admin Sarpras
+    // B. Dashboard Admin Sarpras
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::patch('/admin/laporan/{id}/status', [AdminController::class, 'updateStatus'])->name('admin.laporan.status');
 
-    // Dashboard Pimpinan
+    // >>> RUTE CETAK <<<
+    Route::get('/admin/laporan/cetak', [AdminController::class, 'cetakLaporan'])->name('admin.laporan.cetak');
+
+    // Kelola Barang Fasilitas
+    Route::post('/barang/store', [BarangController::class, 'store'])->name('barang.store');
+    Route::delete('/barang/{id}', [BarangController::class, 'destroy'])->name('barang.destroy');
+
+    // C. Dashboard Pimpinan
     Route::get('/pimpinan/dashboard', [PimpinanController::class, 'dashboard'])->name('pimpinan.dashboard');
 
     // Manajemen Data Barang (Fasilitas)

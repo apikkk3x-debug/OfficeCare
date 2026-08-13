@@ -53,6 +53,7 @@
                 <table class="w-full text-left text-sm">
                     <thead>
                         <tr class="bg-slate-50 text-slate-600 border-b">
+                            <th class="p-3">Tanggal</th>
                             <th class="p-3">Barang</th>
                             <th class="p-3">Kerusakan</th>
                             <th class="p-3">Status</th>

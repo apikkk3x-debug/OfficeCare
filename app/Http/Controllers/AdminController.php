@@ -3,20 +3,36 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
 use App\Models\BarangFasilitas;
 use App\Models\LaporanKerusakan;
-use App\Models\Perbaikan;
 
 class AdminController extends Controller
 {
     public function dashboard()
     {
-        // Statistik ringkas untuk Admin Sarpras
-        $totalUser = User::count();
-        $totalBarang = BarangFasilitas::count();
-        $laporanMasuk = LaporanKerusakan::where('status_laporan', 'Menunggu')->count();
-        
-        return view('admin.dashboard', compact('totalUser', 'totalBarang', 'laporanMasuk'));
+        $laporanMasuk = LaporanKerusakan::with(['user', 'barang'])->latest()->get();
+        $barangFasilitas = BarangFasilitas::all();
+
+        return view('admin.dashboard', compact('laporanMasuk', 'barangFasilitas'));
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status_laporan' => 'required|in:Menunggu,Diproses,Selesai',
+        ]);
+
+        $laporan = LaporanKerusakan::findOrFail($id);
+        $laporan->update([
+            'status_laporan' => $request->status_laporan,
+        ]);
+
+        return redirect()->back()->with('success', 'Status laporan berhasil diperbarui!');
+    }
+
+    public function cetakLaporan()
+    {
+        $laporan = LaporanKerusakan::with(['user', 'barang'])->latest()->get();
+        return view('admin.cetak', compact('laporan'));
     }
 }
