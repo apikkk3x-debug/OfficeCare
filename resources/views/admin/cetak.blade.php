@@ -68,7 +68,9 @@
 <body onload="window.print()">
 
     <div class="no-print" style="margin-bottom: 20px;">
-        <button onclick="window.history.back()" style="padding: 6px 12px; cursor: pointer; font-size: 12px;">&larr; Kembali</button>
+        <a href="{{ route('admin.dashboard') }}" style="display: inline-block; padding: 6px 12px; background: #f1f5f9; color: #334155; text-decoration: none; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; cursor: pointer;">
+            &larr; Kembali ke Dashboard
+        </a>
     </div>
 
     <div class="header">

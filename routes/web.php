@@ -38,4 +38,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/barang', [BarangController::class, 'index'])->name('barang.index');
     Route::post('/barang/store', [BarangController::class, 'store'])->name('barang.store');
     Route::delete('/barang/{id}', [BarangController::class, 'destroy'])->name('barang.destroy');
+
+    
+    Route::get('/pimpinan/dashboard', [PimpinanController::class, 'dashboard'])->name('pimpinan.dashboard');
+    
+    // Cetak Laporan oleh Pimpinan
+    Route::get('/pimpinan/laporan/cetak', [PimpinanController::class, 'cetakLaporan'])->name('pimpinan.laporan.cetak');
 });
