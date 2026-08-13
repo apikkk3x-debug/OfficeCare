@@ -17,6 +17,9 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard Karyawan
     Route::get('/karyawan/dashboard', [KaryawanController::class, 'dashboard'])->name('karyawan.dashboard');
 
+    // Laporan Karyawan
+    Route::post('/karyawan/laporan', [KaryawanController::class, 'storeLaporan'])->name('laporan.store');
+
     // Dashboard Admin Sarpras
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
