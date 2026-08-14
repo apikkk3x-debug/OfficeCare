@@ -38,6 +38,10 @@
                 <a href="{{ route('admin.laporan.cetak') }}" target="_blank" class="bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 cursor-pointer">
                     🖨️ Cetak Laporan
                 </a>
+
+                <a href="{{ route('admin.users') }}" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 border border-indigo-200 cursor-pointer">
+                    👥 Kelola Pengguna
+                </a>
             </div>
 
             <div class="overflow-x-auto">

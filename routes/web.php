@@ -14,34 +14,27 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Rute yang Harus Login Dulu
 Route::middleware(['auth'])->group(function () {
-    // A. Dashboard Karyawan
+    
+    // A. Dashboard Karyawan & Laporan
     Route::get('/karyawan/dashboard', [KaryawanController::class, 'dashboard'])->name('karyawan.dashboard');
-
-    // Laporan Karyawan
     Route::post('/karyawan/laporan', [KaryawanController::class, 'storeLaporan'])->name('laporan.store');
 
-    // B. Dashboard Admin Sarpras
+    // B. Dashboard Admin Sarpras & Manajemen Status
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::patch('/admin/laporan/{id}/status', [AdminController::class, 'updateStatus'])->name('admin.laporan.status');
-
-    // >>> RUTE CETAK <<<
     Route::get('/admin/laporan/cetak', [AdminController::class, 'cetakLaporan'])->name('admin.laporan.cetak');
 
-    // Kelola Barang Fasilitas
-    Route::post('/barang/store', [BarangController::class, 'store'])->name('barang.store');
-    Route::delete('/barang/{id}', [BarangController::class, 'destroy'])->name('barang.destroy');
+    // Manajemen Pengguna oleh Admin
+    Route::get('/admin/users', [AdminController::class, 'manajemenUser'])->name('admin.users');
+    Route::delete('/admin/users/{id}', [AdminController::class, 'hapusUser'])->name('admin.users.hapus');
 
-    // C. Dashboard Pimpinan
-    Route::get('/pimpinan/dashboard', [PimpinanController::class, 'dashboard'])->name('pimpinan.dashboard');
-
-    // Manajemen Data Barang (Fasilitas)
+    // C. Manajemen Barang / Aset Fasilitas
     Route::get('/barang', [BarangController::class, 'index'])->name('barang.index');
     Route::post('/barang/store', [BarangController::class, 'store'])->name('barang.store');
     Route::delete('/barang/{id}', [BarangController::class, 'destroy'])->name('barang.destroy');
 
-    
+    // D. Dashboard Pimpinan & Cetak Laporan Pimpinan
     Route::get('/pimpinan/dashboard', [PimpinanController::class, 'dashboard'])->name('pimpinan.dashboard');
-    
-    // Cetak Laporan oleh Pimpinan
     Route::get('/pimpinan/laporan/cetak', [PimpinanController::class, 'cetakLaporan'])->name('pimpinan.laporan.cetak');
+    
 });
