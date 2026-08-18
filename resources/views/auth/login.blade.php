@@ -34,7 +34,7 @@
             <p>Admin: admin@officecare.com</p>
             <p>Karyawan: karyawan@officecare.com</p>
             <p>Pimpinan: pimpinan@officecare.com</p>
-            <p class="mt-1">Password semua: <b>password123</b></p>
+            <p class="mt-1">Password semua: <b>123</b></p>
         </div>
     </div>
 </body>

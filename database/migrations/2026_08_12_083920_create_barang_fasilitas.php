@@ -15,7 +15,7 @@ return new class extends Migration
         $table->id('id_barang');
         $table->string('kode_barang')->unique(); // Tambahan kode unik
         $table->string('nama_barang');
-        $table->string('kategori'); // Tambahan kategori
+        $table->string('kategori_barang')->nullable(); // Tambahan kategori
         $table->string('lokasi');
         $table->enum('kondisi', ['Baik', 'Perbaikan Ringan', 'Rusak']);
         $table->timestamps();

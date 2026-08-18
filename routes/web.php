@@ -17,7 +17,14 @@ Route::middleware(['auth'])->group(function () {
     
     // A. Dashboard Karyawan & Laporan
     Route::get('/karyawan/dashboard', [KaryawanController::class, 'dashboard'])->name('karyawan.dashboard');
+    Route::get('/karyawan/laporan/tambah', [KaryawanController::class, 'createLaporan'])->name('laporan.create');
+    Route::get('/karyawan/laporan', function () {
+        return redirect()->route('laporan.create');
+    });
     Route::post('/karyawan/laporan', [KaryawanController::class, 'storeLaporan'])->name('laporan.store');
+    Route::get('/karyawan/laporan/{id}/edit', [KaryawanController::class, 'editLaporan'])->name('laporan.edit');
+    Route::put('/karyawan/laporan/{id}', [KaryawanController::class, 'updateLaporan'])->name('laporan.update');
+    Route::delete('/karyawan/laporan/{id}', [KaryawanController::class, 'destroyLaporan'])->name('laporan.destroy');
 
     // B. Dashboard Admin Sarpras & Manajemen Status
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');

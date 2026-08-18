@@ -18,21 +18,21 @@ class DatabaseSeeder extends Seeder
         User::create([
             'nama' => 'Admin Sarpras',
             'email' => 'admin@officecare.com',
-            'password' => Hash::make('password123'),
+            'password' => Hash::make('123'),
             'role' => 'admin',
         ]);
 
         User::create([
             'nama' => 'Ahmad Karyawan',
             'email' => 'karyawan@officecare.com',
-            'password' => Hash::make('password123'),
+            'password' => Hash::make('123'),
             'role' => 'karyawan',
         ]);
 
         User::create([
             'nama' => 'Bapak Pimpinan',
             'email' => 'pimpinan@officecare.com',
-            'password' => Hash::make('password123'),
+            'password' => Hash::make('123'),
             'role' => 'pimpinan',
         ]);
 

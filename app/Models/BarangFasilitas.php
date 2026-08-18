@@ -13,6 +13,7 @@ class BarangFasilitas extends Model
     protected $primaryKey = 'id_barang';
 
     protected $fillable = [
+        'kode_barang',     // <-- Tambahkan baris ini agar diizinkan masuk ke database
         'nama_barang',
         'kategori_barang',
         'lokasi',
