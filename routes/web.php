@@ -25,6 +25,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/karyawan/laporan/{id}/edit', [KaryawanController::class, 'editLaporan'])->name('laporan.edit');
     Route::put('/karyawan/laporan/{id}', [KaryawanController::class, 'updateLaporan'])->name('laporan.update');
     Route::delete('/karyawan/laporan/{id}', [KaryawanController::class, 'destroyLaporan'])->name('laporan.destroy');
+    Route::get('/laporan', [KaryawanController::class, 'index'])->name('laporan.index');
 
     // B. Dashboard Admin Sarpras & Manajemen Status
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');

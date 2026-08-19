@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\BarangFasilitas;
 use App\Models\LaporanKerusakan;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class KaryawanController extends Controller
 {
@@ -20,6 +21,20 @@ class KaryawanController extends Controller
         $barangFasilitas = BarangFasilitas::all();
 
         return view('karyawan.dashboard', compact('laporanku', 'barangFasilitas'));
+    }
+
+    // ==========================================
+    // FIZUR BARU: HALAMAN RIWAYAT LAPORAN (INDEX)
+    // ==========================================
+    public function index()
+    {
+        $userId = Auth::id();
+        $laporanku = LaporanKerusakan::with('barang')
+                    ->where('id_user', $userId)
+                    ->latest()
+                    ->get();
+
+        return view('laporan.index', compact('laporanku'));
     }
 
     public function createLaporan()
@@ -71,11 +86,11 @@ class KaryawanController extends Controller
             'status_laporan' => 'Menunggu',
         ]);
 
-        return redirect()->route('karyawan.dashboard')->with('success', 'Laporan dan data barang baru berhasil dikirim!');
+        return redirect()->route('laporan.index')->with('success', 'Laporan dan data barang baru berhasil dikirim!');
     }
 
     // ==========================================
-    // FITUR BARU: EDIT, UPDATE, & BATALKAN LAPORAN
+    // FITUR: EDIT, UPDATE, & BATALKAN LAPORAN
     // ==========================================
 
     public function editLaporan($id)
@@ -84,22 +99,22 @@ class KaryawanController extends Controller
 
         // Keamanan: Hanya boleh diedit jika status masih 'Menunggu'
         if ($laporan->status_laporan != 'Menunggu') {
-            return redirect()->route('karyawan.dashboard')->with('error', 'Laporan yang sudah diproses tidak dapat diubah.');
+            return redirect()->route('laporan.index')->with('error', 'Laporan yang sudah diproses tidak dapat diubah.');
         }
 
         $barangFasilitas = BarangFasilitas::all();
-        return view('karyawan.edit', compact('laporan', 'barangFasilitas'));
+        return view('laporan.edit', compact('laporan', 'barangFasilitas'));
     }
 
-   public function updateLaporan(Request $request, $id)
+    public function updateLaporan(Request $request, $id)
     {
         $laporan = LaporanKerusakan::findOrFail($id);
 
         if ($laporan->status_laporan != 'Menunggu') {
-            return redirect()->route('karyawan.dashboard')->with('error', 'Laporan yang sudah diproses tidak dapat diubah.');
+            return redirect()->route('laporan.index')->with('error', 'Laporan yang sudah diproses tidak dapat diubah.');
         }
 
-        // 1. Validasi sesuai dengan input form edit yang baru (nama_barang & lokasi)
+        // 1. Validasi sesuai dengan input form edit yang baru
         $request->validate([
             'nama_barang' => 'required|string|max:255',
             'lokasi' => 'nullable|string|max:255',
@@ -118,9 +133,9 @@ class KaryawanController extends Controller
         // 3. Proses upload foto baru jika ada
         $pathFoto = $laporan->foto;
         if ($request->hasFile('foto')) {
-            if ($laporan->foto && \Illuminate\Support\Facades\Storage::disk('public')->exists($laporan->foto)) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($laporan->foto);
-        }
+            if ($laporan->foto && Storage::disk('public')->exists($laporan->foto)) {
+                Storage::disk('public')->delete($laporan->foto);
+            }
             $pathFoto = $request->file('foto')->store('laporan_kerusakan', 'public');
         }
 
@@ -130,7 +145,7 @@ class KaryawanController extends Controller
             'foto' => $pathFoto,
         ]);
 
-        return redirect()->route('karyawan.dashboard')->with('success', 'Laporan berhasil diperbarui.');
+        return redirect()->route('laporan.index')->with('success', 'Laporan berhasil diperbarui.');
     }
 
     public function destroyLaporan($id)
@@ -138,11 +153,11 @@ class KaryawanController extends Controller
         $laporan = LaporanKerusakan::findOrFail($id);
 
         if ($laporan->status_laporan != 'Menunggu') {
-            return redirect()->route('karyawan.dashboard')->with('error', 'Laporan yang sudah diproses tidak dapat dibatalkan.');
+            return redirect()->route('laporan.index')->with('error', 'Laporan yang sudah diproses tidak dapat dibatalkan.');
         }
 
         $laporan->delete();
 
-        return redirect()->route('karyawan.dashboard')->with('success', 'Laporan berhasil dibatalkan.');
+        return redirect()->route('laporan.index')->with('success', 'Laporan berhasil dibatalkan.');
     }
 }
