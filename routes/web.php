@@ -6,6 +6,7 @@ use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PimpinanController;
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\KomentarController;
 
 // Rute Login & Logout (Publik)
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
@@ -34,6 +35,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/laporan', [KaryawanController::class, 'index'])->name('laporan.index');
     // Route untuk menampilkan detail laporan karyawan
     Route::get('/laporan/{id}', [KaryawanController::class, 'showLaporan'])->name('laporan.show');
+    // Route untuk menambahkan komentar pada laporan karyawan
+    Route::post('/laporan/{id}/komentar', [KomentarController::class, 'store'])->name('laporan.komentar.store');
 
     // B. Dashboard Admin Sarpras & Manajemen Status
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');

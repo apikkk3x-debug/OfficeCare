@@ -39,11 +39,12 @@ class LaporanKerusakan extends Model
         return $this->hasOne(Perbaikan::class, 'id_laporan', 'id_laporan');
     }
 
-    // ==========================================
-    // TAMBAHKAN FUNGSI INI
-    // ==========================================
     public function logs()
     {
         return $this->hasMany(LaporanLog::class, 'id_laporan', 'id_laporan');
+    }
+    public function komentars()
+    {
+        return $this->hasMany(LaporanKomentar::class, 'id_laporan', 'id_laporan');
     }
 }
