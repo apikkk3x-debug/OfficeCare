@@ -2,17 +2,17 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto space-y-6">
-    <div class="bg-[rgb(255,232,157)] p-6 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center">
+    <div class="bg-[rgb(255,232,157)] p-6 rounded-xl shadow-sm border border-amber-400 flex justify-between items-center">
         <div>
             <h2 class="text-2xl font-bold text-slate-800">Form Laporan Kerusakan</h2>
             <p class="text-slate-500 text-sm mt-1">Laporkan fasilitas rusak. Jika barang belum ada, Anda bisa menambahkannya.</p>
         </div>
-        <a href="{{ route('karyawan.dashboard') }}" class="bg-[rgb(255,218,97)] text-slate-600 hover:text-slate-900 text-sm font-semibold border px-3 py-1.5 rounded-lg transition">
+        <a href="{{ route('karyawan.dashboard') }}" class="bg-[rgb(255,218,97)] text-slate-600 hover:text-slate-900 border-amber-400 text-sm font-semibold border px-3 py-1.5 rounded-lg transition">
             ← Kembali
         </a>
     </div>
 
-    <div class="bg-[rgb(255,232,157)]  p-6 rounded-xl shadow-sm border border-slate-100">
+    <div class="bg-[rgb(255,232,157)]  p-6 rounded-xl shadow-sm border border-amber-400">
         <form action="{{ route('laporan.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
@@ -45,7 +45,7 @@
 
             <!-- Upload Foto -->
             <div class="mb-4">
-                <label class="block text-slate-700 text-sm font-semibold mb-2">Upload Foto Bukti Kerusakan</label>
+                <label class="block text-slate-700 text-sm font-semibold mb-2">Upload Foto Bukti Kerusakan dengan benar</label>
                 <input type="file" name="foto" accept="image/png, image/jpeg, image/jpg" class="w-full px-3 py-2 border rounded-lg text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700">
             </div>
 

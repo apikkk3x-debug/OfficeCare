@@ -64,9 +64,9 @@
                                 </td>
                                 <td class="p-3 text-slate-600">{{ $lap->deskripsi_kerusakan }}</td>
                                 <td class="p-3">
-                                    <form action="{{ route('admin.laporan.status', $lap->id_laporan) }}" method="POST">
+                                    <!-- Diperbarui ke admin.laporan.updateStatus agar sinkron dengan Controller -->
+                                    <form action="{{ route('admin.laporan.updateStatus', $lap->id_laporan) }}" method="POST">
                                         @csrf
-                                        @method('PATCH')
                                         <select name="status_laporan" onchange="this.form.submit()" class="px-2.5 py-1 rounded-lg text-xs font-semibold border bg-white cursor-pointer
                                             @if($lap->status_laporan == 'Menunggu') text-amber-700 bg-amber-50 border-amber-200
                                             @elseif($lap->status_laporan == 'Diproses') text-blue-700 bg-blue-50 border-blue-200
@@ -161,7 +161,6 @@
         }
     }
 
-    // Jika terjadi error validasi, otomatis buka kembali modal agar pesannya kelihatan
     @if ($errors->any())
         document.addEventListener("DOMContentLoaded", function() {
             toggleModal(true);

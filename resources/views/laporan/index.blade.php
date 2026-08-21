@@ -19,7 +19,7 @@
 
     <!-- Tabel Riwayat Laporan -->
     <div class="bg-[rgb(255,232,157)] p-6 rounded-2xl shadow-sm border border-amber-300/80">
-        <h3 class="text-lg font-bold text-stone-800 mb-4">Daftar Semua Laporan</h3>
+        <h3 class="text-lg font-bold text-stone-800 mb-4">Daftar Laporan</h3>
 
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
@@ -49,15 +49,21 @@
                                 <span class="px-3 py-1 rounded-full text-xs font-semibold
                                     @if($lap->status_laporan == 'Menunggu') bg-amber-100 text-amber-900 border border-amber-300
                                     @elseif($lap->status_laporan == 'Diproses') bg-amber-100 text-amber-900 border border-amber-300
+                                    @elseif($lap->status_laporan == 'Dibatalkan') bg-stone-200 text-stone-700 border border-stone-300 line-through
                                     @else bg-amber-100 text-stone-700 border border-amber-300 @endif">
                                     {{ $lap->status_laporan }}
                                 </span>
                             </td>
 
-                            <!-- Kolom 5: Aksi (Edit & Batalkan) -->
+                            <!-- Kolom 5: Aksi (Detail, Edit & Batalkan) -->
                             <td class="p-3.5">
-                                @if($lap->status_laporan == 'Menunggu')
-                                    <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2">
+                                    <!-- Tombol Detail -->
+                                    <a href="{{ route('laporan.show', $lap->id_laporan ?? $lap->id) }}" class="bg-stone-100 text-stone-800 hover:bg-stone-200 px-3 py-1.5 rounded-lg text-xs font-semibold border border-stone-300 transition">
+                                        Detail
+                                    </a>
+
+                                    @if($lap->status_laporan == 'Menunggu')
                                         <!-- Tombol Edit -->
                                         <a href="{{ route('laporan.edit', $lap->id_laporan ?? $lap->id) }}" class="bg-amber-100 text-amber-900 hover:bg-amber-200 px-3 py-1.5 rounded-lg text-xs font-semibold border border-amber-200 transition">
                                             Edit
@@ -71,10 +77,10 @@
                                                 Batalkan
                                             </button>
                                         </form>
-                                    </div>
-                                @else
-                                    <span class="text-xs text-stone-500 italic">Terkunci</span>
-                                @endif
+                                    @else
+                                        <span class="text-xs text-stone-500 italic">Terkunci</span>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty
