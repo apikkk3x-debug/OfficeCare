@@ -26,13 +26,16 @@ class KaryawanController extends Controller
     // ==========================================
     // FIZUR BARU: HALAMAN RIWAYAT LAPORAN (INDEX)
     // ==========================================
-    public function index()
+    public function index(Request $request)
     {
-        $userId = Auth::id();
-        $laporanku = LaporanKerusakan::with('barang')
-                    ->where('id_user', $userId)
-                    ->latest()
-                    ->get();
+        $query = LaporanKerusakan::where('id_user', Auth::id());
+
+        // Jika diklik card Status Aktif, filter yang bukan Selesai
+        if ($request->has('filter') && $request->filter == 'aktif') {
+            $query->where('status_laporan', '!=', 'Selesai');
+        }
+
+        $laporanku = $query->latest()->get();
 
         return view('laporan.index', compact('laporanku'));
     }
@@ -46,6 +49,7 @@ class KaryawanController extends Controller
     public function storeLaporan(Request $request)
     {
         $request->validate([
+            'id_barang' => 'required',
             'deskripsi_kerusakan' => 'required|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
@@ -77,12 +81,12 @@ class KaryawanController extends Controller
             $pathFoto = $request->file('foto')->store('laporan_kerusakan', 'public');
         }
 
-        // Simpan laporan kerusakan
+        // Simpan laporan kerusakan (menggunakan kolom 'foto_kondisi')
         LaporanKerusakan::create([
             'id_user' => Auth::id(),
             'id_barang' => $idBarang,
             'deskripsi_kerusakan' => $request->deskripsi_kerusakan,
-            'foto' => $pathFoto,
+            'foto_kondisi' => $pathFoto,
             'status_laporan' => 'Menunggu',
         ]);
 
@@ -130,11 +134,11 @@ class KaryawanController extends Controller
             ]);
         }
 
-        // 3. Proses upload foto baru jika ada
-        $pathFoto = $laporan->foto;
+        // 3. Proses upload foto baru jika ada (menggunakan kolom 'foto_kondisi')
+        $pathFoto = $laporan->foto_kondisi;
         if ($request->hasFile('foto')) {
-            if ($laporan->foto && Storage::disk('public')->exists($laporan->foto)) {
-                Storage::disk('public')->delete($laporan->foto);
+            if ($laporan->foto_kondisi && Storage::disk('public')->exists($laporan->foto_kondisi)) {
+                Storage::disk('public')->delete($laporan->foto_kondisi);
             }
             $pathFoto = $request->file('foto')->store('laporan_kerusakan', 'public');
         }
@@ -142,22 +146,34 @@ class KaryawanController extends Controller
         // 4. Update deskripsi dan foto pada laporan kerusakan
         $laporan->update([
             'deskripsi_kerusakan' => $request->deskripsi_kerusakan,
-            'foto' => $pathFoto,
+            'foto_kondisi' => $pathFoto,
         ]);
 
         return redirect()->route('laporan.index')->with('success', 'Laporan berhasil diperbarui.');
     }
 
-    public function destroyLaporan($id)
+        public function destroyLaporan($id)
     {
         $laporan = LaporanKerusakan::findOrFail($id);
 
+        // Jika admin sudah memproses atau mengubah statusnya, karyawan tidak bisa membatalkan
         if ($laporan->status_laporan != 'Menunggu') {
-            return redirect()->route('laporan.index')->with('error', 'Laporan yang sudah diproses tidak dapat dibatalkan.');
+            return redirect()->route('laporan.index')->with('error', 'Laporan tidak dapat dibatalkan karena sudah diproses oleh Admin.');
         }
 
         $laporan->delete();
 
-        return redirect()->route('laporan.index')->with('success', 'Laporan berhasil dibatalkan.');
+        return redirect()->route('laporan.index')->with('success', 'Laporan berhasil dibatalkan dan sudah dihapus dari sistem.');
+    }
+
+    // ==========================================
+    // FITUR BARU: DETAIL LAPORAN (SHOW)
+    // ==========================================
+    public function showLaporan($id)
+    {
+        // Tambahkan 'logs' di dalam fungsi with()
+        $laporan = LaporanKerusakan::with(['barang', 'logs'])->findOrFail($id);
+
+        return view('laporan.show', compact('laporan'));
     }
 }
