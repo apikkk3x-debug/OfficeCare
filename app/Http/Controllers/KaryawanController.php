@@ -26,13 +26,26 @@ class KaryawanController extends Controller
     // ==========================================
     // FIZUR BARU: HALAMAN RIWAYAT LAPORAN (INDEX)
     // ==========================================
-    public function index(Request $request)
+   public function index(Request $request)
     {
-        $query = LaporanKerusakan::where('id_user', Auth::id());
+        $query = LaporanKerusakan::with(['barang'])
+                    ->where('id_user', Auth::id());
 
-        // Jika diklik card Status Aktif, filter yang bukan Selesai
+        // 1. Filter jika diklik card Status Aktif
         if ($request->has('filter') && $request->filter == 'aktif') {
             $query->where('status_laporan', '!=', 'Selesai');
+        }
+
+        // 2. Fitur Pencarian (Search)
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('deskripsi_kerusakan', 'like', '%' . $search . '%')
+                ->orWhereHas('barang', function($barangQuery) use ($search) {
+                    $barangQuery->where('nama_barang', 'like', '%' . $search . '%')
+                                ->orWhere('lokasi', 'like', '%' . $search . '%');
+                });
+            });
         }
 
         $laporanku = $query->latest()->get();
@@ -172,7 +185,7 @@ class KaryawanController extends Controller
     public function showLaporan($id)
     {
         // Tambahkan 'logs' di dalam fungsi with()
-        $laporan = LaporanKerusakan::with(['barang', 'logs'])->findOrFail($id);
+        $laporan = LaporanKerusakan::with(['barang', 'logs', 'komentars.user'])->findOrFail($id);
 
         return view('laporan.show', compact('laporan'));
     }

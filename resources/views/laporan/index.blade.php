@@ -16,6 +16,30 @@
             Buat Laporan Baru
         </a>
     </div>
+    <!-- Form Search Bar & Filter -->
+<div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+    
+    <!-- Form Search -->
+    <form action="{{ route('laporan.index') }}" method="GET" class="flex gap-2 w-full md:w-auto">
+        <!-- Jika sedang aktif filter-nya, bawa juga saat melakukan search -->
+        @if(request('filter') == 'aktif')
+            <input type="hidden" name="filter" value="aktif">
+        @endif
+        
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama barang / kerusakan..." class="px-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-full md:w-64">
+        
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+            Cari
+        </button>
+
+        @if(request('search') || request('filter'))
+            <a href="{{ route('laporan.index') }}" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold transition flex items-center">
+                Reset
+            </a>
+        @endif
+    </form>
+
+</div>
 
     <!-- Tabel Riwayat Laporan -->
     <div class="bg-[rgb(255,232,157)] p-6 rounded-2xl shadow-sm border border-amber-300/80">
@@ -93,4 +117,5 @@
         </div>
     </div>
 </div>
+
 @endsection

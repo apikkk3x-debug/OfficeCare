@@ -115,4 +115,38 @@
     </div>
 
 </div>
+
+<!-- Bagian Diskusi / Komentar -->
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mt-6 space-y-4">
+    <h3 class="text-lg font-bold text-slate-800">Diskusi & Catatan Laporan</h3>
+    
+    <!-- Kotak Daftar Pesan -->
+    <div class="space-y-3 max-h-80 overflow-y-auto pr-2">
+        @forelse($laporan->komentars as $komentar)
+            <div class="p-3 rounded-xl {{ $komentar->id_user == Auth::id() ? 'bg-indigo-50 ml-6' : 'bg-slate-50 mr-6' }} border border-slate-100">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="font-bold text-xs text-slate-700">
+                        {{ $komentar->user->name ?? 'Pengguna' }} 
+                        @if($komentar->user->role ?? false)
+                            <span class="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded ml-1">{{ $komentar->user->role }}</span>
+                        @endif
+                    </span>
+                    <span class="text-[10px] text-slate-400">{{ $komentar->created_at->format('d M Y, H:i') }}</span>
+                </div>
+                <p class="text-sm text-slate-600">{{ $komentar->pesan }}</p>
+            </div>
+        @empty
+            <p class="text-sm text-slate-400 italic text-center py-4">Belum ada diskusi pada laporan ini. Mulai percakapan di bawah.</p>
+        @endforelse
+    </div>
+
+    <!-- Form Kirim Pesan -->
+    <form action="{{ route('laporan.komentar.store', $laporan->id_laporan) }}" method="POST" class="mt-4 flex gap-2">
+        @csrf
+        <input type="text" name="pesan" placeholder="Tulis pesan atau pertanyaan ke admin..." class="flex-1 px-4 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none" required>
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-semibold transition cursor-pointer shadow-sm">
+            Kirim 💬
+        </button>
+    </form>
+</div>
 @endsection
