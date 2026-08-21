@@ -18,18 +18,26 @@ Route::middleware(['auth'])->group(function () {
     // A. Dashboard Karyawan & Laporan
     Route::get('/karyawan/dashboard', [KaryawanController::class, 'dashboard'])->name('karyawan.dashboard');
     Route::get('/karyawan/laporan/tambah', [KaryawanController::class, 'createLaporan'])->name('laporan.create');
+    // Route untuk menampilkan formulir tambah laporan
     Route::get('/karyawan/laporan', function () {
         return redirect()->route('laporan.create');
     });
+    // Route untuk menyimpan laporan karyawan
     Route::post('/karyawan/laporan', [KaryawanController::class, 'storeLaporan'])->name('laporan.store');
+    // Route untuk menampilkan formulir edit laporan
     Route::get('/karyawan/laporan/{id}/edit', [KaryawanController::class, 'editLaporan'])->name('laporan.edit');
+    // Route untuk memperbarui laporan karyawan
     Route::put('/karyawan/laporan/{id}', [KaryawanController::class, 'updateLaporan'])->name('laporan.update');
+    // Route untuk menghapus laporan karyawan
     Route::delete('/karyawan/laporan/{id}', [KaryawanController::class, 'destroyLaporan'])->name('laporan.destroy');
+    // Route untuk menampilkan semua laporan karyawan
     Route::get('/laporan', [KaryawanController::class, 'index'])->name('laporan.index');
+    // Route untuk menampilkan detail laporan karyawan
+    Route::get('/laporan/{id}', [KaryawanController::class, 'showLaporan'])->name('laporan.show');
 
     // B. Dashboard Admin Sarpras & Manajemen Status
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::patch('/admin/laporan/{id}/status', [AdminController::class, 'updateStatus'])->name('admin.laporan.status');
+    Route::post('/admin/laporan/{id}/status', [AdminController::class, 'updateStatus'])->name('admin.laporan.updateStatus');
     Route::get('/admin/laporan/cetak', [AdminController::class, 'cetakLaporan'])->name('admin.laporan.cetak');
 
     // Manajemen Pengguna oleh Admin
