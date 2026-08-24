@@ -77,7 +77,7 @@
 
             <!-- Deskripsi Kerusakan -->
             <div>
-                <span class="text-stone-600 text-[10px] font-semibold uppercase tracking-wider">Keterangan / Deskripsi Kerusakan</span>
+                <span class="text-stone-600 text-[10px] font-semibold uppercase tracking-wider">Keterangan / Deskripsi Pengaduan</span>
                 <div class="mt-1 p-3 bg-amber-50/60 rounded-lg border border-amber-200 text-stone-800 text-xs leading-relaxed">
                     {{ $laporan->deskripsi_kerusakan }}
                 </div>

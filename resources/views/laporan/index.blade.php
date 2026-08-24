@@ -7,7 +7,7 @@
     <div class="bg-[rgb(255,232,157)] p-6 rounded-2xl shadow-sm border border-amber-400/80 flex justify-between items-center">
         <div>
             <h2 class="text-2xl font-bold text-stone-800">Riwayat Laporan Saya</h2>
-            <p class="text-stone-700 text-sm mt-1">Kelola dan pantau seluruh laporan kerusakan fasilitas kantor yang pernah kamu ajukan.</p>
+            <p class="text-stone-700 text-sm mt-1">Kelola dan pantau seluruh laporan Pengaduan fasilitas kantor yang pernah kamu ajukan.</p>
         </div>
         <a href="{{ route('laporan.create') }}" class="bg-amber-100 hover:bg-amber-300 text-amber-900 font-semibold px-4 py-2.5 rounded-xl text-sm border border-amber-200 transition shadow-sm inline-flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -26,7 +26,7 @@
             <input type="hidden" name="filter" value="aktif">
         @endif
         
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama barang / kerusakan..." class="px-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-full md:w-64">
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari laporan pengaduan..." class="px-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-full md:w-64">
         
         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
             Cari
@@ -51,7 +51,7 @@
                     <tr class="bg-[rgb(255,222,112)] text-stone-800 border-b border-amber-300/60">
                         <th class="p-3.5 rounded-l-xl">Tanggal</th>
                         <th class="p-3.5">Barang</th>
-                        <th class="p-3.5">Kerusakan</th>
+                        <th class="p-3.5">Deskripsi Pengaduan</th>
                         <th class="p-3.5">Status</th>
                         <th class="p-3.5 rounded-r-xl">Aksi</th>
                     </tr>
