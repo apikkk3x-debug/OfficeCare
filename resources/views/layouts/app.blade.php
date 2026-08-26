@@ -24,16 +24,23 @@
                 <!-- Menu Navigasi Samping -->
                 <nav class="p-4 space-y-2">
                     <a href="{{ route('karyawan.dashboard') }}" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition {{ request()->routeIs('karyawan.dashboard') ? 'bg-amber-100/80 text-amber-900 shadow-sm font-semibold border border-amber-200/60' : 'text-stone-600 hover:bg-amber-50/50' }}">
-                        📊 Dashboard
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition {{ request()->routeIs('karyawan.dashboard') ? 'bg-amber-100/80 text-amber-900 shadow-sm font-semibold border border-amber-200/60' : 'text-stone-600 hover:bg-amber-100' }}">
+                        Dashboard
                     </a>
+
                     <a href="{{ route('laporan.create') }}" 
-                       class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition {{ request()->routeIs('laporan.create') ? 'bg-amber-100/80 text-amber-900 shadow-sm font-semibold border border-amber-200/60' : 'text-stone-600 hover:bg-amber-50/50' }}">
-                        📝 Buat Laporan
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition {{ request()->routeIs('laporan.create') ? 'bg-amber-100/80 text-amber-900 shadow-sm font-semibold border border-amber-200/60' : 'text-stone-600 hover:bg-amber-100' }}">
+                        Buat Laporan
                     </a>
+
                     <a href="{{ route('laporan.index') }}" 
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition {{ request()->routeIs('laporan.index') ? 'bg-amber-100/80 text-amber-900 shadow-sm font-semibold border border-amber-200/60' : 'text-stone-600 hover:bg-amber-50/50' }}">
-                        📋 Riwayat Laporan
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition {{ request()->routeIs('laporan.index') ? 'bg-amber-100/80 text-amber-900 shadow-sm font-semibold border border-amber-200/60' : 'text-stone-600 hover:bg-amber-100' }}">
+                        Riwayat Laporan
+                    </a>
+
+                    <a href="{{ route('karyawan.profile') }}" 
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition {{ request()->routeIs('karyawan.profile*') ? 'bg-amber-100/80 text-amber-900 shadow-sm font-semibold border border-amber-200/60' : 'text-stone-600 hover:bg-amber-100' }}">
+                        <span>Profil Saya</span>
                     </a>
                 </nav>
             </div>
@@ -62,10 +69,24 @@
 
                 @auth
                     <div class="flex items-center gap-4">
-                        <!-- Badge Karyawan Krem Elegan -->
-                        <span class="text-xs bg-amber-100 text-amber-900 border border-amber-200 px-4 py-1.5 rounded-full uppercase font-semibold tracking-wider shadow-sm">
-                            {{ Auth::user()->role }}
-                        </span>
+                        <!-- Tombol Profil Dinamis (Menggantikan Badge Karyawan) -->
+                        <a href="{{ route('karyawan.profile') }}" class="flex items-center gap-2.5 bg-amber-50 hover:bg-amber-100/80 px-3 py-1 rounded-full border border-amber-200 transition text-stone-800 shadow-sm">
+                            <!-- Lingkaran Foto atau Inisial Huruf Depan -->
+                            <div class="w-7 h-7 rounded-full overflow-hidden bg-amber-200 flex items-center justify-center shrink-0 border border-amber-300">
+                                @if(Auth::user()->foto)
+                                    <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto Profil" class="w-full h-full object-cover">
+                                @else
+                                    <span class="text-xs font-bold text-amber-900">
+                                        {{ strtoupper(substr(Auth::user()->nama, 0, 1)) }}
+                                    </span>
+                                @endif
+                            </div>
+
+                            <!-- Nama Dinamis Sesuai User yang Login -->
+                            <span class="text-xs font-semibold tracking-wide text-stone-800">
+                                {{ Auth::user()->nama }}
+                            </span>
+                        </a>
                         
                         <!-- Tombol logout mobile -->
                         <form action="{{ route('logout') }}" method="POST" class="inline md:hidden">

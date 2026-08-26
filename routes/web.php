@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PimpinanController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\KomentarController;
+use App\Http\Controllers\Karyawan\ProfileController;
 
 // Rute Login & Logout (Publik)
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
@@ -19,24 +20,32 @@ Route::middleware(['auth'])->group(function () {
     // A. Dashboard Karyawan & Laporan
     Route::get('/karyawan/dashboard', [KaryawanController::class, 'dashboard'])->name('karyawan.dashboard');
     Route::get('/karyawan/laporan/tambah', [KaryawanController::class, 'createLaporan'])->name('laporan.create');
-    // Route untuk menampilkan formulir tambah laporan
     Route::get('/karyawan/laporan', function () {
         return redirect()->route('laporan.create');
     });
-    // Route untuk menyimpan laporan karyawan
     Route::post('/karyawan/laporan', [KaryawanController::class, 'storeLaporan'])->name('laporan.store');
-    // Route untuk menampilkan formulir edit laporan
     Route::get('/karyawan/laporan/{id}/edit', [KaryawanController::class, 'editLaporan'])->name('laporan.edit');
-    // Route untuk memperbarui laporan karyawan
     Route::put('/karyawan/laporan/{id}', [KaryawanController::class, 'updateLaporan'])->name('laporan.update');
-    // Route untuk menghapus laporan karyawan
     Route::delete('/karyawan/laporan/{id}', [KaryawanController::class, 'destroyLaporan'])->name('laporan.destroy');
-    // Route untuk menampilkan semua laporan karyawan
     Route::get('/laporan', [KaryawanController::class, 'index'])->name('laporan.index');
-    // Route untuk menampilkan detail laporan karyawan
     Route::get('/laporan/{id}', [KaryawanController::class, 'showLaporan'])->name('laporan.show');
-    // Route untuk menambahkan komentar pada laporan karyawan
     Route::post('/laporan/{id}/komentar', [KomentarController::class, 'store'])->name('laporan.komentar.store');
+    
+    // Rute Profil Karyawan (Diubah menjadi PUT agar sinkron dengan form)
+    Route::get('/profil', [ProfileController::class, 'index'])->name('karyawan.profile');
+    Route::put('/profil/update', [ProfileController::class, 'update'])->name('karyawan.profile.update');
+    
+    // Penangan jika URL /profil/update diakses langsung lewat GET
+    Route::get('/profil/update', function () {
+        return redirect()->route('karyawan.profile');
+    });
+
+    // Rute Halaman Khusus Ganti Password
+    Route::get('/profil/ganti-password', [ProfileController::class, 'editPassword'])->name('karyawan.password.edit');
+    Route::put('/profil/ganti-password', [ProfileController::class, 'updatePassword'])->name('karyawan.password.update');
+    Route::get('/profil/ganti-password/update', function () {
+        return redirect()->route('karyawan.password.edit');
+    });
 
     // B. Dashboard Admin Sarpras & Manajemen Status
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');

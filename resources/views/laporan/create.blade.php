@@ -7,9 +7,6 @@
             <h2 class="text-2xl font-bold text-slate-800">Form Laporan Pengaduan</h2>
             <p class="text-slate-500 text-sm mt-1">Laporkan pengaduan terkait fasilitas kantor. Jika belum ada, Anda bisa menambahkannya.</p>
         </div>
-        <a href="{{ route('karyawan.dashboard') }}" class="bg-[rgb(255,218,97)] text-slate-600 hover:text-slate-900 border-amber-400 text-sm font-semibold border px-3 py-1.5 rounded-lg transition">
-            ← Kembali
-        </a>
     </div>
 
     <div class="bg-[rgb(255,232,157)]  p-6 rounded-xl shadow-sm border border-amber-400">
