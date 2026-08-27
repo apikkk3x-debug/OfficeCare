@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\BarangFasilitas;
 use App\Models\LaporanKerusakan;
-use App\Models\LaporanLog; // 1. Tambahkan import model LaporanLog ini
+use App\Models\LaporanLog;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth; // Pastikan Auth juga ter-import
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
@@ -36,12 +36,15 @@ class AdminController extends Controller
             'status_laporan' => $statusBaru,
         ]);
 
-        // 2. OTOMATIS CATAT KE TABEL LOG/TIMELINE
+        // Cek user login dan ambil nama (fallback jika 'name' atau 'nama' kosong)
+       $user = Auth::user();
+        $namaAdmin = $user->name ?? $user->nama ?? $user->username ?? 'Admin';
+
         LaporanLog::create([
-            'id_laporan' => $laporan->id_laporan, // Sesuaikan jika primary key di tabel kamu bernama 'id_laporan'
+            'id_laporan'        => $laporan->id_laporan ?? $laporan->id,
             'status_sebelumnya' => $statusLama,
-            'status_sekarang' => $statusBaru,
-            'keterangan' => 'Status diperbarui oleh Admin (' . Auth::user()->name . ')'
+            'status_sekarang'   => $statusBaru,
+            'keterangan'        => "Status diperbarui oleh Admin ({$namaAdmin})"
         ]);
 
         return redirect()->back()->with('success', 'Status laporan berhasil diperbarui!');
