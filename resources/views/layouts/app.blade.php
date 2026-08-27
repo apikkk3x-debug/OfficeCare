@@ -6,52 +6,76 @@
     <title>OfficeCare - Aplikasi Sarana Prasarana Kantor</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#FDFBF7] text-stone-700 font-sans antialiased">
+<body class="bg-slate-50 text-slate-700 font-sans antialiased">
 
     <!-- Wrapper Utama -->
     <div class="flex h-screen overflow-hidden">
         
-        <!-- ================= SIDEBAR KIRI (Warm Cream & Soft Amber) ================= -->
-        <aside class="w-64 bg-white border-r border-amber-300/80 flex flex-col justify-between hidden md:flex shadow-sm">
+        <!-- ================= SIDEBAR KIRI (DARK SLATE ELEGAN) ================= -->
+        <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between hidden md:flex shadow-xl z-20">
             <div>
                 <!-- Logo / Judul Brand -->
-                <div class="bg-[rgb(255,232,157)] h-16 flex items-center px-6 border-b border-amber-300/60">
-                    <span class="text-xl font-bold tracking-wide text-amber-900 flex items-center gap-2">
+                <div class="h-16 flex items-center px-6 border-b border-slate-800/80">
+                    <span class="text-xl font-bold tracking-wide text-white flex items-center gap-3">
+                        <div class="p-2 bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-600/30">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0v-5a2 2 0 012-2h2a2 2 0 012 2v5"></path>
+                            </svg>
+                        </div>
                         OfficeCare
                     </span>
                 </div>
 
                 <!-- Menu Navigasi Samping -->
-                <nav class="p-4 space-y-2">
+                <nav class="p-4 space-y-1.5">
+                    <!-- Dashboard -->
                     <a href="{{ route('karyawan.dashboard') }}" 
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition {{ request()->routeIs('karyawan.dashboard') ? 'bg-amber-100/80 text-amber-900 shadow-sm font-semibold border border-amber-200/60' : 'text-stone-600 hover:bg-amber-100' }}">
+                       class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('karyawan.dashboard') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
                         Dashboard
                     </a>
 
+                    <!-- Buat Laporan -->
                     <a href="{{ route('laporan.create') }}" 
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition {{ request()->routeIs('laporan.create') ? 'bg-amber-100/80 text-amber-900 shadow-sm font-semibold border border-amber-200/60' : 'text-stone-600 hover:bg-amber-100' }}">
+                       class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('laporan.create') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
                         Buat Laporan
                     </a>
 
+                    <!-- Riwayat Laporan -->
                     <a href="{{ route('laporan.index') }}" 
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition {{ request()->routeIs('laporan.index') ? 'bg-amber-100/80 text-amber-900 shadow-sm font-semibold border border-amber-200/60' : 'text-stone-600 hover:bg-amber-100' }}">
+                       class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('laporan.index') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
                         Riwayat Laporan
                     </a>
 
+                    <!-- Profil Saya -->
                     <a href="{{ route('karyawan.profile') }}" 
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition {{ request()->routeIs('karyawan.profile*') ? 'bg-amber-100/80 text-amber-900 shadow-sm font-semibold border border-amber-200/60' : 'text-stone-600 hover:bg-amber-100' }}">
-                        <span>Profil Saya</span>
+                       class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('karyawan.profile*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        Profil Saya
                     </a>
                 </nav>
             </div>
 
-            <!-- Tombol Keluar di Bawah Sidebar -->
+            <!-- Tombol Keluar (Bottom Sidebar Desktop) -->
             @auth
-            <div class="p-4 border-t border-amber-100/60">
+            <div class="p-4 border-t border-slate-800/80">
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[rgb(255,112,112)] text-stone-100 hover:bg-red-50 hover:text-red-600 transition font-medium text-sm border border-stone-200/60">
-                        🚪 logout
+                    <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700/60 hover:text-white transition font-medium text-xs shadow-sm">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        <span>Keluar Akun</span>
                     </button>
                 </form>
             </div>
@@ -62,57 +86,85 @@
         <div class="flex-1 flex flex-col h-screen overflow-hidden">
             
             <!-- Header Atas -->
-            <header class="h-14 bg-white/80 backdrop-blur border-b border-amber-100/80 px-8 flex justify-between items-center z-10 shadow-sm shrink-0">
+            <header class="h-16 bg-white border-b border-slate-200/80 px-6 md:px-8 flex justify-between items-center z-10 shadow-sm shrink-0">
                 <div class="flex items-center gap-3">
-                    <span class="font-semibold text-stone-700 text-base">Panel Karyawan</span>
+                    <span class="font-bold text-slate-800 text-base md:text-lg">Panel Karyawan</span>
                 </div>
 
                 @auth
-                    <div class="flex items-center gap-4">
-                        <!-- Tombol Profil Dinamis (Menggantikan Badge Karyawan) -->
-                        <a href="{{ route('karyawan.profile') }}" class="flex items-center gap-2.5 bg-amber-50 hover:bg-amber-100/80 px-3 py-1 rounded-full border border-amber-200 transition text-stone-800 shadow-sm">
-                            <!-- Lingkaran Foto atau Inisial Huruf Depan -->
-                            <div class="w-7 h-7 rounded-full overflow-hidden bg-amber-200 flex items-center justify-center shrink-0 border border-amber-300">
+                    <div class="flex items-center gap-3">
+                        <!-- Profil User Top Bar -->
+                        <a href="{{ route('karyawan.profile') }}" class="flex items-center gap-2.5 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 transition text-slate-700 shadow-sm">
+                            <div class="w-7 h-7 rounded-full overflow-hidden bg-indigo-100 flex items-center justify-center shrink-0 border border-indigo-200">
                                 @if(Auth::user()->foto)
                                     <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto Profil" class="w-full h-full object-cover">
                                 @else
-                                    <span class="text-xs font-bold text-amber-900">
-                                        {{ strtoupper(substr(Auth::user()->nama, 0, 1)) }}
+                                    <span class="text-xs font-bold text-indigo-700">
+                                        {{ strtoupper(substr(Auth::user()->nama ?? Auth::user()->name, 0, 1)) }}
                                     </span>
                                 @endif
                             </div>
 
-                            <!-- Nama Dinamis Sesuai User yang Login -->
-                            <span class="text-xs font-semibold tracking-wide text-stone-800">
-                                {{ Auth::user()->nama }}
+                            <span class="text-xs md:text-sm font-semibold tracking-wide text-slate-700">
+                                {{ Auth::user()->nama ?? Auth::user()->name }}
                             </span>
                         </a>
                         
-                        <!-- Tombol logout mobile -->
+                        <!-- Tombol Logout Quick (Mobile Top Bar) -->
                         <form action="{{ route('logout') }}" method="POST" class="inline md:hidden">
                             @csrf
-                            <button type="submit" class="bg-amber-50 hover:bg-amber-100 px-3.5 py-1.5 rounded-lg text-xs font-medium transition text-amber-900">
-                                Keluar
+                            <button type="submit" class="bg-slate-100 hover:bg-slate-200 p-2 rounded-full text-slate-600 transition shadow-sm" title="Logout">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                </svg>
                             </button>
                         </form>
                     </div>
                 @endauth
             </header>
 
-            <!-- Area Konten Dinamis yang Bisa Di-scroll dengan Padding yang Nyaman -->
-            <main class="flex-1 overflow-y-auto p-6 md:p-8">
+            <!-- Area Konten Utama -->
+            <main class="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8">
                 <div class="max-w-7xl mx-auto">
                     @yield('content')
                 </div>
             </main>
 
-            <!-- Footer -->
-            <footer class="bg-white border-t border-amber-100/80 text-center py-4 text-xs text-stone-500 shrink-0">
+            <!-- Footer Desktop -->
+            <footer class="bg-white border-t border-slate-200/80 text-center py-3 text-xs text-slate-400 shrink-0 hidden md:block">
                 &copy; 2026 OfficeCare. Sistem Manajemen Sarpras Kantor.
             </footer>
         </div>
 
     </div>
+
+    <!-- Navigasi Bawah (Khusus Mobile/HP) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around p-2 z-30 shadow-lg">
+        <a href="{{ route('karyawan.dashboard') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('karyawan.dashboard') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            Dashboard
+        </a>
+        <a href="{{ route('laporan.create') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('laporan.create') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Buat
+        </a>
+        <a href="{{ route('laporan.index') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('laporan.index') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Riwayat
+        </a>
+        <a href="{{ route('karyawan.profile') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('karyawan.profile*') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            </svg>
+            Profil
+        </a>
+    </nav>
 
 </body>
 </html>

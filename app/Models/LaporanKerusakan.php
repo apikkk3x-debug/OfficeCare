@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class LaporanKerusakan extends Model
 {
@@ -43,6 +44,7 @@ class LaporanKerusakan extends Model
     {
         return $this->hasMany(LaporanLog::class, 'id_laporan', 'id_laporan');
     }
+
     public function komentars()
     {
         return $this->hasMany(LaporanKomentar::class, 'id_laporan', 'id_laporan');
