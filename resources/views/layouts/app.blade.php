@@ -11,7 +11,7 @@
     <!-- Wrapper Utama -->
     <div class="flex h-screen overflow-hidden">
         
-        <!-- ================= SIDEBAR KIRI (DARK SLATE ELEGAN) ================= -->
+        <!-- ================= SIDEBAR KIRI DESKTOP ================= -->
         <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between hidden md:flex shadow-xl z-20">
             <div>
                 <!-- Logo / Judul Brand -->
@@ -26,43 +26,113 @@
                     </span>
                 </div>
 
-                <!-- Menu Navigasi Samping -->
+                <!-- Menu Navigasi Samping Dinamis (3 Role) -->
                 <nav class="p-4 space-y-1.5">
-                    <!-- Dashboard -->
-                    <a href="{{ route('karyawan.dashboard') }}" 
-                       class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('karyawan.dashboard') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                        </svg>
-                        Dashboard
-                    </a>
+                    @auth
+                        @if(Auth::user()->role === 'admin')
+                            <!-- 1. MENU ADMIN -->
+                            <a href="{{ route('admin.dashboard') }}" 
+                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                                </svg>
+                                Dashboard Admin
+                            </a>
 
-                    <!-- Buat Laporan -->
-                    <a href="{{ route('laporan.create') }}" 
-                       class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('laporan.create') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Buat Laporan
-                    </a>
+                            <a href="{{ route('admin.users') }}" 
+                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.users*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                </svg>
+                                Kelola Pengguna
+                            </a>
 
-                    <!-- Riwayat Laporan -->
-                    <a href="{{ route('laporan.index') }}" 
-                       class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('laporan.index') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        Riwayat Laporan
-                    </a>
+                            <a href="{{ route('admin.laporan.index') }}" 
+                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.laporan.*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                </svg>
+                                Data Laporan
+                            </a>
 
-                    <!-- Profil Saya -->
-                    <a href="{{ route('karyawan.profile') }}" 
-                       class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('karyawan.profile*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                        Profil Saya
-                    </a>
+                            <a href="{{ route('admin.barang.index') }}" 
+                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.barang*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                </svg>
+                                Manajemen Aset
+                            </a>
+
+                        @elseif(Auth::user()->role === 'pimpinan')
+                            <!-- 2. MENU PIMPINAN -->
+                            <a href="{{ route('pimpinan.dashboard') }}" 
+                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('pimpinan.dashboard') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                </svg>
+                                Dashboard
+                            </a>
+
+                            <a href="{{ route('pimpinan.pengadaan.index') }}" 
+                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('pimpinan.pengadaan.*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Persetujuan Pengadaan
+                            </a>
+
+                            <a href="{{ route('pimpinan.rekap') }}" 
+                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('pimpinan.rekap') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                </svg>
+                                Rekap & Cetak
+                            </a>
+
+                        @else
+                            <!-- 3. MENU KARYAWAN -->
+                            <a href="{{ route('karyawan.dashboard') }}" 
+                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('karyawan.dashboard') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                </svg>
+                                Dashboard
+                            </a>
+
+                            <a href="{{ route('laporan.create') }}" 
+                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('laporan.create') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Buat Laporan
+                            </a>
+
+                            <a href="{{ route('laporan.index') }}" 
+                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('laporan.index') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Riwayat Laporan
+                            </a>
+
+                            <a href="{{ route('karyawan.pengadaan.index') }}" 
+                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('karyawan.pengadaan.*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                </svg>
+                                Pengadaan Barang
+                            </a>
+                        @endif
+
+                        <!-- Menu Profil Umum -->
+                        <a href="{{ route('karyawan.profile') }}" 
+                           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('karyawan.profile*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            Profil Saya
+                        </a>
+                    @endauth
                 </nav>
             </div>
 
@@ -85,27 +155,42 @@
         <!-- Area Kanan (Header + Konten + Footer) -->
         <div class="flex-1 flex flex-col h-screen overflow-hidden">
             
-            <!-- Header Atas -->
+            <!-- Header Atas Dinamis -->
             <header class="h-16 bg-white border-b border-slate-200/80 px-6 md:px-8 flex justify-between items-center z-10 shadow-sm shrink-0">
                 <div class="flex items-center gap-3">
-                    <span class="font-bold text-slate-800 text-base md:text-lg">Panel Karyawan</span>
+                    <span class="font-bold text-slate-800 text-base md:text-lg">
+                        @auth
+                            @if(Auth::user()->role === 'admin')
+                                Panel Admin Sarpras
+                            @elseif(Auth::user()->role === 'pimpinan')
+                                Panel Pimpinan Executive
+                            @else
+                                Panel Karyawan
+                            @endif
+                        @else
+                            OfficeCare
+                        @endauth
+                    </span>
                 </div>
 
                 @auth
                     <div class="flex items-center gap-3">
                         <!-- Profil User Top Bar -->
-                        <a href="{{ route('karyawan.profile') }}" class="flex items-center gap-2.5 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 transition text-slate-700 shadow-sm">
-                            <div class="w-7 h-7 rounded-full overflow-hidden bg-indigo-100 flex items-center justify-center shrink-0 border border-indigo-200">
+                        <!-- Profil User Top Bar (Langsung ke Halaman Profil) -->
+                        <a href="{{ route('karyawan.profile') }}" class="inline-flex items-center gap-2.5 bg-white hover:bg-slate-50 px-3.5 py-1.5 rounded-full border border-slate-200 shadow-sm transition text-slate-700">
+                            <!-- Avatar Foto / Inisial -->
+                            <div class="w-7 h-7 rounded-full overflow-hidden bg-indigo-100 flex items-center justify-center shrink-0 border border-slate-200">
                                 @if(Auth::user()->foto)
                                     <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto Profil" class="w-full h-full object-cover">
                                 @else
                                     <span class="text-xs font-bold text-indigo-700">
-                                        {{ strtoupper(substr(Auth::user()->nama ?? Auth::user()->name, 0, 1)) }}
+                                        {{ strtoupper(substr(Auth::user()->nama ?? Auth::user()->name ?? 'U', 0, 1)) }}
                                     </span>
                                 @endif
                             </div>
 
-                            <span class="text-xs md:text-sm font-semibold tracking-wide text-slate-700">
+                            <!-- Nama User -->
+                            <span class="text-xs md:text-sm font-semibold text-slate-700 pr-1">
                                 {{ Auth::user()->nama ?? Auth::user()->name }}
                             </span>
                         </a>
@@ -138,26 +223,61 @@
 
     </div>
 
-    <!-- Navigasi Bawah (Khusus Mobile/HP) -->
+    <!-- Navigasi Bawah Mobile (Khusus HP - Dinamis 3 Role) -->
+    @auth
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around p-2 z-30 shadow-lg">
-        <a href="{{ route('karyawan.dashboard') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('karyawan.dashboard') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
-            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-            </svg>
-            Dashboard
-        </a>
-        <a href="{{ route('laporan.create') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('laporan.create') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
-            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            Buat
-        </a>
-        <a href="{{ route('laporan.index') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('laporan.index') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
-            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            Riwayat
-        </a>
+        @if(Auth::user()->role === 'admin')
+            <!-- Mobile Admin -->
+            <a href="{{ route('admin.dashboard') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('admin.dashboard') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                </svg>
+                Dashboard
+            </a>
+            <a href="{{ route('admin.users') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('admin.users*') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+                Pengguna
+            </a>
+
+        @elseif(Auth::user()->role === 'pimpinan')
+            <!-- Mobile Pimpinan -->
+            <a href="{{ route('pimpinan.dashboard') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('pimpinan.dashboard') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6m2 0h2a2 2 0 002-2v-5a2 2 0 00-2-2h-2m-4-6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z"></path>
+                </svg>
+                Executive
+            </a>
+            <a href="{{ route('pimpinan.rekap') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('pimpinan.rekap*') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                Rekap & Cetak
+            </a>
+
+        @else
+            <!-- Mobile Karyawan -->
+            <a href="{{ route('karyawan.dashboard') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('karyawan.dashboard') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                Dashboard
+            </a>
+            <a href="{{ route('laporan.create') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('laporan.create') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Buat
+            </a>
+            <a href="{{ route('laporan.index') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('laporan.index') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Riwayat
+            </a>
+        @endif
+
         <a href="{{ route('karyawan.profile') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('karyawan.profile*') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
             <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -165,6 +285,7 @@
             Profil
         </a>
     </nav>
+    @endauth
 
 </body>
 </html>

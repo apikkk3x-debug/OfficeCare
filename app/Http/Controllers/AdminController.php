@@ -19,6 +19,13 @@ class AdminController extends Controller
         return view('admin.dashboard', compact('laporanMasuk', 'barangFasilitas'));
     }
 
+    // Method baru khusus untuk halaman Data Laporan Admin
+    public function laporan()
+    {
+        $laporan = LaporanKerusakan::with(['user', 'barang'])->latest()->get();
+        return view('admin.laporan', compact('laporan'));
+    }
+
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
@@ -36,8 +43,8 @@ class AdminController extends Controller
             'status_laporan' => $statusBaru,
         ]);
 
-        // Cek user login dan ambil nama (fallback jika 'name' atau 'nama' kosong)
-       $user = Auth::user();
+        // Cek user login dan ambil nama
+        $user = Auth::user();
         $namaAdmin = $user->name ?? $user->nama ?? $user->username ?? 'Admin';
 
         LaporanLog::create([
@@ -73,4 +80,30 @@ class AdminController extends Controller
         $user->delete();
         return redirect()->back()->with('success', 'Akun pengguna berhasil dihapus dari sistem.');
     }
-}   
+    // Tambahkan relasi chat/tanggapan jika ada
+    public function showLaporan($id)
+    {
+        $laporan = \App\Models\LaporanKerusakan::with(['user', 'barang', 'komentars.user'])->findOrFail($id);
+
+        return view('admin.laporan.show', compact('laporan'));
+    }
+
+    public function tanggapiLaporan(Request $request, $id)
+{
+    $request->validate([
+        'pesan' => 'required|string',
+    ]);
+
+    // Jika kamu punya model Komentar / Tanggapan:
+    // Pastikan dipanggil di bagian atas controller jika belum ada:
+// use Illuminate\Support\Facades\Auth;
+
+    \App\Models\LaporanKomentar::create([
+        'id_laporan' => $id,
+        'id_user'    => Auth::id(),
+        'pesan'      => $request->pesan,
+    ]);
+
+    return redirect()->back()->with('success', 'Tanggapan berhasil dikirim!');
+    }
+}
