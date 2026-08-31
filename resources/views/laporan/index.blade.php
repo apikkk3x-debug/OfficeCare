@@ -15,10 +15,9 @@
             <span>{{ session('error') }}</span>
         </div>
     @endif
-    <!-- END NOTIFIKASI -->
 
     <!-- Header Halaman (Gradient Accent Card) -->
-    <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 border border-indigo-700/50 rounded-2xl p-6 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-400/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <span class="inline-block px-2.5 py-0.5 bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-[10px] font-semibold tracking-wider uppercase rounded-md mb-1.5">
                 Riwayat Pengaduan
@@ -26,7 +25,7 @@
             <h2 class="text-xl font-bold text-white tracking-wide">Riwayat Laporan Saya</h2>
             <p class="text-xs text-indigo-100/80 mt-1">Kelola dan pantau seluruh laporan pengaduan fasilitas kantor yang pernah kamu ajukan.</p>
         </div>
-        <a href="{{ route('laporan.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2.5 rounded-xl text-xs shadow-md shadow-indigo-600/20 transition inline-flex items-center gap-2 shrink-0">
+        <a href="{{ route('laporan.create') }}" class="bg-indigo-800 hover:bg-indigo-900 text-white font-semibold px-4 py-2.5 rounded-xl text-xs shadow-md shadow-indigo-600/20 transition inline-flex items-center gap-2 shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
@@ -64,7 +63,7 @@
             <table class="w-full text-left text-xs border-collapse">
                 <!-- Sticky Header -->
                 <thead class="sticky top-0 z-10">
-                    <tr class="text-slate-100 bg-gradient-to-r from-indigo-800 via-indigo-700 to-slate-800 border-b border-indigo-700/50">
+                    <tr class="text-slate-100 bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-800 border-b border-indigo-700/50">
                         <th class="p-3.5 font-bold">Tanggal</th>
                         <th class="p-3.5 font-bold">Barang</th>
                         <th class="p-3.5 font-bold">Deskripsi Pengaduan</th>

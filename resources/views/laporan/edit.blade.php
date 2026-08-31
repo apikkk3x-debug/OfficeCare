@@ -4,7 +4,7 @@
 <div class="max-w-2xl mx-auto space-y-6">
 
     <!-- Header Halaman (Gradient Accent Card) -->
-    <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 border border-indigo-700/50 p-6 rounded-2xl shadow-md text-white">
+    <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 border border-indigo-700/50 p-4 rounded-2xl shadow-md text-white">
         <span class="inline-block px-2.5 py-0.5 bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-[10px] font-semibold tracking-wider uppercase rounded-md mb-1.5">
             Formulir Edit
         </span>
