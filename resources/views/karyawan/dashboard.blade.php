@@ -4,30 +4,30 @@
 <div class="space-y-6">
     
     <!-- Header Sambutan (Gradient Accent Card) -->
-    <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 border border-indigo-700/50 rounded-2xl p-6 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-indigo-700/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <span class="inline-block px-2.5 py-0.5 bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-[10px] font-semibold tracking-wider uppercase rounded-md mb-1.5">
                 Overview
             </span>
             <h2 class="text-xl font-bold text-white tracking-wide">Dashboard Karyawan</h2>
-            <p class="text-xs text-indigo-100/80 mt-1">Selamat datang, <span class="font-semibold text-white">{{ Auth::user()->nama ?? Auth::user()->name }}</span>. Pantau status laporan pengaduan fasilitas kantor di sini.</p>
+            <p class="text-xs text-indigo-100/80 mt-1">Selamat datang, <span class="font-semibold text-white">{{ Auth::user()->nama ?? Auth::user()->name }}</span>. Kelola pengaduan fasilitas dan pengajuan barang baru kantor di sini.</p>
         </div>
         <span class="bg-white/10 backdrop-blur-md text-indigo-200 font-medium px-3.5 py-1.5 rounded-full text-xs border border-white/10 shrink-0 shadow-sm">
             Karyawan Aktif
         </span>
     </div>
 
-    <!-- Grid Kartu Utama -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <!-- Grid Kartu Utama (4 Kolom Layout) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         
-        <!-- Action Card: Buat Laporan -->
+        <!-- Action Card 1: Pengaduan Kerusakan -->
         <div class="bg-slate-100/80 p-5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between">
             <div>
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Ada Fasilitas Rusak?</h3>
-                <p class="text-slate-600 text-xs leading-relaxed mb-5">Laporkan pengaduan terkait AC, lampu, proyektor, atau fasilitas kantor lainnya agar segera ditangani.</p>
+                <p class="text-slate-600 text-xs leading-relaxed mb-5">Laporkan AC, lampu, proyektor, atau alat kerja rusak agar segera diperbaiki.</p>
             </div>
                 
-            <a href="{{ route('laporan.create') }}" class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-xs transition shadow-md shadow-indigo-600/20 w-full sm:w-fit">
+            <a href="{{ route('laporan.create') }}" class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-xs transition shadow-md shadow-indigo-600/20 w-full">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -35,11 +35,26 @@
             </a>
         </div>
 
-        <!-- Stat Card 1: Total Laporan -->
+        <!-- Action Card 2: Pengadaan Barang Baru (BARU ADDED) -->
+        <div class="bg-slate-100/80 p-5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between">
+            <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Butuh Barang Baru?</h3>
+                <p class="text-slate-600 text-xs leading-relaxed mb-5">Ajukan usulan permohonan pengadaan barang atau fasilitas baru ke Pimpinan.</p>
+            </div>
+                
+            <a href="{{ route('karyawan.pengadaan.create') }}" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2.5 rounded-xl text-xs transition shadow-md shadow-emerald-600/20 w-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Ajukan Barang Baru
+            </a>
+        </div>
+
+        <!-- Stat Card 1: Total Laporan Pengaduan -->
         <a href="{{ route('laporan.index') }}" class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-indigo-400 hover:shadow-md group">
             <div>
                 <div class="flex justify-between items-start">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Laporan Pengaduan</span>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Pengaduan</span>
                     <div class="p-2 bg-white text-indigo-600 rounded-xl shadow-sm border border-slate-200/60 group-hover:bg-indigo-600 group-hover:text-white transition">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 02 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012-2m-6 9l2 2 4-4" />
@@ -47,14 +62,14 @@
                     </div>
                 </div>
                 <h4 class="text-3xl font-extrabold text-slate-800 mt-3">{{ $laporanku->count() }}</h4>
-                <p class="text-slate-500 text-xs mt-1">Laporan pengaduan yang pernah diajukan</p>
+                <p class="text-slate-500 text-xs mt-1">Pengaduan diajukan</p>
             </div>
             <span class="text-xs font-semibold text-indigo-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                Lihat semua riwayat &rarr;
+                Lihat riwayat &rarr;
             </span>
         </a>
 
-        <!-- Stat Card 2: Laporan Aktif -->
+        <!-- Stat Card 2: Pengaduan Aktif -->
         <a href="{{ route('laporan.index', ['filter' => 'aktif']) }}" class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-indigo-400 hover:shadow-md group">
             <div>
                 <div class="flex justify-between items-start">
@@ -68,10 +83,10 @@
                 <h4 class="text-3xl font-extrabold text-slate-800 mt-3">
                     {{ $laporanku->where('status_laporan', '!=', 'Selesai')->count() }}
                 </h4>
-                <p class="text-slate-500 text-xs mt-1">Laporan pengaduan dalam penanganan</p>
+                <p class="text-slate-500 text-xs mt-1">Dalam proses perbaikan</p>
             </div>
             <span class="text-xs font-semibold text-indigo-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                Filter laporan aktif &rarr;
+                Filter aktif &rarr;
             </span>
         </a>
     </div>
@@ -93,7 +108,6 @@
         <div class="space-y-3">
             @forelse($logs as $activity)
                 @php
-                    // Mapping Warna Badge Berdasarkan Status
                     $statusClasses = [
                         'Menunggu' => 'bg-rose-100 text-rose-700 border-rose-200',
                         'Diproses' => 'bg-amber-100 text-amber-700 border-amber-200',
@@ -102,10 +116,7 @@
                     ];
 
                     $badgeClass = $statusClasses[$activity->status_sekarang] ?? 'bg-indigo-100 text-indigo-700 border-indigo-200';
-                    
-                    // Cek apakah ada perubahan status
-                    $isStatusChanged = isset($activity->status_sebelumnya) 
-                        && $activity->status_sebelumnya !== $activity->status_sekarang;
+                    $isStatusChanged = isset($activity->status_sebelumnya) && $activity->status_sebelumnya !== $activity->status_sekarang;
                 @endphp
 
                 <a href="{{ route('laporan.show', $activity->id_laporan) }}#log-{{ $activity->id_log ?? $activity->id }}" 
