@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OfficeCare - Aplikasi Sarana Prasarana Kantor</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js CDN untuk Interaktivitas Dropdown Profil -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-700 font-sans antialiased">
 
@@ -175,25 +177,92 @@
 
                 @auth
                     <div class="flex items-center gap-3">
-                        <!-- Profil User Top Bar -->
-                        <!-- Profil User Top Bar (Langsung ke Halaman Profil) -->
-                        <a href="{{ route('karyawan.profile') }}" class="inline-flex items-center gap-2.5 bg-white hover:bg-slate-50 px-3.5 py-1.5 rounded-full border border-slate-200 shadow-sm transition text-slate-700">
-                            <!-- Avatar Foto / Inisial -->
-                            <div class="w-7 h-7 rounded-full overflow-hidden bg-indigo-100 flex items-center justify-center shrink-0 border border-slate-200">
-                                @if(Auth::user()->foto)
-                                    <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto Profil" class="w-full h-full object-cover">
-                                @else
-                                    <span class="text-xs font-bold text-indigo-700">
-                                        {{ strtoupper(substr(Auth::user()->nama ?? Auth::user()->name ?? 'U', 0, 1)) }}
-                                    </span>
-                                @endif
-                            </div>
+                        <!-- Profil Dropdown Top Bar (Klik untuk membuka menu melayang) -->
+                        <div x-data="{ open: false }" class="relative inline-block text-left">
+                            <!-- Trigger Button: Foto Profil Bundar dengan Ring Hijau -->
+                            <button @click="open = !open" type="button" class="w-9 h-9 rounded-full p-0.5 bg-emerald-500 focus:outline-none cursor-pointer hover:ring-2 hover:ring-emerald-400 transition shrink-0">
+                                <div class="w-full h-full rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
+                                    @if(Auth::user()->foto)
+                                        <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto Profil" class="w-full h-full object-cover">
+                                    @else
+                                        <span class="text-xs font-bold text-white uppercase">
+                                            {{ strtoupper(substr(Auth::user()->nama ?? Auth::user()->name ?? 'U', 0, 1)) }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </button>
 
-                            <!-- Nama User -->
-                            <span class="text-xs md:text-sm font-semibold text-slate-700 pr-1">
-                                {{ Auth::user()->nama ?? Auth::user()->name }}
-                            </span>
-                        </a>
+                            <!-- Dropdown Menu Box -->
+                            <div x-show="open" 
+                                 @click.away="open = false"
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                 class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50 space-y-3"
+                                 style="display: none;">
+                                
+                                <!-- Header Info User -->
+                                <div class="flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-full p-0.5 bg-emerald-500 shrink-0">
+                                        <div class="w-full h-full rounded-full overflow-hidden bg-slate-800 flex items-center justify-center">
+                                            @if(Auth::user()->foto)
+                                                <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Foto Profil" class="w-full h-full object-cover">
+                                            @else
+                                                <span class="text-sm font-bold text-white uppercase">
+                                                    {{ strtoupper(substr(Auth::user()->nama ?? Auth::user()->name ?? 'U', 0, 1)) }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <h4 class="text-sm font-bold text-slate-800 truncate leading-tight">
+                                            {{ Auth::user()->nama ?? Auth::user()->name }}
+                                        </h4>
+                                        <span class="inline-block mt-1 px-2.5 py-0.5 bg-blue-100 text-blue-600 font-semibold rounded-md text-[11px] capitalize">
+                                            {{ Auth::user()->role }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <hr class="border-slate-100">
+
+                                <!-- Navigasi Link -->
+                                <div class="space-y-1">
+                                    @php
+                                        $dashRoute = match(Auth::user()->role) {
+                                            'admin' => route('admin.dashboard'),
+                                            'pimpinan' => route('pimpinan.dashboard'),
+                                            default => route('karyawan.dashboard'),
+                                        };
+                                    @endphp
+                                    <a href="{{ $dashRoute }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                        </svg>
+                                        <span>Dashboard</span>
+                                    </a>
+
+                                    <a href="{{ route('karyawan.profile') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        </svg>
+                                        <span>Profil Saya</span>
+                                    </a>
+                                </div>
+
+                                <hr class="border-slate-100">
+                                <!-- Tombol Log out Red Card -->
+                                <form action="{{ route('logout') }}" method="POST" class="pt-1">
+                                    @csrf
+                                    <button type="submit" class="w-full bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-600 font-bold text-xs py-2.5 rounded-xl transition text-center cursor-pointer">
+                                        Log out
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                         
                         <!-- Tombol Logout Quick (Mobile Top Bar) -->
                         <form action="{{ route('logout') }}" method="POST" class="inline md:hidden">
