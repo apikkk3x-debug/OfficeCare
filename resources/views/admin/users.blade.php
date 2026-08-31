@@ -2,10 +2,10 @@
 
 @section('content')
 <div class="space-y-6">
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center">
+    <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center">
         <div>
-            <h2 class="text-2xl font-bold text-slate-800">Manajemen Pengguna</h2>
-            <p class="text-slate-500 text-sm mt-1">Daftar seluruh akun yang terdaftar dalam sistem OfficeCare.</p>
+            <h2 class="text-2xl font-bold text-slate-100">Manajemen Pengguna</h2>
+            <p class="text-slate-300 text-sm mt-1">Daftar seluruh akun yang terdaftar dalam sistem OfficeCare.</p>
         </div>
         <a href="{{ route('admin.dashboard') }}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition">
             &larr; Kembali ke Dashboard
