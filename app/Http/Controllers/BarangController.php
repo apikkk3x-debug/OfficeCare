@@ -46,4 +46,10 @@ class BarangController extends Controller
 
         return redirect()->back()->with('success', 'Data barang berhasil dihapus.');
     }
+    public function index()
+    {
+        $barangFasilitas = BarangFasilitas::latest()->get();
+        return view('admin.barang.index', compact('barangFasilitas'));
+    }
+
 }
