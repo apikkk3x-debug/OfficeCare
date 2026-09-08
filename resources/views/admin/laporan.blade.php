@@ -117,7 +117,7 @@
                                     <!-- Select Status -->
                                     <form action="{{ route('admin.laporan.updateStatus', $item->id_laporan ?? $item->id) }}" method="POST" class="inline-block">
                                         @csrf
-                                        @method('PATCH')
+                                        @method('PUT')
                                         <select name="status_laporan" onchange="this.form.submit()" class="text-[11px] bg-white border border-slate-300 rounded-lg p-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer font-medium text-slate-700 shadow-xs">
                                             <option value="Menunggu" {{ $status == 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
                                             <option value="Diproses" {{ $status == 'Diproses' ? 'selected' : '' }}>Diproses</option>
