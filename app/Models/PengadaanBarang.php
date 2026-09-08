@@ -21,6 +21,7 @@ class PengadaanBarang extends Model
         'estimasi_harga',
         'status_approval',
         'tanggal_approval',
+        'link_referensi',
     ];
 
     // Relasi: Pengajuan ini dibuat oleh 1 User (Pemohon)
