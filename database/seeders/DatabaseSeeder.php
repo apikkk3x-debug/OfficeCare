@@ -17,21 +17,21 @@ class DatabaseSeeder extends Seeder
         // 1. Buat Contoh User untuk 3 Role
         User::create([
             'nama' => 'Admin Sarpras',
-            'email' => 'admin@officecare.com',
+            'email' => 'admin@gmail.com',
             'password' => Hash::make('123'),
             'role' => 'admin',
         ]);
 
         User::create([
             'nama' => 'Ahmad Karyawan',
-            'email' => 'karyawan@officecare.com',
+            'email' => 'karyawan@gmail.com',
             'password' => Hash::make('123'),
             'role' => 'karyawan',
         ]);
 
         User::create([
             'nama' => 'Bapak Pimpinan',
-            'email' => 'pimpinan@officecare.com',
+            'email' => 'pimpinan@gmail.com',
             'password' => Hash::make('123'),
             'role' => 'pimpinan',
         ]);
