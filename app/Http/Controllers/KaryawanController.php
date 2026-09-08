@@ -41,7 +41,7 @@ class KaryawanController extends Controller
     // ==========================================
     // HALAMAN RIWAYAT LAPORAN (INDEX)
     // ==========================================
-    public function index(Request $request)
+        public function index(Request $request)
     {
         $query = LaporanKerusakan::with(['barang'])
                     ->where('id_user', Auth::id());
@@ -63,9 +63,17 @@ class KaryawanController extends Controller
             });
         }
 
-        $laporanku = $query->latest()->get();
+        // 3. Konfigurasi Paginasi & Batasan Pilihan Per Page
+        $perPage = $request->input('per_page', 10);
+        $allowedPerPage = [10, 30, 50, 80, 100];
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 10;
+        }
 
-        return view('laporan.index', compact('laporanku'));
+        // Menggunakan paginate() menggantikan get()
+        $laporanku = $query->latest()->paginate($perPage)->appends($request->all());
+
+        return view('laporan.index', compact('laporanku', 'perPage'));
     }
 
     public function createLaporan()
