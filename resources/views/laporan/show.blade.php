@@ -57,17 +57,18 @@
                         </div>
                     </div>
 
-                    <!-- Foto Bukti Kerusakan -->
+                    <!-- Foto Bukti Kerusakan (Diubah Menjadi Modal Pop-up) -->
                     <div class="space-y-1.5 flex flex-col items-start">
                         <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Foto Kerusakan</span>
                         <div>
                             @if($laporan->foto_kondisi)
-                                <a href="{{ asset('storage/' . $laporan->foto_kondisi) }}" target="_blank" class="inline-block border border-slate-200 rounded-xl overflow-hidden bg-white p-1.5 shadow-sm transition hover:border-indigo-300">
+                                <div onclick="bukaModalFoto('{{ asset('storage/' . $laporan->foto_kondisi) }}')" class="inline-block border border-slate-200 rounded-xl overflow-hidden bg-white p-1.5 shadow-sm transition hover:border-indigo-400 cursor-pointer">
                                     <img src="{{ asset('storage/' . $laporan->foto_kondisi) }}" 
                                          alt="Foto Kerusakan" 
                                          class="rounded-lg max-h-[180px] w-auto object-contain block"
-                                         title="Klik untuk melihat foto ukuran penuh">
-                                </a>
+                                         title="Klik untuk memperbesar foto">
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-1 italic">Klik gambar untuk memperbesar</p>
                             @else
                                 <div class="border border-slate-200 rounded-xl bg-white p-3">
                                     <p class="text-slate-400 text-xs italic">Tidak ada foto.</p>
@@ -79,7 +80,7 @@
 
                 <hr class="border-slate-200">
 
-                <!-- Deskripsi Kerusakan (Diberi break-words & break-all) -->
+                <!-- Deskripsi Kerusakan -->
                 <div>
                     <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Deskripsi Pengaduan</span>
                     <div class="mt-1.5 p-3.5 bg-white rounded-xl border border-slate-200/80 text-slate-700 text-xs leading-relaxed shadow-sm break-words break-all">
@@ -91,41 +92,39 @@
 
         <!-- KOLOM KANAN: Timeline (Lebar 5 Kolom) -->
         <div class="lg:col-span-5 bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col h-full">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 border-b border-slate-200 pb-2">Riwayat & Timeline Status</h3>
-            
-            <div class="max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-                <div class="relative border-l-2 border-slate-300 ml-3 space-y-4 pt-1 pb-1 overflow-visible">
-                    @forelse($laporan->logs ?? [] as $log)
-                        <!-- PROPERTI target: Highlight warna Indigo -->
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 border-b border-slate-200 pb-2">Riwayat & Timeline Status</h3>
+        
+        <div class="max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+            <div class="relative border-l-2 border-slate-300 ml-3 space-y-4 pt-1 pb-1 overflow-visible">
+                @forelse($laporan->logs ?? [] as $log)
+                    <div class="relative pl-6 pr-2 py-1 group transition-all duration-300">
+                        
+                        <!-- Titik/Dot Timeline -->
+                        <div class="absolute -left-[9px] top-3 h-4 w-4 rounded-full bg-indigo-600 border-2 border-white shadow-sm z-10 shrink-0"></div>
+                        
+                        <!-- ID dipindah ke Card agar kelas target: berfungsi optimal -->
                         <div id="log-{{ $log->id_log ?? $log->id }}" 
-                             class="relative pl-6 pr-2 py-1 group transition-all duration-300">
-                            
-                            <!-- Titik/Dot Timeline -->
-                            <div class="absolute -left-[9px] top-3 h-4 w-4 rounded-full bg-indigo-600 border-2 border-white shadow-sm z-10 shrink-0"></div>
-                            
-                            <!-- Kotak Card Log -->
-                            <div class="bg-white border border-slate-200/80 p-3 rounded-xl shadow-sm transition-all duration-500
-                                        target:bg-indigo-100 target:border-indigo-400 target:ring-2 target:ring-indigo-500/50 target:shadow-md target:scale-[1.02]">
-                                <p class="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                                    Status: 
-                                    <span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold text-[10px]">
-                                        {{ $log->status_sekarang }}
-                                    </span>
-                                </p>
-                                <!-- Keterangan Log (Diberi break-words & break-all) -->
-                                <p class="text-[11px] text-slate-600 mt-1 leading-relaxed break-words break-all">
-                                    {{ $log->created_at->format('d M Y, H:i') }} • {{ $log->keterangan }}
-                                </p>
-                            </div>
+                            class="bg-white border border-slate-200/80 p-3 rounded-xl shadow-sm transition-all duration-500
+                                    target:bg-indigo-100 target:border-indigo-400 target:ring-2 target:ring-indigo-500/50 target:shadow-md target:scale-[1.02]">
+                            <p class="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                                Status: 
+                                <span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold text-[10px]">
+                                    {{ $log->status_sekarang }}
+                                </span>
+                            </p>
+                            <p class="text-[11px] text-slate-600 mt-1 leading-relaxed break-words break-all">
+                                {{ $log->created_at->format('d M Y, H:i') }} • {{ $log->keterangan }}
+                            </p>
                         </div>
-                    @empty
-                        <div class="pl-6 py-4">
-                            <p class="text-[11px] text-slate-500 italic">Belum ada catatan riwayat perubahan untuk laporan ini.</p>
-                        </div>
-                    @endforelse
-                </div>
+                    </div>
+                @empty
+                    <div class="pl-6 py-4">
+                        <p class="text-[11px] text-slate-500 italic">Belum ada catatan riwayat perubahan untuk laporan ini.</p>
+                    </div>
+                @endforelse
             </div>
         </div>
+    </div>
 
     </div> <!-- TUTUP GRID 2 KOLOM -->
 
@@ -156,7 +155,6 @@
                         </span>
                         <span class="text-[10px] text-slate-400">{{ $komentar->created_at->format('d M Y, H:i') }}</span>
                     </div>
-                    <!-- Pesan Komentar (Diberi break-words & break-all) -->
                     <p class="text-xs text-slate-600 leading-relaxed break-words break-all">{{ $komentar->pesan }}</p>
                 </div>
             @empty
@@ -177,4 +175,51 @@
     </div>
 
 </div>
+
+<!-- ================= MODAL POP-UP PREVIEW FOTO ================= -->
+<div id="modalPreviewFoto" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs hidden items-center justify-center z-50 p-4" onclick="tutupModalFoto()">
+    <!-- Ubah max-w-2xl w-full menjadi w-fit max-w-full agar kotaknya menyusut pas dengan gambar -->
+    <div class="relative w-fit max-w-full bg-white rounded-3xl p-4 shadow-2xl overflow-hidden border border-slate-400" onclick="event.stopPropagation()">
+        
+        <!-- Tombol Tutup -->
+        <div class="flex justify-between items-center pb-3 px-1 border-b border-slate-600 mb-3 gap-6">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Pratinjau Foto Kerusakan</span>
+            <button type="button" onclick="tutupModalFoto()" class="text-slate-400 hover:text-slate-600 font-bold text-lg px-2 py-1 rounded-full hover:bg-slate-100 transition cursor-pointer">✕</button>
+        </div>
+
+        <!-- Area Gambar -->
+        <div class="flex items-center justify-center bg-slate-900 rounded-2xl overflow-hidden p-2">
+            <img id="gambarModalFull" src="" class="max-h-[75vh] w-auto rounded-xl object-contain shadow-sm">
+        </div>
+    </div>
+</div>
+
+<!-- Script Pop-up Foto -->
+<script>
+function bukaModalFoto(url) {
+    const modal = document.getElementById('modalPreviewFoto');
+    const gambarFull = document.getElementById('gambarModalFull');
+    
+    gambarFull.src = url;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function tutupModalFoto() {
+    const modal = document.getElementById('modalPreviewFoto');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.location.hash) {
+        const targetCard = document.querySelector(window.location.hash);
+        if (targetCard) {
+            setTimeout(() => {
+                targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 200);
+        }
+    }
+});
+</script>
 @endsection
