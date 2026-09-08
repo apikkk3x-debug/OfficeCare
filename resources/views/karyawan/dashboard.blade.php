@@ -4,21 +4,34 @@
 <div class="space-y-6">
     
     <!-- Header Sambutan (Gradient Accent Card) -->
+    <!-- Header Sambutan Menyapa User (Gradient Accent Card) -->
     <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-indigo-700/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <span class="inline-block px-2.5 py-0.5 bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-[10px] font-semibold tracking-wider uppercase rounded-md mb-1.5">
-                Overview
-            </span>
-            <h2 class="text-xl font-bold text-white tracking-wide">Dashboard Karyawan</h2>
-            <p class="text-xs text-indigo-100/80 mt-1">Selamat datang, <span class="font-semibold text-white">{{ Auth::user()->nama ?? Auth::user()->name }}</span>. Kelola pengaduan fasilitas dan pengajuan barang baru kantor di sini.</p>
+            <div class="flex items-center gap-2 mb-2">
+                <span class="px-2.5 py-0.5 bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-[10px] font-semibold tracking-wider uppercase rounded-md">
+                    Overview
+                </span>
+                <span class="text-xs text-indigo-300 font-medium">• Dashboard Karyawan</span>
+            </div>
+            
+            <!-- Judul Utama Menyapa Nama User -->
+            <h2 class="text-2xl font-bold text-white tracking-wide">
+                Selamat Datang, {{ ucwords(Auth::user()->nama ?? Auth::user()->name) }}! 
+            </h2>
+            
+            <!-- Deskripsi Tugas Karyawan -->
+            <p class="text-xs text-indigo-100/80 mt-1.5 leading-relaxed">
+                Kelola pengaduan fasilitas kantor dan ajukan permohonan pengadaan barang baru secara real-time di sini.
+            </p>
         </div>
-        <span class="bg-white/10 backdrop-blur-md text-indigo-200 font-medium px-3.5 py-1.5 rounded-full text-xs border border-white/10 shrink-0 shadow-sm">
+        
+        <span class="bg-white/10 backdrop-blur-md text-indigo-200 font-medium px-4 py-2 rounded-full text-xs border border-white/10 shrink-0 shadow-sm">
             Karyawan Aktif
         </span>
     </div>
 
-    <!-- Grid Kartu Utama (4 Kolom Layout) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+    <!-- Quick Action Cards (2 Kartu Aksi Cepat) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         
         <!-- Action Card 1: Pengaduan Kerusakan -->
         <div class="bg-slate-100/80 p-5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between">
@@ -35,7 +48,7 @@
             </a>
         </div>
 
-        <!-- Action Card 2: Pengadaan Barang Baru (BARU ADDED) -->
+        <!-- Action Card 2: Pengadaan Barang Baru -->
         <div class="bg-slate-100/80 p-5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between">
             <div>
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Butuh Barang Baru?</h3>
@@ -50,6 +63,11 @@
             </a>
         </div>
 
+    </div>
+
+    <!-- Ringkasan Statistik Interaktif (4 Kolom Layout) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        
         <!-- Stat Card 1: Total Laporan Pengaduan -->
         <a href="{{ route('laporan.index') }}" class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-indigo-400 hover:shadow-md group">
             <div>
@@ -57,7 +75,7 @@
                     <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Total Pengaduan</span>
                     <div class="p-2 bg-white text-indigo-600 rounded-xl shadow-sm border border-slate-200/60 group-hover:bg-indigo-600 group-hover:text-white transition">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 02 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012-2m-6 9l2 2 4-4" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012-2m-6 9l2 2 4-4" />
                         </svg>
                     </div>
                 </div>
@@ -70,25 +88,65 @@
         </a>
 
         <!-- Stat Card 2: Pengaduan Aktif -->
-        <a href="{{ route('laporan.index', ['filter' => 'aktif']) }}" class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-indigo-400 hover:shadow-md group">
+        <a href="{{ route('laporan.index', ['filter' => 'aktif']) }}" class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-amber-400 hover:shadow-md group">
             <div>
                 <div class="flex justify-between items-start">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Status Aktif</span>
-                    <div class="p-2 bg-white text-indigo-600 rounded-xl shadow-sm border border-slate-200/60 group-hover:bg-indigo-600 group-hover:text-white transition">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-600">Perbaikan Aktif</span>
+                    <div class="p-2 bg-white text-amber-600 rounded-xl shadow-sm border border-slate-200/60 group-hover:bg-amber-500 group-hover:text-white transition">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                 </div>
-                <h4 class="text-3xl font-extrabold text-slate-800 mt-3">
+                <h4 class="text-3xl font-extrabold text-amber-600 mt-3">
                     {{ $laporanku->where('status_laporan', '!=', 'Selesai')->count() }}
                 </h4>
                 <p class="text-slate-500 text-xs mt-1">Dalam proses perbaikan</p>
             </div>
-            <span class="text-xs font-semibold text-indigo-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            <span class="text-xs font-semibold text-amber-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                 Filter aktif &rarr;
             </span>
         </a>
+
+        <!-- Stat Card 3: Total Pengadaan Barang Baru (Menggunakan $pengadaanku jika ada, fallback ke 0) -->
+        <a href="{{ route('karyawan.pengadaan.index') }}" class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-emerald-400 hover:shadow-md group">
+            <div>
+                <div class="flex justify-between items-start">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Pengadaan Barang</span>
+                    <div class="p-2 bg-white text-emerald-600 rounded-xl shadow-sm border border-slate-200/60 group-hover:bg-emerald-600 group-hover:text-white transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                </div>
+                <h4 class="text-3xl font-extrabold text-slate-800 mt-3">
+                    {{ isset($pengadaanku) ? $pengadaanku->count() : 0 }}
+                </h4>
+                <p class="text-slate-500 text-xs mt-1">Usulan barang diajukan</p>
+            </div>
+            <span class="text-xs font-semibold text-emerald-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                Daftar pengadaan &rarr;
+            </span>
+        </a>
+
+        <!-- Stat Card 4: Pengadaan Disetujui Pimpinan -->
+        <div class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Pengadaan Disetujui</span>
+                    <h4 class="text-3xl font-extrabold text-blue-600 mt-3">
+                        {{ isset($pengadaanku) ? $pengadaanku->where('status_approval', 'disetujui')->count() : 0 }}
+                    </h4>
+                </div>
+                <div class="p-2 bg-white text-blue-600 rounded-xl shadow-sm border border-slate-200/60">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+            <p class="text-slate-500 text-xs mt-3">Telah di-ACC Pimpinan</p>
+        </div>
+
     </div>
 
     <!-- Log Aktivitas Terbaru -->
