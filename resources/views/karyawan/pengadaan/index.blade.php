@@ -4,7 +4,7 @@
 <div class="space-y-6" x-data="{ showModal: false, modalData: {} }">
     
     <!-- Header Banner -->
-    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-indigo-700/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-400/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <span class="inline-block px-2.5 py-0.5 bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-[10px] font-semibold tracking-wider uppercase rounded-md mb-1.5">
                 Pengadaan Barang
@@ -13,7 +13,7 @@
             <p class="text-xs text-indigo-100/80 mt-1">Pantau status permohonan fasilitas/barang baru yang kamu ajukan ke Pimpinan.</p>
         </div>
         
-        <a href="{{ route('karyawan.pengadaan.create') }}" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2.5 rounded-xl text-xs transition shadow-md shadow-emerald-600/20 shrink-0">
+        <a href="{{ route('karyawan.pengadaan.create') }}" class="inline-flex items-center justify-center gap-2 bg-indigo-800 hover:bg-indigo-900 text-white font-semibold px-4 py-2.5 rounded-xl text-xs shadow-md shadow-indigo-600/20 transition shrink-0">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
@@ -21,17 +21,17 @@
         </a>
     </div>
 
-    <!-- Tabel Daftar Pengajuan -->
-    <div class="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
+    <!-- Tabel Daftar Pengajuan (Card Pembungkus Utama) -->
+    <div class="bg-slate-100/80 p-6 rounded-2xl shadow-sm border border-slate-200/90 space-y-4">
         
         <!-- Baris Atas Tabel: Judul & Dropdown Tampilkan Data -->
-        <div class="flex justify-between items-center text-xs text-slate-700">
-            <h3 class="font-bold uppercase tracking-wider text-slate-700">DAFTAR PENGAJUAN</h3>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2 border-b border-slate-200/60">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">DAFTAR PENGAJUAN</h3>
             
-            <form method="GET" action="{{ route('karyawan.pengadaan.index') }}" class="flex items-center gap-2">
+            <form method="GET" action="{{ route('karyawan.pengadaan.index') }}" class="flex items-center gap-2 text-xs text-slate-600">
                 <span>Tampilkan</span>
                 <select name="per_page" onchange="this.form.submit()" 
-                        class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+                        class="bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-600 cursor-pointer shadow-sm">
                     <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
                     <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
                     <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
@@ -41,39 +41,47 @@
             </form>
         </div>
 
-        <!-- Wrapper Tabel Tanpa table-fixed agar kolom menyesuaikan isi -->
-        <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <!-- Wrapper Tabel -->
+        <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white">
             <table class="w-full text-left text-xs text-slate-600 border-collapse">
-                <thead class="bg-indigo-900 text-white uppercase font-bold text-[10px] tracking-wider">
-                    <tr>
-                        <th class="p-3.5">Tanggal</th>
-                        <th class="p-3.5">Barang</th>
-                        <th class="p-3.5 text-center">Jumlah</th>
-                        <th class="p-3.5">Estimasi Harga</th>
-                        <th class="p-3.5 text-center">Referensi</th>
-                        <th class="p-3.5">Alasan / Kebutuhan</th>
-                        <th class="p-3.5">Status</th>
-                        <th class="p-3.5 text-center">Aksi</th>
+                <thead>
+                    <tr class="text-slate-100 bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-800 border-b border-indigo-700/50">
+                        <th class="p-3.5 font-bold">Tanggal</th>
+                        <th class="p-3.5 font-bold">Barang</th>
+                        <th class="p-3.5 font-bold text-center">Jumlah</th>
+                        <th class="p-3.5 font-bold">Estimasi Harga (Total)</th>
+                        <th class="p-3.5 font-bold text-center">Referensi</th>
+                        <th class="p-3.5 font-bold">Alasan / Kebutuhan</th>
+                        <th class="p-3.5 font-bold">Status</th>
+                        <th class="p-3.5 font-bold text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200 bg-white">
+                <tbody class="divide-y divide-slate-200/80 bg-white">
                     @forelse($pengadaanku as $index => $item)
                         @php
                             $namaBarang = $item->nama_barang_baru ?? $item->nama_barang;
                             $alasanBarang = $item->alasan_pengadaan ?? $item->alasan;
                             $rawStatus = strtolower($item->status_approval ?? $item->status ?? 'pending');
                             $isPending = in_array($rawStatus, ['pending', 'menunggu']);
+                            $idPengadaan = $item->id_pengadaan ?? $item->id;
+
+                            // Perhitungan Total Estimasi Biaya
+                            $jumlah = $item->jumlah ?? 1;
+                            $hargaSatuan = $item->estimasi_harga ?? 0;
+                            $totalEstimasi = $jumlah * $hargaSatuan;
 
                             $statusConfig = [
-                                'pending'   => ['bg' => 'bg-amber-100 text-amber-700 border-amber-200',    'label' => 'Menunggu'],
-                                'disetujui' => ['bg' => 'bg-blue-100 text-blue-700 border-blue-200',      'label' => 'Proses'],
-                                'selesai'   => ['bg' => 'bg-emerald-100 text-emerald-700 border-emerald-200', 'label' => 'Selesai'],
-                                'ditolak'   => ['bg' => 'bg-rose-100 text-rose-700 border-rose-200',      'label' => 'Ditolak'],
+                                'pending'   => ['bg' => 'bg-amber-50 text-amber-700 border-amber-200',    'label' => 'Menunggu'],
+                                'disetujui' => ['bg' => 'bg-indigo-50 text-indigo-700 border-indigo-200',    'label' => 'Proses'],
+                                'selesai'   => ['bg' => 'bg-emerald-50 text-emerald-700 border-emerald-200', 'label' => 'Selesai'],
+                                'ditolak'   => ['bg' => 'bg-rose-50 text-rose-700 border-rose-200',      'label' => 'Ditolak'],
                             ];
                             $config = $statusConfig[$rawStatus] ?? $statusConfig['pending'];
                         @endphp
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="p-3.5 text-slate-500 whitespace-nowrap">
+                        
+                        <!-- Baris Tabel dengan Pengecekan Highlight -->
+                        <tr class="{{ request('highlight_pengadaan') == $idPengadaan ? 'bg-indigo-50 ring-2 ring-indigo-400 transition-all duration-700 animate-pulse' : 'hover:bg-slate-50/80' }} transition">
+                            <td class="p-3.5 text-slate-600 whitespace-nowrap">
                                 {{ $item->created_at ? $item->created_at->format('d/m/Y') : '-' }}
                             </td>
                             
@@ -81,13 +89,16 @@
                                 {{ $namaBarang }}
                             </td>
                             
-                            <td class="p-3.5 font-medium text-center whitespace-nowrap">{{ $item->jumlah }} Unit</td>
+                            <td class="p-3.5 font-medium text-center text-slate-700 whitespace-nowrap">{{ $jumlah }} Unit</td>
                             
+                            <!-- Kolom Estimasi Harga (Total + Satuan) -->
                             <td class="p-3.5 font-semibold text-slate-700 whitespace-nowrap">
-                                Rp {{ number_format($item->estimasi_harga ?? 0, 0, ',', '.') }}
+                                <div>Rp {{ number_format($totalEstimasi, 0, ',', '.') }}</div>
+                                <div class="text-[10px] text-slate-400 font-normal">
+                                    (@if($hargaSatuan > 0) Rp {{ number_format($hargaSatuan, 0, ',', '.') }} / unit @else - @endif)
+                                </div>
                             </td>
                             
-                            <!-- Kolom Referensi dengan Tombol & Ikon Standar -->
                             <td class="p-3.5 text-center whitespace-nowrap">
                                 @if(!empty($item->link_referensi))
                                     <a href="{{ $item->link_referensi }}" target="_blank" rel="noopener noreferrer"
@@ -102,7 +113,7 @@
                                 @endif
                             </td>
 
-                            <td class="p-3.5 text-slate-500 truncate max-w-[220px]" title="{{ $alasanBarang }}">
+                            <td class="p-3.5 text-slate-600 truncate max-w-[220px]" title="{{ $alasanBarang }}">
                                 {{ $alasanBarang }}
                             </td>
                             
@@ -112,46 +123,58 @@
                                 </span>
                             </td>
 
-                            <td class="p-3.5 text-center relative whitespace-nowrap" x-data="{ open: false }">
-                                <div class="inline-block relative">
-                                    <button @click="open = !open" @click.outside="open = false" 
-                                            class="p-1.5 rounded-lg hover:bg-slate-200/80 text-slate-500 transition cursor-pointer">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                            <td class="p-3.5 whitespace-nowrap text-center align-middle">
+                                <div class="relative inline-flex items-center justify-center text-left" x-data="{ open: false }">
+                                    <button @click="open = !open" type="button" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition cursor-pointer inline-flex items-center justify-center">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
                                         </svg>
                                     </button>
 
-                                    <div x-show="open" style="display: none;" 
-                                         class="absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded-xl shadow-xl z-50 py-1 text-left">
+                                    <!-- Dropdown Menu Pop-up Kiri -->
+                                    <div x-show="open" 
+                                        @click.away="open = false" 
+                                        x-transition:enter="transition ease-out duration-100"
+                                        x-transition:enter-start="transform opacity-0 scale-95"
+                                        x-transition:enter-end="transform opacity-100 scale-100"
+                                        x-transition:leave="transition ease-in duration-75"
+                                        x-transition:leave-start="transform opacity-100 scale-100"
+                                        x-transition:leave-end="transform opacity-0 scale-95"
+                                        class="absolute right-full mr-2 top-1/2 -translate-y-1/2 w-36 bg-white border border-slate-200 rounded-xl shadow-xl z-50 py-1 text-left" 
+                                        style="display: none;">
                                         
                                         <button @click="modalData = {
-                                                    nama: '{{ addslashes($namaBarang) }}',
-                                                    jumlah: '{{ $item->jumlah }}',
-                                                    harga: 'Rp {{ number_format($item->estimasi_harga ?? 0, 0, ',', '.') }}',
-                                                    link: '{{ $item->link_referensi }}',
-                                                    alasan: '{{ addslashes($alasanBarang) }}',
-                                                    status: '{{ $config['label'] }}',
-                                                    tanggal: '{{ $item->created_at ? $item->created_at->format('d/m/Y') : '-' }}'
-                                                }; showModal = true; open = false;" 
-                                                class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-100 font-medium cursor-pointer">
-                                            Lihat Detail
+                                                nama: '{{ addslashes($namaBarang) }}',
+                                                jumlah: '{{ $jumlah }}',
+                                                harga: 'Rp {{ number_format($totalEstimasi, 0, ',', '.') }} (Satuan: Rp {{ number_format($hargaSatuan, 0, ',', '.') }})',
+                                                link: '{{ $item->link_referensi }}',
+                                                alasan: '{{ addslashes($alasanBarang) }}',
+                                                status: '{{ $config['label'] }}',
+                                                tanggal: '{{ $item->created_at ? $item->created_at->format('d/m/Y') : '-' }}'
+                                            }; showModal = true; open = false;" 
+                                            class="w-full text-left px-3 py-2 hover:bg-slate-50 text-slate-700 font-medium cursor-pointer">
+                                            Detail
                                         </button>
 
                                         @if($isPending)
-                                            <a href="{{ route('karyawan.pengadaan.edit', $item->id_pengadaan ?? $item->id) }}" 
-                                               class="block px-4 py-2 text-xs text-amber-600 hover:bg-slate-100 font-medium">
-                                                Edit Pengajuan
+                                            <a href="{{ route('karyawan.pengadaan.edit', $idPengadaan) }}" 
+                                               class="block px-3 py-2 hover:bg-indigo-50 text-indigo-600 font-semibold">
+                                                Edit
                                             </a>
 
-                                            <form action="{{ route('karyawan.pengadaan.destroy', $item->id_pengadaan ?? $item->id) }}" 
+                                            <form action="{{ route('karyawan.pengadaan.destroy', $idPengadaan) }}" 
                                                   method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pengajuan pengadaan barang ini?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
-                                                        class="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-slate-100 font-medium cursor-pointer">
+                                                        class="w-full text-left px-3 py-2 hover:bg-rose-50 text-rose-600 font-semibold cursor-pointer">
                                                     Batalkan
                                                 </button>
                                             </form>
+                                        @else
+                                            <div class="px-3 py-2 text-slate-400 italic text-[11px] select-none">
+                                                Terkunci
+                                            </div>
                                         @endif
                                     </div>
                                 </div>
@@ -159,7 +182,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-8 text-slate-400">
+                            <td colspan="8" class="p-8 text-center text-slate-500">
                                 Belum ada riwayat pengajuan barang baru.
                             </td>
                         </tr>
@@ -169,9 +192,16 @@
         </div>
 
         <!-- Navigasi Paginasi Laravel -->
-        <div class="pt-3 border-t border-slate-200">
-            {{ $pengadaanku->links() }}
-        </div>
+        @if(method_exists($pengadaanku, 'links'))
+            <div class="pt-3 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+                <div>
+                    Menampilkan {{ $pengadaanku->firstItem() ?? 0 }} sampai {{ $pengadaanku->lastItem() ?? 0 }} dari total {{ $pengadaanku->total() }} data
+                </div>
+                <div>
+                    {{ $pengadaanku->links() }}
+                </div>
+            </div>
+        @endif
 
     </div>
 
@@ -208,7 +238,7 @@
                     <span class="font-bold text-slate-700" x-text="modalData.jumlah + ' Unit'"></span>
                 </div>
                 <div>
-                    <span class="text-slate-400 block font-medium">Estimasi Harga</span>
+                    <span class="text-slate-400 block font-medium">Estimasi Biaya</span>
                     <span class="font-bold text-slate-700" x-text="modalData.harga"></span>
                 </div>
 
@@ -243,4 +273,18 @@
     </div>
 
 </div>
+
+<!-- Skrip Pembersih URL Parameter Highlight -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (window.URLSearchParams) {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('highlight_pengadaan')) {
+                urlParams.delete('highlight_pengadaan');
+                const newRelativePathQuery = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+                history.replaceState(null, '', newRelativePathQuery);
+            }
+        }
+    });
+</script>
 @endsection

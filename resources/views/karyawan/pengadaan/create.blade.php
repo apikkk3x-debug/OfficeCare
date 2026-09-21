@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6" x-data="{ jumlah: {{ old('jumlah', 1) }}, hargaPerUnit: '{{ old('estimasi_harga', 0) }}' }">
+<div class="space-y-6" x-data="{ jumlah: {{ old('jumlah', $pengadaan->jumlah ?? 1) }}, hargaPerUnit: '{{ old('estimasi_harga', $pengadaan->estimasi_harga ?? '') }}' }">    
     
     <!-- Header Banner (Gradient Accent Card) -->
     <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-indigo-700/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

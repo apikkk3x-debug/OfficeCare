@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="{ jumlah: {{ old('jumlah', $pengadaan->jumlah ?? 1) }}, harga: {{ old('estimasi_harga', $pengadaan->estimasi_harga ?? 0) }} }">
 
     <!-- Header Banner -->
     <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-indigo-700/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -44,6 +44,7 @@
                         Jumlah (Unit) <span class="text-rose-500">*</span>
                     </label>
                     <input type="number" name="jumlah" id="jumlah" 
+                        x-model.number="jumlah"
                         value="{{ old('jumlah', $pengadaan->jumlah) }}" min="1" required 
                         class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah') border-rose-500 @enderror">
                     @error('jumlah')
@@ -57,12 +58,22 @@
                         Estimasi Harga Per Unit (Rp) <span class="text-rose-500">*</span>
                     </label>
                     <input type="number" name="estimasi_harga" id="estimasi_harga" 
+                        x-model.number="harga"
                         value="{{ old('estimasi_harga', $pengadaan->estimasi_harga) }}" min="0" required 
                         class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('estimasi_harga') border-rose-500 @enderror">
                     @error('estimasi_harga')
                         <p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>
                     @enderror
                 </div>
+            </div>
+
+            <!-- Kotak Total Estimasi Biaya Keseluruhan (Real-time kalkulasi) -->
+            <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                    <h5 class="text-[10px] font-bold text-indigo-900 uppercase tracking-wider">TOTAL ESTIMASI BIAYA KESELURUHAN</h5>
+                    <p class="text-[11px] text-slate-500 mt-0.5">(Jumlah Unit × Harga Per Unit)</p>
+                </div>
+                <span class="text-base font-extrabold text-indigo-900" x-text=" 'Rp ' + (jumlah * harga || 0).toLocaleString('id-ID') ">Rp 0</span>
             </div>
 
             <!-- Tautan / Link Referensi Produk -->
