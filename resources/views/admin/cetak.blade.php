@@ -95,7 +95,7 @@
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $lap->created_at->format('d/m/Y') }}</td>
-                    <td>{{ $lap->user->name ?? '-' }}</td>
+                    <td>{{ $lap->user->nama ?? '-' }}</td>
                     <td>{{ $lap->barang->nama_barang ?? '-' }}</td>
                     <td>{{ $lap->barang->lokasi ?? '-' }}</td>
                     <td>{{ $lap->deskripsi_kerusakan }}</td>
