@@ -5,17 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OfficeCare - Aplikasi Sarana Prasarana Kantor</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Alpine.js CDN untuk Interaktivitas Dropdown Profil -->
+    <!-- Alpine.js CDN untuk Interaktivitas Dropdown Profil, Toast & Notifikasi -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-700 font-sans antialiased">
 
+    <!-- ================= GLOBAL TOAST NOTIFIKASI (MUNCUL DI SEMUA HALAMAN) ================= -->
+    @if(session('success'))
+        <div x-data="{ show: true, progress: 100 }" 
+             x-init="
+                setTimeout(() => { show = false }, 3000);
+                let interval = setInterval(() => {
+                    progress -= 1;
+                    if (progress <= 0) clearInterval(interval);
+                }, 30);
+             "
+             x-show="show"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
+             x-transition:enter-end="translate-y-0 opacity-100 sm:translate-x-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed top-5 right-5 z-[9999] max-w-sm w-full bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden pointer-events-auto">
+            
+            <div class="p-4 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <div class="flex-1 pt-0.5">
+                    <h5 class="text-xs font-bold text-slate-800">Berhasil!</h5>
+                    <p class="text-[11px] text-slate-600 mt-0.5 leading-relaxed">{{ session('success') }}</p>
+                </div>
+                <button @click="show = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Garis Hitung Mundur (Progress Bar) -->
+            <div class="h-1 bg-slate-100 w-full">
+                <div class="h-full bg-emerald-500 transition-all duration-75" :style="`width: ${progress}%`"></div>
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div x-data="{ show: true, progress: 100 }" 
+             x-init="
+                setTimeout(() => { show = false }, 3000);
+                let interval = setInterval(() => {
+                    progress -= 1;
+                    if (progress <= 0) clearInterval(interval);
+                }, 30);
+             "
+             x-show="show"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
+             x-transition:enter-end="translate-y-0 opacity-100 sm:translate-x-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed top-5 right-5 z-[9999] max-w-sm w-full bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden pointer-events-auto">
+            
+            <div class="p-4 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <div class="flex-1 pt-0.5">
+                    <h5 class="text-xs font-bold text-slate-800">Terjadi Kesalahan</h5>
+                    <p class="text-[11px] text-slate-600 mt-0.5 leading-relaxed">{{ session('error') }}</p>
+                </div>
+                <button @click="show = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Garis Hitung Mundur (Progress Bar) -->
+            <div class="h-1 bg-slate-100 w-full">
+                <div class="h-full bg-rose-500 transition-all duration-75" :style="`width: ${progress}%`"></div>
+            </div>
+        </div>
+    @endif
+
     @auth
         <!-- Wrapper Utama (Hanya Tampil Jika Sudah Login) -->
-        <div class="flex h-screen overflow-hidden">
+        <div class="min-h-screen flex bg-slate-50">
             
-            <!-- ================= SIDEBAR KIRI DESKTOP ================= -->
-            <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between hidden md:flex shadow-xl z-20">
+            <!-- ================= SIDEBAR KIRI DESKTOP (Fixed) ================= -->
+            <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between hidden md:flex shadow-xl fixed inset-y-0 left-0 z-30">
                 <div>
                     <!-- Logo / Judul Brand -->
                     <div class="h-16 flex items-center px-6 border-b border-slate-800/80">
@@ -30,7 +115,7 @@
                     </div>
 
                     <!-- Menu Navigasi Samping Dinamis (3 Role) -->
-                    <nav class="p-4 space-y-1.5">
+                    <nav class="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-8rem)]">
                         @php
                             $userRole = strtolower(Auth::user()->role ?? 'karyawan');
                             $profileRoute = match($userRole) {
@@ -80,6 +165,15 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                                 </svg>
                                 Manajemen Aset
+                            </a>
+
+                            <!-- Menu Sidebar: Kelola Pengumuman -->
+                            <a href="{{ route('admin.pengumuman.index') }}" 
+                            class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition {{ request()->routeIs('admin.pengumuman*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                                </svg>
+                                Pengumuman Kantor
                             </a>
 
                         @elseif($userRole === 'pimpinan')
@@ -153,26 +247,27 @@
                         </a>
                     </nav>
                 </div>
-
-                <!-- Tombol Keluar (Bottom Sidebar Desktop) -->
-                <div class="p-4 border-t border-slate-800/80">
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700/60 hover:text-white transition font-medium text-xs shadow-sm cursor-pointer">
-                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                            </svg>
-                            <span>Keluar Akun</span>
-                        </button>
-                    </form>
+                <!-- INFORMASI KONTAK & LAYANAN DI BAWAH SIDEBAR -->
+                <div class="mt-auto p-3.5 mx-3 mb-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span class="text-slate-400">Ext. Sarpras</span>
+                        <span class="font-mono text-indigo-300 font-bold">#4042</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span class="text-slate-400">Jam Kerja</span>
+                        <span class="text-slate-200">08:00 - 17:00</span>
+                    </div>
+                    <div class="pt-1.5 border-t border-white/5 text-[10px] text-slate-400 truncate">
+                        officecare.support@gmail.com
+                    </div>
                 </div>
             </aside>
 
-            <!-- Area Kanan (Header + Konten + Footer) -->
-            <div class="flex-1 flex flex-col h-screen overflow-hidden">
+            <!-- ================= AREA KANAN (ml-64 agar tidak tertutup sidebar fixed) ================= -->
+            <div class="flex-1 flex flex-col h-screen overflow-hidden ml-0 md:ml-64">
                 
-                <!-- Header Atas Dinamis -->
-                <header class="h-16 bg-white border-b border-slate-200/80 px-6 md:px-8 flex justify-between items-center z-10 shadow-sm shrink-0">
+                <!-- Header Atas Dinamis (Sticky) -->
+                <header class="h-16 bg-white border-b border-slate-200/80 px-6 md:px-8 flex justify-between items-center sticky top-0 z-20 shadow-sm shrink-0">
                     <div class="flex items-center gap-3">
                         <span class="font-bold text-slate-800 text-base md:text-lg">
                             @if($userRole === 'admin')
@@ -189,6 +284,147 @@
                         @php
                             $headerProfileRoute = $profileRoute;
                         @endphp
+              <!-- ================= PUSAT NOTIFIKASI MODERN & PERSISTENT ================= -->
+                            <script>
+                            window.globalNotifications = @json($globalNotifications ?? []);
+                        </script>
+                        
+                        <div class="relative" 
+                             x-data="{ 
+                                openNotification: false,
+                                dismissed: JSON.parse(localStorage.getItem('officecare_dismissed_notifs') || '[]'),
+                                notifications: window.globalNotifications,
+                                
+                                get activeNotifications() {
+                                    return this.notifications.filter(n => !this.dismissed.includes(n.id));
+                                },
+                                
+                                dismiss(id) {
+                                    if (!this.dismissed.includes(id)) {
+                                        this.dismissed.push(id);
+                                        localStorage.setItem('officecare_dismissed_notifs', JSON.stringify(this.dismissed));
+                                    }
+                                }
+                             }">
+                            
+                            <!-- Tombol Lonceng (Bell Button) -->
+                            <button @click="openNotification = !openNotification" 
+                                    class="relative p-2.5 text-slate-600 hover:text-indigo-600 bg-slate-100 hover:bg-slate-200/80 rounded-full transition cursor-pointer"
+                                    title="Notifikasi">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                </svg>
+                                
+                                <!-- Dot Indikator MERAH -->
+                                <template x-if="activeNotifications.length > 0">
+                                    <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white animate-pulse"></span>
+                                </template>
+                            </button>
+
+                            <!-- Dropdown Pop-up Notifikasi -->
+                            <div x-show="openNotification" 
+                                 @click.outside="openNotification = false"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                                 style="display: none;"
+                                 class="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-3 z-50">
+                                
+                                <div class="px-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-indigo-600"></div>
+                                        <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Pusat Notifikasi</h4>
+                                    </div>
+                                    <span class="text-[10px] bg-indigo-50 text-indigo-600 font-semibold px-2 py-0.5 rounded-md border border-indigo-100"
+                                          x-text="activeNotifications.length + ' Baru'">
+                                    </span>
+                                </div>
+
+                                <div class="max-h-80 overflow-y-auto px-2 py-2 space-y-1.5">
+                                    <template x-for="notif in activeNotifications" :key="notif.id">
+                                        <div class="group relative bg-slate-50/60 hover:bg-indigo-50/40 rounded-xl p-3 border border-slate-200/60 hover:border-indigo-200 transition">
+                                            <div class="flex items-start justify-between gap-2.5">
+                                                
+                                                <!-- LINK DETAIL NOTIFIKASI -->
+                                            <a :href="notif.url" class="flex items-start gap-3 flex-1 min-w-0">
+                                                
+                                                <!-- 1. Ikon Pengumuman (Warna Amber/Kuning) -->
+                                                <template x-if="notif.type === 'pengumuman'">
+                                                    <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0 border border-amber-500/20 mt-0.5">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                                                        </svg>
+                                                    </div>
+                                                </template>
+
+                                                <!-- 2. Ikon Pengadaan Barang (Warna Biru) -->
+                                                <template x-if="notif.type === 'pengadaan'">
+                                                    <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0 border border-blue-500/20 mt-0.5">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                                        </svg>
+                                                    </div>
+                                                </template>
+
+                                                <!-- 3. Ikon Komentar (Warna Ungu) -->
+                                                <template x-if="notif.type === 'komentar'">
+                                                    <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0 border border-purple-500/20 mt-0.5">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                                                        </svg>
+                                                    </div>
+                                                </template>
+
+                                                <!-- 4. Ikon Laporan Kerusakan (Warna Indigo) -->
+                                                <template x-if="notif.type === 'laporan'">
+                                                    <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-500/20 mt-0.5">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                        </svg>
+                                                    </div>
+                                                </template>
+
+                                                <!-- Konten Teks -->
+                                                <div class="flex-1 min-w-0 pr-4">
+                                                    <div class="flex items-center gap-1.5 mb-1">
+                                                        <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border"
+                                                            :class="notif.badge_style"
+                                                            x-text="notif.badge"></span>
+                                                    </div>
+                                                    <h5 class="text-xs font-bold text-slate-800 truncate group-hover:text-indigo-600 transition" 
+                                                        x-text="notif.title"></h5>
+                                                    <p class="text-[11px] text-slate-600 mt-0.5 line-clamp-2 leading-tight" 
+                                                    x-text="notif.desc"></p>
+                                                </div>
+                                            </a>
+
+                                                <button @click="dismiss(notif.id)" 
+                                                        class="text-slate-400 hover:text-rose-500 hover:bg-rose-50 p-1 rounded-lg transition cursor-pointer shrink-0" 
+                                                        title="Hapus notifikasi ini">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
+
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <template x-if="activeNotifications.length === 0">
+                                        <div class="text-center py-8 text-slate-400 text-xs italic bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                                            Tidak ada notifikasi saat ini.
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <div class="pt-2 px-4 border-t border-slate-100 text-center">
+                                    <span class="text-[10px] text-slate-400 font-medium">OfficeCare Notification Hub</span>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Profil Dropdown Top Bar dengan Alpine.js -->
                         <div x-data="{ open: false }" class="relative inline-block text-left">
@@ -206,16 +442,16 @@
 
                             <!-- Dropdown Menu Box -->
                             <div x-show="open" 
-                                   @click.away="open = false"
-                                   x-transition:enter="transition ease-out duration-100"
-                                   x-transition:enter-start="transform opacity-0 scale-95"
-                                   x-transition:enter-end="transform opacity-100 scale-100"
-                                   x-transition:leave="transition ease-in duration-75"
-                                   x-transition:leave-start="transform opacity-100 scale-100"
-                                   x-transition:leave-end="transform opacity-0 scale-95"
-                                   class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50 space-y-3"
-                                   style="display: none;">
-                                
+                                 @click.away="open = false"
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                 class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50 space-y-3"
+                                 style="display: none;">
+                            
                                 <!-- Header Info User -->
                                 <div class="flex items-center gap-3">
                                     <div class="w-11 h-11 rounded-full p-0.5 bg-emerald-500 shrink-0">
@@ -290,7 +526,7 @@
                 </header>
 
                 <!-- Area Konten Utama -->
-                <main class="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8">
+                <main class="flex-1 min-h-0 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8">
                     <div class="max-w-7xl mx-auto">
                         @yield('content')
                     </div>
@@ -370,7 +606,7 @@
         </nav>
     @else
         <!-- ================= JIKA BELUM LOGIN (HALAMAN TAMU / LOGIN & REGISTER) ================= -->
-        <main class="w-full min-h-screen flex items-center justify-center p-4">
+        <main class="w-full min-h-screen flex items-center justify-center p-0 md:p-6">
             <div class="w-full">
                 @yield('content')
             </div>
