@@ -3,8 +3,9 @@
 @section('content')
 <div class="space-y-6">
     
+    <!-- ================= ANNOUNCEMENT BANNER DINAMIS ================= -->
+
     <!-- Header Sambutan (Gradient Accent Card) -->
-    <!-- Header Sambutan Menyapa User (Gradient Accent Card) -->
     <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-indigo-700/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <div class="flex items-center gap-2 mb-2">
@@ -108,7 +109,7 @@
             </span>
         </a>
 
-        <!-- Stat Card 3: Total Pengadaan Barang Baru (Menggunakan $pengadaanku jika ada, fallback ke 0) -->
+        <!-- Stat Card 3: Total Pengadaan Barang Baru -->
         <a href="{{ route('karyawan.pengadaan.index') }}" class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-emerald-400 hover:shadow-md group">
             <div>
                 <div class="flex justify-between items-start">
@@ -120,7 +121,7 @@
                     </div>
                 </div>
                 <h4 class="text-3xl font-extrabold text-slate-800 mt-3">
-                    {{ isset($pengadaanku) ? $pengadaanku->count() : 0 }}
+                    {{ $pengadaanBarang ?? 0 }}
                 </h4>
                 <p class="text-slate-500 text-xs mt-1">Usulan barang diajukan</p>
             </div>
@@ -130,101 +131,157 @@
         </a>
 
         <!-- Stat Card 4: Pengadaan Disetujui Pimpinan -->
-        <div class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between">
-            <div class="flex justify-between items-start">
-                <div>
+        <a href="{{ route('karyawan.pengadaan.index') }}" class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-blue-400 hover:shadow-md group">
+            <div>
+                <div class="flex justify-between items-start">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Pengadaan Disetujui</span>
-                    <h4 class="text-3xl font-extrabold text-blue-600 mt-3">
-                        {{ isset($pengadaanku) ? $pengadaanku->where('status_approval', 'disetujui')->count() : 0 }}
-                    </h4>
+                    <div class="p-2 bg-white text-blue-600 rounded-xl shadow-sm border border-slate-200/60 group-hover:bg-blue-600 group-hover:text-white transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
                 </div>
-                <div class="p-2 bg-white text-blue-600 rounded-xl shadow-sm border border-slate-200/60">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
+                <h4 class="text-3xl font-extrabold text-blue-600 mt-3">
+                    {{ $pengadaanDisetujui ?? 0 }}
+                </h4>
+                <p class="text-slate-500 text-xs mt-1">Telah di-ACC Pimpinan</p>
             </div>
-            <p class="text-slate-500 text-xs mt-3">Telah di-ACC Pimpinan</p>
-        </div>
+            <span class="text-xs font-semibold text-blue-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                Lihat daftar &rarr;
+            </span>
+        </a>
 
     </div>
 
-    <!-- Log Aktivitas Terbaru -->
-    <div class="bg-slate-100/80 p-6 rounded-2xl shadow-sm border border-slate-200/90">
-        <div class="flex items-center justify-between mb-5">
-            <div>
-                <h3 class="text-base font-bold text-slate-800">Aktivitas & Pembaruan Status</h3>
-                <p class="text-slate-500 text-xs mt-0.5">Riwayat perubahan status terbaru dari laporan pengaduan fasilitas yang kamu ajukan.</p>
+
+    <!-- ================= SECTION BAWAH: GRID 2 KOLOM SEIMBANG ================= -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+    
+    <!-- KOLOM KIRI: Widget Pengumuman Terbaru -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col justify-between">
+        <div>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    Pengumuman Terbaru
+                </h3>
+                <span class="text-[11px] text-slate-400 font-medium">Informasi Kantor</span>
             </div>
-            <div class="p-2 bg-indigo-600 text-white rounded-xl shadow-sm shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-            </div>
-        </div>
 
-        <div class="space-y-3">
-            @forelse($logs as $activity)
-                @php
-                    $statusClasses = [
-                        'Menunggu' => 'bg-rose-100 text-rose-700 border-rose-200',
-                        'Diproses' => 'bg-amber-100 text-amber-700 border-amber-200',
-                        'Selesai'  => 'bg-emerald-100 text-emerald-700 border-emerald-200',
-                        'Ditolak'  => 'bg-slate-200 text-slate-700 border-slate-300',
-                    ];
-
-                    $badgeClass = $statusClasses[$activity->status_sekarang] ?? 'bg-indigo-100 text-indigo-700 border-indigo-200';
-                    $isStatusChanged = isset($activity->status_sebelumnya) && $activity->status_sebelumnya !== $activity->status_sekarang;
-                @endphp
-
-                <a href="{{ route('laporan.show', $activity->id_laporan) }}#log-{{ $activity->id_log ?? $activity->id }}" 
-                    class="block bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm hover:border-indigo-300 transition group cursor-pointer">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div class="flex items-start sm:items-center gap-3">
-                            <div class="w-2 h-2 rounded-full bg-indigo-600 shrink-0 mt-1.5 sm:mt-0 group-hover:scale-125 transition-transform"></div>
-                            <div>
-                                <p class="text-xs font-semibold text-slate-800">
-                                    Laporan Pengaduan untuk 
-                                    <span class="text-indigo-600 font-bold group-hover:underline">
-                                        {{ $activity->laporan->barang->nama_barang ?? 'Fasilitas Kantor' }}
-                                    </span>
-                                </p>
-                                <p class="text-[11px] text-slate-500 mt-1">
-                                    @if($isStatusChanged)
-                                        Status berubah menjadi 
-                                    @else
-                                        Status: 
-                                    @endif
-
-                                    <span class="font-semibold px-2 py-0.5 rounded text-[10px] border {{ $badgeClass }}">
-                                        {{ $activity->status_sekarang }}
-                                    </span> 
-
-                                    @if($activity->keterangan)
-                                        • <span class="text-slate-600">{{ $activity->keterangan }}</span>
-                                    @endif
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center gap-2 self-end sm:self-center">
-                            <span class="text-[10px] text-slate-500 font-medium whitespace-nowrap bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
-                                {{ $activity->created_at->diffForHumans() }}
-                            </span>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-1 group-hover:text-indigo-600 transition hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            <!-- Tanpa max-h agar pas mengikuti isi data (maksimal 3) -->
+            <div class="space-y-3">
+                @forelse($pengumumans as $p)
+                <div x-data="{ showAnnouncement: true }" 
+                     x-show="showAnnouncement" 
+                     x-transition:leave="transition ease-in duration-200"
+                     class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 rounded-xl p-3.5 shadow-sm flex items-center justify-between text-slate-800">
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 bg-amber-500 text-white rounded-lg flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
                             </svg>
                         </div>
+                        
+                        <div>
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="px-2 py-0.5 bg-amber-500/20 text-amber-800 text-[10px] font-bold tracking-wider uppercase rounded-md">
+                                    {{ $p->target_role === 'semua' ? 'Pengumuman Umum' : 'Info Sarpras' }}
+                                </span>
+                                <span class="text-[11px] text-slate-400 font-medium">• {{ $p->created_at->diffForHumans() }}</span>
+                            </div>
+                            <h4 class="text-xs font-bold text-slate-900">{{ $p->judul }}</h4>
+                            <p class="text-xs font-medium text-slate-700 mt-0.5">
+                                {{ $p->pesan }}
+                            </p>
+                        </div>
                     </div>
-                </a>
-            @empty
-                <div class="text-center py-8 bg-white/60 rounded-xl border border-dashed border-slate-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                    </svg>
-                    <p class="text-slate-500 text-xs">Belum ada pembaruan status laporan pengaduan saat ini.</p>
+
+                    <button @click="showAnnouncement = false" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-amber-500/10 transition cursor-pointer shrink-0 ml-3" title="Tutup">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
-            @endforelse
+                @empty
+                <div class="text-xs text-slate-500 italic bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
+                    Tidak ada pengumuman aktif saat ini.
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    <!-- KOLOM KANAN: Log Aktivitas Terbaru -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col justify-between">
+        <div>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                    Log Riwayat & Status Laporan
+                </h3>
+                <span class="text-[11px] text-slate-400 font-medium">Riwayat Sistem</span>
+            </div>
+
+            <!-- Tanpa max-h agar pas mengikuti isi data (maksimal 3) -->
+            <div class="space-y-3">
+                @forelse($logs as $activity)
+                    @php
+                        $statusClasses = [
+                            'Menunggu' => 'bg-rose-100 text-rose-700 border-rose-200',
+                            'Diproses' => 'bg-amber-100 text-amber-700 border-amber-200',
+                            'Selesai'  => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                            'Ditolak'  => 'bg-slate-200 text-slate-700 border-slate-300',
+                        ];
+
+                        $badgeClass = $statusClasses[$activity->status_sekarang] ?? 'bg-indigo-100 text-indigo-700 border-indigo-200';
+                        $isStatusChanged = isset($activity->status_sebelumnya) && $activity->status_sebelumnya !== $activity->status_sekarang;
+                    @endphp
+
+                    <a href="{{ route('laporan.show', $activity->id_laporan) }}#log-{{ $activity->id_log ?? $activity->id }}" 
+                        class="block bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/60 hover:border-indigo-300 hover:bg-white transition group cursor-pointer">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-2.5">
+                                <div class="w-2 h-2 rounded-full bg-indigo-600 shrink-0 mt-1.5 group-hover:scale-125 transition-transform"></div>
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-800">
+                                        Laporan 
+                                        <span class="text-indigo-600 font-bold group-hover:underline">
+                                            {{ $activity->laporan->barang->nama_barang ?? 'Fasilitas Kantor' }}
+                                        </span>
+                                    </p>
+                                    <p class="text-[11px] text-slate-500 mt-1">
+                                        @if($isStatusChanged)
+                                            Status menjadi 
+                                        @else
+                                            Status: 
+                                        @endif
+
+                                        <span class="font-semibold px-1.5 py-0.5 rounded text-[10px] border {{ $badgeClass }}">
+                                            {{ $activity->status_sekarang }}
+                                        </span> 
+
+                                        @if($activity->keterangan)
+                                            • <span class="text-slate-600">{{ $activity->keterangan }}</span>
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <span class="text-[10px] text-slate-400 font-medium whitespace-nowrap bg-white px-2 py-0.5 rounded-md border border-slate-200 shrink-0">
+                                {{ $activity->created_at->diffForHumans() }}
+                            </span>
+                        </div>
+                    </a>
+                @empty
+                    <div class="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                        <p class="text-slate-500 text-xs">Belum ada pembaruan status laporan pengaduan saat ini.</p>
+                    </div>
+                @endforelse
+            </div>
         </div>
     </div>
 

@@ -35,16 +35,6 @@
         </svg>
         <span id="global-alert-msg"></span>
     </div>
-
-    @if(session('success'))
-        <div id="success-alert" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-semibold transition-opacity duration-500 shadow-sm flex items-center gap-2.5">
-            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
     <!-- GRID LAYOUT UTAMA -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
@@ -310,7 +300,7 @@
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Kata Sandi Baru</label>
                 <div class="relative">
-                    <input type="password" id="inputNewPassword" class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:bg-white" placeholder="Minimal 8 karakter" required>
+                    <input type="password" id="inputNewPassword" class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:bg-white" placeholder="Minimal 6 karakter" required>
                     <button type="button" onclick="togglePassword('inputNewPassword', 'eyeOtpNew')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer">
                         <svg id="eyeOtpNew" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
