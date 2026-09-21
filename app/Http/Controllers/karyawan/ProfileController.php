@@ -58,13 +58,13 @@ class ProfileController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'current_password' => 'required',
-            'password' => 'required|min:8|confirmed|different:current_password',
+            'password' => 'required|min:6|confirmed|different:current_password',
         ], [
             'current_password.required' => 'Kata sandi saat ini wajib diisi.',
             'password.required' => 'Kata sandi baru wajib diisi.',
             'password.different' => 'Kata sandi baru tidak boleh sama dengan kata sandi lama!',
             'password.confirmed' => 'Konfirmasi kata sandi baru tidak cocok.',
-            'password.min' => 'Kata sandi baru minimal 8 karakter.',
+            'password.min' => 'Kata sandi baru minimal 6 karakter.',
         ]);
 
         if ($validator->fails()) {
@@ -126,7 +126,7 @@ class ProfileController extends Controller
     {
         $request->validate([
             'otp' => 'required|numeric',
-            'password' => 'required|min:8|confirmed',
+            'password' => 'required|min:6|confirmed',
         ]);
 
         $user = Auth::user();
