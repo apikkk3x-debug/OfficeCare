@@ -9,23 +9,27 @@ use App\Http\Controllers\BarangController;
 use App\Http\Controllers\KomentarController;
 use App\Http\Controllers\Karyawan\ProfileController;
 use App\Http\Controllers\PengadaanController;
+use App\Http\Controllers\Admin\PengumumanController;
 
 // ==========================================
-// Rute Login & Logout (Publik)
+// Rute Login & Register (Publik/Guest)
 // ==========================================
-Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.process');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-// Rute untuk Registrasi Karyawan Baru
-Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-Route::post('/register', [AuthController::class, 'register'])->name('register.store');
+Route::middleware(['guest'])->group(function () {
+    Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.process'); 
+    
+    // Rute untuk Registrasi Karyawan Baru
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1')->name('register.store');
+});
 
 // ==========================================
 // Rute Terproteksi (Wajib Login)
 // ==========================================
 Route::middleware(['auth'])->group(function () {
+
+    // Rute Logout (Hanya untuk user yang sudah login)
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('throttle:10,1')->name('logout');
 
     // ------------------------------------------
     // A. Khusus Role Karyawan
@@ -53,10 +57,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/pengadaan', [PengadaanController::class, 'store'])->name('karyawan.pengadaan.store');
         Route::get('/pengadaan', [PengadaanController::class, 'index'])->name('karyawan.pengadaan.index');
         Route::get('/pengadaan/{id}', [PengadaanController::class, 'show'])->name('karyawan.pengadaan.show');
-Route::get('/pengadaan/{id}/edit', [PengadaanController::class, 'edit'])->name('karyawan.pengadaan.edit');
-Route::put('/pengadaan/{id}', [PengadaanController::class, 'update'])->name('karyawan.pengadaan.update');
-Route::delete('/pengadaan/{id}', [PengadaanController::class, 'destroy'])->name('karyawan.pengadaan.destroy');
-        
+        Route::get('/pengadaan/{id}/edit', [PengadaanController::class, 'edit'])->name('karyawan.pengadaan.edit');
+        Route::put('/pengadaan/{id}', [PengadaanController::class, 'update'])->name('karyawan.pengadaan.update');
+        Route::delete('/pengadaan/{id}', [PengadaanController::class, 'destroy'])->name('karyawan.pengadaan.destroy');
     });
 
     // Profile & Ganti Password Karyawan
@@ -73,24 +76,24 @@ Route::delete('/pengadaan/{id}', [PengadaanController::class, 'destroy'])->name(
             return redirect()->route('karyawan.password.edit');
         });
 
-        // Route AJAX OTP Ubah Password
-        Route::post('/profil/ganti-password/send-otp', [ProfileController::class, 'sendOtp'])->name('karyawan.password.sendOtp');
-        Route::post('/profil/ganti-password/verify-update', [ProfileController::class, 'verifyAndUpdatePassword'])->name('karyawan.password.verifyUpdate');
+        // Route AJAX OTP Ubah Password (dengan Rate-Limiting)
+        Route::post('/profil/ganti-password/send-otp', [ProfileController::class, 'sendOtp'])->middleware('throttle:3,1')->name('karyawan.password.sendOtp');
+        Route::post('/profil/ganti-password/verify-update', [ProfileController::class, 'verifyAndUpdatePassword'])->middleware('throttle:5,1')->name('karyawan.password.verifyUpdate');
     });
 
-  // ------------------------------------------
+    // ------------------------------------------
     // B. Khusus Role Admin
     // ------------------------------------------
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         
-        // Profile & Ganti Password Admin
+        // Profile & Ganti Password Admin (dengan Rate-Limiting)
         Route::get('/profile', [ProfileController::class, 'index'])->name('admin.profile');
         Route::put('/profile/update', [ProfileController::class, 'update'])->name('admin.profile.update');
         Route::get('/profile/ganti-password', [ProfileController::class, 'editPassword'])->name('admin.password.edit');
         Route::put('/profile/ganti-password', [ProfileController::class, 'updatePassword'])->name('admin.password.update');
-        Route::post('/profile/ganti-password/send-otp', [ProfileController::class, 'sendOtp'])->name('admin.password.sendOtp');
-        Route::post('/profile/ganti-password/verify-update', [ProfileController::class, 'verifyAndUpdatePassword'])->name('admin.password.verifyUpdate');
+        Route::post('/profile/ganti-password/send-otp', [ProfileController::class, 'sendOtp'])->middleware('throttle:3,1')->name('admin.password.sendOtp');
+        Route::post('/profile/ganti-password/verify-update', [ProfileController::class, 'verifyAndUpdatePassword'])->middleware('throttle:5,1')->name('admin.password.verifyUpdate');
         
         // Kelola & Status Laporan Admin
         Route::get('/laporan', [AdminController::class, 'laporan'])->name('admin.laporan.index');
@@ -115,9 +118,15 @@ Route::delete('/pengadaan/{id}', [PengadaanController::class, 'destroy'])->name(
         Route::get('/barang', [BarangController::class, 'index'])->name('admin.barang.index');
         Route::post('/barang/store', [BarangController::class, 'store'])->name('admin.barang.store');
         Route::delete('/barang/{id}', [BarangController::class, 'destroy'])->name('admin.barang.destroy');
+
+        // Manajemen Pengumuman
+        Route::get('/pengumuman', [PengumumanController::class, 'index'])->name('admin.pengumuman.index');
+        Route::post('/pengumuman', [PengumumanController::class, 'store'])->name('admin.pengumuman.store');
+        Route::patch('/pengumuman/{id}/toggle', [PengumumanController::class, 'toggle'])->name('admin.pengumuman.toggle');
+        Route::delete('/pengumuman/{id}', [PengumumanController::class, 'destroy'])->name('admin.pengumuman.destroy');
     });
 
-  // ------------------------------------------
+    // ------------------------------------------
     // C. Khusus Role Pimpinan
     // ------------------------------------------
     Route::middleware(['role:pimpinan'])->prefix('pimpinan')->group(function () {
@@ -132,13 +141,13 @@ Route::delete('/pengadaan/{id}', [PengadaanController::class, 'destroy'])->name(
         Route::put('/pengadaan/{pengadaan}/setujui', [PimpinanController::class, 'setujuiPengadaan'])->name('pimpinan.pengadaan.setujui');
         Route::put('/pengadaan/{pengadaan}/tolak', [PimpinanController::class, 'tolakPengadaan'])->name('pimpinan.pengadaan.tolak');
 
-        // Profil & Ganti Password Pimpinan (Lengkap dengan OTP)
+        // Profil & Ganti Password Pimpinan (dengan Rate-Limiting)
         Route::get('/profil', [ProfileController::class, 'index'])->name('pimpinan.profile');
         Route::put('/profil/update', [ProfileController::class, 'update'])->name('pimpinan.profile.update');
         Route::get('/profil/ganti-password', [ProfileController::class, 'editPassword'])->name('pimpinan.password.edit');
         Route::put('/profil/ganti-password', [ProfileController::class, 'updatePassword'])->name('pimpinan.password.update');
-        Route::post('/profil/ganti-password/send-otp', [ProfileController::class, 'sendOtp'])->name('pimpinan.password.sendOtp');
-        Route::post('/profil/ganti-password/verify-update', [ProfileController::class, 'verifyAndUpdatePassword'])->name('pimpinan.password.verifyUpdate');
+        Route::post('/profil/ganti-password/send-otp', [ProfileController::class, 'sendOtp'])->middleware('throttle:3,1')->name('pimpinan.password.sendOtp');
+        Route::post('/profil/ganti-password/verify-update', [ProfileController::class, 'verifyAndUpdatePassword'])->middleware('throttle:5,1')->name('pimpinan.password.verifyUpdate');
     });
 
 });
