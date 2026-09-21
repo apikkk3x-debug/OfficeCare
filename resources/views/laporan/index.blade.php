@@ -3,18 +3,6 @@
 @section('content')
 <div class="space-y-6">
     
-    <!-- NOTIFIKASI BERHASIL / ERROR -->
-    @if(session('success'))
-        <div id="success-alert" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-semibold transition-opacity duration-500 shadow-sm flex items-center justify-between">
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div id="error-alert" class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-semibold transition-opacity duration-500 shadow-sm flex items-center justify-between">
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
 
     <!-- Header Halaman (Gradient Accent Card) -->
     <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-400/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -35,13 +23,11 @@
 
     <!-- Form Search Bar & Filter -->
     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-        <!-- Form Search -->
         <form action="{{ route('laporan.index') }}" method="GET" class="flex gap-2 w-full md:w-auto">
             @if(request('filter') == 'aktif')
                 <input type="hidden" name="filter" value="aktif">
             @endif
             
-            <!-- Pertahankan nilai per_page saat melakukan pencarian -->
             @if(request('per_page'))
                 <input type="hidden" name="per_page" value="{{ request('per_page') }}">
             @endif
@@ -60,14 +46,13 @@
         </form>
     </div>
 
-    <!-- Tabel Riwayat Laporan -->
+    <!-- Tabel Riwayat Laporan (Card Pembungkus Utama) -->
     <div class="bg-slate-100/80 p-6 rounded-2xl shadow-sm border border-slate-200/90 space-y-4">
         
         <!-- Header Daftar & Dropdown Per Page -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2 border-b border-slate-200/60">
             <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Daftar Laporan</h3>
             
-            <!-- Form Dropdown Pilihan Jumlah Baris -->
             <form method="GET" action="{{ route('laporan.index') }}" class="flex items-center gap-2 text-xs text-slate-600">
                 @if(request('search'))
                     <input type="hidden" name="search" value="{{ request('search') }}">
@@ -95,82 +80,99 @@
                         <th class="p-3.5 font-bold">Tanggal</th>
                         <th class="p-3.5 font-bold">Barang</th>
                         <th class="p-3.5 font-bold">Deskripsi Pengaduan</th>
-                        <th class="p-3.5 font-bold">Status</th>
+                        <th class="p-3.5 font-bold">Status & Prioritas</th>
                         <th class="p-3.5 font-bold text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200/80">
                     @forelse($laporanku as $lap)
+                        @php
+                            $prioritas = $lap->prioritas ?? 'Sedang';
+                        @endphp
                         <tr class="hover:bg-slate-50/80 transition">
                             <!-- Kolom 1: Tanggal -->
                             <td class="p-3.5 text-slate-600 whitespace-nowrap">{{ $lap->created_at->format('d/m/Y') }}</td>
                             
                             <!-- Kolom 2: Barang -->
-                            <td class="p-3.5 font-semibold text-slate-800 whitespace-nowrap">{{ $lap->barang->nama_barang ?? 'Barang Dihapus' }}</td>
+                            <td class="p-3.5 font-semibold text-slate-800 max-w-[200px]">
+                                <div class="truncate" title="{{ $lap->barang->nama_barang ?? 'Barang Dihapus' }}">
+                                    {{ \Illuminate\Support\Str::limit($lap->barang->nama_barang ?? 'Barang Dihapus', 25, '...') }}
+                                </div>
+                            </td>
                             
-                            <!-- Kolom 3: Kerusakan (Ringkas dengan titik-titik) -->
+                            <!-- Kolom 3: Kerusakan -->
                             <td class="p-3.5 text-slate-600 max-w-[220px]">
                                 <div class="truncate" title="{{ $lap->deskripsi_kerusakan }}">
                                     {{ \Illuminate\Support\Str::limit($lap->deskripsi_kerusakan, 35, '...') }}
                                 </div>
                             </td>
                             
-                            <!-- Kolom 4: Status -->
-                            <td class="p-3.5 whitespace-nowrap">
-                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold inline-block
-                                    @if($lap->status_laporan == 'Menunggu') bg-amber-50 text-amber-700 border border-amber-200
-                                    @elseif($lap->status_laporan == 'Diproses') bg-indigo-50 text-indigo-700 border border-indigo-200
-                                    @elseif($lap->status_laporan == 'Dibatalkan') bg-slate-100 text-slate-500 border border-slate-200 line-through
-                                    @else bg-emerald-50 text-emerald-700 border border-emerald-200 @endif">
-                                    {{ $lap->status_laporan }}
-                                </span>
+                            <!-- Kolom 4: Status & Prioritas -->
+                            <td class="p-3.5 whitespace-nowrap space-y-1">
+                                <div>
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold inline-block
+                                        @if($lap->status_laporan == 'Menunggu') bg-amber-50 text-amber-700 border border-amber-200
+                                        @elseif($lap->status_laporan == 'Diproses') bg-indigo-50 text-indigo-700 border border-indigo-200
+                                        @elseif($lap->status_laporan == 'Dibatalkan') bg-slate-100 text-slate-500 border border-slate-200 line-through
+                                        @else bg-emerald-50 text-emerald-700 border border-emerald-200 @endif">
+                                        {{ $lap->status_laporan }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="px-2 py-0.5 text-[9px] font-bold uppercase rounded-md border inline-flex items-center gap-1
+                                        @if($prioritas == 'Darurat') bg-red-50 text-red-700 border-red-200
+                                        @elseif($prioritas == 'Sedang') bg-amber-50 text-amber-700 border-amber-200
+                                        @else bg-slate-100 text-slate-600 border-slate-200 @endif">
+                                        ⚡ {{ $prioritas }}
+                                    </span>
+                                </div>
                             </td>
 
-                            <!-- Kolom 5: Aksi (Menu Titik 3 / Dropdown Alpine.js) -->
-                            <td class="p-3.5 whitespace-nowrap text-center">
-                                <div class="relative inline-block text-left" x-data="{ open: false }">
-                                    <button @click="open = !open" type="button" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition cursor-pointer inline-flex items-center justify-center">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
-                                        </svg>
-                                    </button>
+                          <!-- Kolom 5: Aksi -->
+                        <td class="p-3.5 whitespace-nowrap text-center align-middle">
+                            <div class="relative inline-flex items-center justify-center text-left" x-data="{ open: false }">
+                                <button @click="open = !open" type="button" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition cursor-pointer inline-flex items-center justify-center">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                                    </svg>
+                                </button>
 
-                                    <!-- Dropdown Menu Pop-up -->
-                                    <div x-show="open" 
-                                         @click.away="open = false" 
-                                         x-transition:enter="transition ease-out duration-100"
-                                         x-transition:enter-start="transform opacity-0 scale-95"
-                                         x-transition:enter-end="transform opacity-100 scale-100"
-                                         x-transition:leave="transition ease-in duration-75"
-                                         x-transition:leave-start="transform opacity-100 scale-100"
-                                         x-transition:leave-end="transform opacity-0 scale-95"
-                                         class="absolute right-0 mt-1 w-32 bg-white border border-slate-200 rounded-xl shadow-lg z-30 py-1 text-left" 
-                                         style="display: none;">
-                                        
-                                        <a href="{{ route('laporan.show', $lap->id_laporan ?? $lap->id) }}" class="block px-3 py-2 hover:bg-slate-50 text-slate-700 font-medium">
-                                            Detail
+                                <!-- Dropdown Menu Pop-up -->
+                                <div x-show="open" 
+                                    @click.away="open = false" 
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="transform opacity-0 scale-95"
+                                    x-transition:enter-end="transform opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                    class="absolute right-full mr-2 top-1/2 -translate-y-1/2 w-32 bg-white border border-slate-200 rounded-xl shadow-xl z-50 py-1 text-left" 
+                                    style="display: none;">
+                                    
+                                    <a href="{{ route('laporan.show', $lap->id_laporan ?? $lap->id) }}" class="block px-3 py-2 hover:bg-slate-50 text-slate-700 font-medium">
+                                        Detail
+                                    </a>
+
+                                    @if($lap->status_laporan == 'Menunggu')
+                                        <a href="{{ route('laporan.edit', $lap->id_laporan ?? $lap->id) }}" class="block px-3 py-2 hover:bg-indigo-50 text-indigo-600 font-semibold">
+                                            Edit
                                         </a>
-
-                                        @if($lap->status_laporan == 'Menunggu')
-                                            <a href="{{ route('laporan.edit', $lap->id_laporan ?? $lap->id) }}" class="block px-3 py-2 hover:bg-indigo-50 text-indigo-600 font-semibold">
-                                                Edit
-                                            </a>
-                                            
-                                            <form action="{{ route('laporan.destroy', $lap->id_laporan ?? $lap->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan laporan ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="w-full text-left px-3 py-2 hover:bg-rose-50 text-rose-600 font-semibold">
-                                                    Batalkan
-                                                </button>
-                                            </form>
-                                        @else
-                                            <div class="px-3 py-2 text-slate-400 italic text-[11px] select-none">
-                                                Terkunci
-                                            </div>
-                                        @endif
-                                    </div>
+                                        
+                                        <form action="{{ route('laporan.destroy', $lap->id_laporan ?? $lap->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan laporan ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-full text-left px-3 py-2 hover:bg-rose-50 text-rose-600 font-semibold cursor-pointer">
+                                                Batalkan
+                                            </button>
+                                        </form>
+                                    @else
+                                        <div class="px-3 py-2 text-slate-400 italic text-[11px] select-none">
+                                            Terkunci
+                                        </div>
+                                    @endif
                                 </div>
-                           </td>
+                            </div>
+                        </td>
                         </tr>
                     @empty
                         <tr>
@@ -193,8 +195,9 @@
             </div>
         @endif
 
-    </div>
-</div>
+    </div> 
+
+</div> 
 
 <!-- SCRIPT JAVASCRIPT UNTUK AUTO-HIDE NOTIFIKASI -->
 <script>

@@ -17,8 +17,8 @@
         </a>
     </div>
 
-    <!-- Layout 2 Kolom (Kiri: Detail Laporan, Kanan: Timeline) -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <!-- Layout 2 Kolom Atas (Kiri: Informasi Laporan, Kanan: Diskusi & Catatan) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         
         <!-- KOLOM KIRI: Detail Laporan (Lebar 7 Kolom) -->
         <div class="lg:col-span-7 bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 space-y-4 flex flex-col justify-between">
@@ -57,7 +57,7 @@
                         </div>
                     </div>
 
-                    <!-- Foto Bukti Kerusakan (Diubah Menjadi Modal Pop-up) -->
+                    <!-- Foto Bukti Kerusakan -->
                     <div class="space-y-1.5 flex flex-col items-start">
                         <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Foto Kerusakan</span>
                         <div>
@@ -90,11 +90,74 @@
             </div>
         </div>
 
-        <!-- KOLOM KANAN: Timeline (Lebar 5 Kolom) -->
-        <div class="lg:col-span-5 bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col h-full">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 border-b border-slate-200 pb-2">Riwayat & Timeline Status</h3>
+        <!-- KOLOM KANAN: Diskusi & Catatan / Chat (Gaya WhatsApp) -->
+        <div class="lg:col-span-5 bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 space-y-4 flex flex-col justify-between">
+            <div class="space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Diskusi & Catatan Laporan</h3>
+                        <p class="text-slate-400 text-[11px]">Pesan atau instruksi tambahan.</p>
+                    </div>
+                    <div class="p-1.5 bg-indigo-600 text-white rounded-xl shadow-sm shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Kotak Daftar Pesan (Gaya Gelembung WhatsApp) -->
+                <div class="space-y-3 max-h-[240px] overflow-y-auto pr-2 custom-scrollbar">
+                    @forelse($laporan->komentars as $komentar)
+                        @php
+                            $isMe = $komentar->id_user == Auth::id();
+                        @endphp
+                        
+                        <!-- Baris Flex untuk Mengatur Posisi Kiri / Kanan -->
+                        <div class="flex {{ $isMe ? 'justify-end' : 'justify-start' }}">
+                            <!-- Gelembung Chat yang Lebarnya Menyesuaikan Teks -->
+                            <div class="max-w-[85%] p-3 rounded-2xl shadow-sm text-xs space-y-1 
+                                {{ $isMe ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-sm' }}">
+                                
+                                <div class="flex justify-between items-center gap-4 text-[10px] {{ $isMe ? 'text-indigo-100' : 'text-slate-400' }}">
+                                    <span class="font-bold">
+                                        {{ $isMe ? 'Anda' : ($komentar->user->name ?? 'Pengguna') }}
+                                        @if(!$isMe && ($komentar->user->role ?? false))
+                                            <span class="opacity-80 font-normal">({{ ucfirst($komentar->user->role) }})</span>
+                                        @endif
+                                    </span>
+                                    <span>{{ $komentar->created_at->format('H:i') }}</span>
+                                </div>
+                                
+                                <p class="leading-relaxed break-words break-all {{ $isMe ? 'text-white' : 'text-slate-700' }}">
+                                    {{ $komentar->pesan }}
+                                </p>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-5 bg-white/60 rounded-xl border border-dashed border-slate-300">
+                            <p class="text-[11px] text-slate-500 italic">Belum ada diskusi. Mulai percakapan di bawah.</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- Form Kirim Pesan -->
+            <form action="{{ route('laporan.komentar.store', $laporan->id_laporan) }}" method="POST" class="pt-2 flex gap-2">
+                @csrf
+                <input type="text" name="pesan" placeholder="Tulis pesan..." class="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm" required>
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-md shadow-indigo-600/20 shrink-0">
+                    Kirim 💬
+                </button>
+            </form>
+        </div>
+
+    </div> <!-- TUTUP GRID 2 KOLOM ATAS -->
+
+    <!-- ================= BAGIAN BAWAH: TIMELINE / LOG RIWAYAT ================= -->
+    <div class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 space-y-3 w-full">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2">Log Riwayat & Status Laporan</h3>
         
-        <div class="max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+        <div class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
             <div class="relative border-l-2 border-slate-300 ml-3 space-y-4 pt-1 pb-1 overflow-visible">
                 @forelse($laporan->logs ?? [] as $log)
                     <div class="relative pl-6 pr-2 py-1 group transition-all duration-300">
@@ -102,7 +165,7 @@
                         <!-- Titik/Dot Timeline -->
                         <div class="absolute -left-[9px] top-3 h-4 w-4 rounded-full bg-indigo-600 border-2 border-white shadow-sm z-10 shrink-0"></div>
                         
-                        <!-- ID dipindah ke Card agar kelas target: berfungsi optimal -->
+                        <!-- Card Log -->
                         <div id="log-{{ $log->id_log ?? $log->id }}" 
                             class="bg-white border border-slate-200/80 p-3 rounded-xl shadow-sm transition-all duration-500
                                     target:bg-indigo-100 target:border-indigo-400 target:ring-2 target:ring-indigo-500/50 target:shadow-md target:scale-[1.02]">
@@ -126,59 +189,10 @@
         </div>
     </div>
 
-    </div> <!-- TUTUP GRID 2 KOLOM -->
-
-    <!-- Bagian Diskusi / Komentar -->
-    <div class="bg-slate-100/80 p-6 rounded-2xl shadow-sm border border-slate-200/90 space-y-4 w-full">
-        <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-            <div>
-                <h3 class="text-sm font-bold text-slate-800">Diskusi & Catatan Laporan</h3>
-                <p class="text-slate-500 text-xs">Pesan atau instruksi tambahan terkait penanganan laporan ini.</p>
-            </div>
-            <div class="p-2 bg-indigo-600 text-white rounded-xl shadow-sm shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-            </div>
-        </div>
-        
-        <!-- Kotak Daftar Pesan -->
-        <div class="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
-            @forelse($laporan->komentars as $komentar)
-                <div class="p-3.5 rounded-xl {{ $komentar->id_user == Auth::id() ? 'bg-indigo-50/90 border-indigo-200/80 ml-6' : 'bg-white border-slate-200/80' }} border shadow-sm">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="font-bold text-xs text-slate-800">
-                            {{ $komentar->user->name ?? 'Pengguna' }} 
-                            @if($komentar->user->role ?? false)
-                                <span class="text-[10px] bg-slate-200/80 text-slate-600 px-1.5 py-0.5 rounded ml-1 font-semibold">{{ $komentar->user->role }}</span>
-                            @endif
-                        </span>
-                        <span class="text-[10px] text-slate-400">{{ $komentar->created_at->format('d M Y, H:i') }}</span>
-                    </div>
-                    <p class="text-xs text-slate-600 leading-relaxed break-words break-all">{{ $komentar->pesan }}</p>
-                </div>
-            @empty
-                <div class="text-center py-6 bg-white/60 rounded-xl border border-dashed border-slate-300">
-                    <p class="text-xs text-slate-500 italic">Belum ada diskusi pada laporan ini. Mulai percakapan di bawah.</p>
-                </div>
-            @endforelse
-        </div>
-
-        <!-- Form Kirim Pesan -->
-        <form action="{{ route('laporan.komentar.store', $laporan->id_laporan) }}" method="POST" class="pt-2 flex gap-2">
-            @csrf
-            <input type="text" name="pesan" placeholder="Tulis pesan atau pertanyaan ke admin..." class="flex-1 px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm" required>
-            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-indigo-600/20 shrink-0">
-                Kirim 💬
-            </button>
-        </form>
-    </div>
-
 </div>
 
-<!-- ================= MODAL POP-UP PREVIEW FOTO ================= -->
+<!-- ================= MODAL MODAL PREVIEW FOTO ================= -->
 <div id="modalPreviewFoto" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs hidden items-center justify-center z-50 p-4" onclick="tutupModalFoto()">
-    <!-- Ubah max-w-2xl w-full menjadi w-fit max-w-full agar kotaknya menyusut pas dengan gambar -->
     <div class="relative w-fit max-w-full bg-white rounded-3xl p-4 shadow-2xl overflow-hidden border border-slate-400" onclick="event.stopPropagation()">
         
         <!-- Tombol Tutup -->

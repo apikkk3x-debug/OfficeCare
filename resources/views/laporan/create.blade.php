@@ -25,19 +25,57 @@
         <form action="{{ route('laporan.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
             @csrf
             
-            <!-- Pilihan Barang -->
-            <div>
-                <label for="select_barang" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+            <!-- Pilihan Barang (Alpine.js Searchable Dropdown - Berada di Dalam Form) -->
+            <div class="relative" x-data="{ open: false, search: '', selectedText: '-- Pilih Barang / Fasilitas --', selectedId: '{{ old('id_barang') }}' }">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                     Pilih Barang / Fasilitas <span class="text-red-500">*</span>
                 </label>
-                <select name="id_barang" id="select_barang" onchange="cekBarangBaru(this)" required class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition shadow-sm">
-                    <option value="">-- Pilih Barang / Fasilitas --</option>
-                    @foreach($barangFasilitas as $barang)
-                        <option value="{{ $barang->id_barang }}">
-                            {{ $barang->nama_barang }} — (Lokasi: {{ $barang->lokasi }})
-                        </option>
-                    @endforeach
+
+                <!-- Hidden input untuk mengirim ID ke database -->
+                <input type="hidden" name="id_barang" x-model="selectedId" required>
+
+                <!-- Kotak Trigger -->
+                <button type="button" @click="open = !open" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition shadow-sm flex items-center justify-between text-left cursor-pointer">
+                    <span x-text="selectedText"></span>
+                    <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+
+                <!-- Menu Dropdown & Kotak Pencarian -->
+                <div x-show="open" @click.away="open = false" class="absolute z-50 w-full mt-1 bg-white border border-slate-300 rounded-xl shadow-lg overflow-hidden text-xs" style="display: none;">
+                    
+                    <!-- Input untuk mencari -->
+                    <div class="p-2 border-b border-slate-200 bg-slate-50">
+                        <input type="text" x-model="search" placeholder="Ketik untuk mencari nama barang atau lokasi..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-600 text-xs">
+                    </div>
+
+                    <!-- Daftar Pilihan -->
+                    <div class="max-h-48 overflow-y-auto">
+                        <div @click="selectedId = ''; selectedText = '-- Pilih Barang / Fasilitas --'; open = false" class="px-3 py-2 hover:bg-slate-100 cursor-pointer text-slate-400">
+                            -- Pilih Barang / Fasilitas --
+                        </div>
+
+                        @foreach($barangFasilitas as $barang)
+                            <div x-show="('{{ strtolower($barang->nama_barang . ' ' . $barang->lokasi) }}').includes(search.toLowerCase())"
+                                 @click="selectedId = '{{ $barang->id_barang }}'; selectedText = '{{ $barang->nama_barang }} — (Lokasi: {{ $barang->lokasi }})'; open = false;"
+                                 class="px-3 py-2 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer text-slate-700 border-b border-slate-100 last:border-none">
+                                {{ $barang->nama_barang }} — (Lokasi: {{ $barang->lokasi }})
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pilihan Tingkat Prioritas Kerusakan -->
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                    Tingkat Prioritas Kerusakan <span class="text-red-500">*</span>
+                </label>
+                <select name="prioritas" class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-indigo-600 focus:outline-none font-medium text-slate-800 shadow-sm cursor-pointer" required>
+                    <option value="Rendah" {{ old('prioritas') == 'Rendah' ? 'selected' : '' }}>Rendah (Kerusakan ringan, tidak mengganggu operasional)</option>
+                    <option value="Sedang" {{ old('prioritas', 'Sedang') == 'Sedang' ? 'selected' : '' }}>Sedang (Cukup mengganggu, perlu penanganan segera)</option>
+                    <option value="Darurat" {{ old('prioritas') == 'Darurat' ? 'selected' : '' }}>Darurat / Tinggi (Bahaya / Sangat mengganggu aktivitas kantor)</option>
                 </select>
+                <p class="text-[11px] text-slate-500 mt-1.5">Pilih tingkat urgensi agar Admin dapat memprioritaskan penanganan dengan tepat.</p>
             </div>
 
             <!-- Upload Foto (Pilihan: Galeri atau Kamera Interaktif) -->
@@ -75,7 +113,7 @@
             <!-- Deskripsi -->
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Deskripsi Pengaduan <span class="text-red-500">*</span></label>
-                <textarea name="deskripsi_kerusakan" rows="4" required placeholder="Jelaskan secara detail kendala atau kerusakan fasilitas yang ditemui..." class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition resize-none shadow-sm"></textarea>
+                <textarea name="deskripsi_kerusakan" rows="4" required placeholder="Jelaskan secara detail kendala atau kerusakan fasilitas yang ditemui..." class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition resize-none shadow-sm">{{ old('deskripsi_kerusakan') }}</textarea>
             </div>
 
             <!-- Tombol Aksi -->
@@ -130,23 +168,6 @@
 <script>
 let mediaStream = null;
 let blobFileFoto = null;
-
-function cekBarangBaru(select) {
-    const formBaru = document.getElementById('form_barang_baru');
-    if (!formBaru) return;
-    const inputNama = formBaru.querySelector('input[name="nama_barang_baru"]');
-    const inputLokasi = formBaru.querySelector('input[name="lokasi_baru"]');
-
-    if (select.value === 'tambah_baru') {
-        formBaru.classList.remove('hidden');
-        inputNama.setAttribute('required', 'required');
-        inputLokasi.setAttribute('required', 'required');
-    } else {
-        formBaru.classList.add('hidden');
-        inputNama.removeAttribute('required');
-        inputLokasi.removeAttribute('required');
-    }
-}
 
 function tampilkanNamaFile(input) {
     if (input.files && input.files[0]) {
