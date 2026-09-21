@@ -10,27 +10,71 @@ use App\Models\LaporanLog;
 use App\Models\User;
 use App\Models\PengadaanBarang;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
-    /**
-     * Menampilkan Dashboard Admin
-     */
     public function dashboard()
     {
         $laporanMasuk = LaporanKerusakan::with(['user', 'barang'])->latest()->get();
         $barangFasilitas = BarangFasilitas::all();
 
-        return view('admin.dashboard', compact('laporanMasuk', 'barangFasilitas'));
+        // Data Statistik Laporan & Prioritas
+        $totalLaporan = LaporanKerusakan::count();
+        $laporanMenunggu = LaporanKerusakan::where('status_laporan', 'Menunggu')->count();
+        $laporanDiproses = LaporanKerusakan::where('status_laporan', 'Diproses')->count();
+        $laporanSelesai = LaporanKerusakan::where('status_laporan', 'Selesai')->count();
+        
+        $prioritasDarurat = LaporanKerusakan::where('prioritas', 'Darurat')->count();
+        $prioritasSedang = LaporanKerusakan::where('prioritas', 'Sedang')->count();
+        $prioritasRendah = LaporanKerusakan::where('prioritas', 'Rendah')->count();
+
+        // Data Tambahan Aset, Pengadaan, & Pengguna
+        $totalAset = BarangFasilitas::count();
+        $pengadaanPending = PengadaanBarang::where('status_approval', 'pending')
+            ->orWhere('status_approval', 'menunggu')
+            ->count();
+        $totalUsers = User::count();
+
+        // Ambil Pengumuman Terbaru (Aman jika model belum ada)
+        $pengumumanTerbaru = null;
+        if (class_exists('\App\Models\Pengumuman')) {
+            $pengumumanTerbaru = \App\Models\Pengumuman::latest()->first();
+        } elseif (class_exists('\App\Models\PengumumanKantor')) {
+            $pengumumanTerbaru = \App\Models\PengumumanKantor::latest()->first();
+        }
+
+        return view('admin.dashboard', compact(
+            'laporanMasuk', 
+            'barangFasilitas',
+            'totalLaporan',
+            'laporanMenunggu',
+            'laporanDiproses',
+            'laporanSelesai',
+            'prioritasDarurat',
+            'prioritasSedang',
+            'prioritasRendah',
+            'totalAset',
+            'pengadaanPending',
+            'totalUsers',
+            'pengumumanTerbaru'
+        ));
     }
 
     /**
      * Menampilkan Halaman Data Laporan Pengaduan
      */
-    public function laporan()
+    public function laporan(Request $request)
     {
-        $laporan = LaporanKerusakan::with(['user', 'barang'])->latest()->get();
+        $perPage = $request->get('per_page', 10);
+        
+        // Pastikan menggunakan paginate, bukan get() atau all()
+        $laporan = LaporanKerusakan::with(['user', 'barang'])
+                        ->latest()
+                        ->paginate($perPage)
+                        ->withQueryString();
+
         return view('admin.laporan', compact('laporan'));
     }
 
@@ -75,12 +119,49 @@ class AdminController extends Controller
     }
 
     /**
-     * Menampilkan Halaman Manajemen Pengguna
+     * Menampilkan Halaman Manajemen Pengguna (Dengan Paginasi)
      */
-    public function manajemenUser()
+    public function manajemenUser(Request $request)
     {
-        $users = User::latest()->get();
+        $perPage = $request->get('per_page', 10);
+        $users = User::latest()->paginate($perPage)->withQueryString();
+
         return view('admin.users', compact('users'));
+    }
+
+    /**
+     * Menyimpan Pengguna Baru dari Modal Admin
+     */
+        public function storeUser(Request $request)
+    {
+        $request->validate([
+            'nama'     => 'required|string|max:255',
+            'email'    => 'required|email|max:255|unique:users,email',
+            'role'     => 'required|in:admin,pimpinan,karyawan',
+            'password' => 'required|string|min:6',
+            'divisi'   => 'required|string|max:100',
+        ]);
+
+        // 1. Membuat NIK Otomatis Berdasarkan Tahun dan Nomor Urut
+        $year = date('Y');
+        $latestUser = User::whereYear('created_at', $year)->latest('id_user')->first();
+        
+        // Ambil 4 digit terakhir dari NIK terakhir tahun ini, lalu tambahkan 1
+        $nextNumber = $latestUser ? intval(substr($latestUser->nik, -4)) + 1 : 1;
+        $nik = 'GC-' . $year . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+        // 2. Simpan Data ke Database
+        User::create([
+            'nama'     => $request->nama,
+            'email'    => $request->email,
+            'nik'      => $nik, // NIK otomatis terisi rapi
+            'divisi'   => $request->divisi,
+            'password' => Hash::make($request->password),
+            'role'     => $request->role,
+            'status'   => 'disetujui',
+        ]);
+
+        return redirect()->back()->with('success', 'Akun pengguna berhasil ditambahkan dengan NIK ' . $nik);
     }
 
     /**
@@ -88,9 +169,9 @@ class AdminController extends Controller
      */
     public function hapusUser($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::where('id_user', $id)->firstOrFail();
         
-        if ($user->id === Auth::id()) {
+        if ($user->id_user === Auth::id()) {
             return redirect()->back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }
 
@@ -132,13 +213,18 @@ class AdminController extends Controller
     public function barangIndex()
     {
         $barangs = BarangFasilitas::latest()->get();
-        dd($barangs);
         return view('admin.barang.index', compact('barangs'));
     }
     
-    public function indexPengadaan()
+        public function indexPengadaan(Request $request)
     {
-        $daftarPengadaan = PengadaanBarang::with('pemohon')->latest()->get();
+        $perPage = $request->get('per_page', 10);
+        
+        // Pastikan menggunakan paginate dan withQueryString
+        $daftarPengadaan = PengadaanBarang::with('pemohon')
+                            ->latest()
+                            ->paginate($perPage)
+                            ->withQueryString();
 
         return view('admin.pengadaan.index', compact('daftarPengadaan'));
     }
@@ -215,8 +301,14 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Data barang berhasil dihapus dari inventaris!');
     }
 
-    public function selesaikanPengadaan($id)
+    public function selesaikanPengadaan(Request $request, $id)
     {
+        $request->validate([
+            'kategori' => 'required|string|max:255',
+            'lokasi'   => 'required|string|max:255',
+            'kondisi'  => 'nullable|string|max:255',
+        ]);
+
         $pengadaan = PengadaanBarang::findOrFail($id);
 
         $pengadaan->update([
@@ -226,9 +318,9 @@ class AdminController extends Controller
         BarangFasilitas::create([
             'kode_barang'     => 'BRG-' . date('Ymd') . '-' . rand(100, 999),
             'nama_barang'     => $pengadaan->nama_barang_baru ?? $pengadaan->nama_barang,
-            'kategori_barang' => 'Peralatan Kantor',
-            'lokasi'          => 'Gudang Sarpras / Siap Pakai',
-            'kondisi'         => 'Baik',
+            'kategori_barang' => $request->kategori,
+            'lokasi'          => $request->lokasi,
+            'kondisi'         => $request->kondisi ?? 'Baik',
         ]);
 
         return redirect()->back()->with('success', 'Barang pengadaan telah dibeli dan resmi terdaftar di Master Aset kantor!');

@@ -33,7 +33,7 @@ class PengadaanController extends Controller
         'estimasi_harga'   => $request->estimasi_harga,
         'link_referensi'   => $request->link_referensi,
         'alasan_pengadaan' => $request->alasan_pengadaan,
-        'status'           => 'Menunggu', // Atau status default pengadaan baru
+        'status_approval'  => 'Pending', // Atau status default pengadaan baru
     ]);
 
     return redirect()->route('karyawan.pengadaan.index')->with('success', 'Pengajuan pengadaan barang berhasil dikirim ke Pimpinan.');

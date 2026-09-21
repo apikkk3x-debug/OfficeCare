@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\BarangFasilitas;
 use App\Models\LaporanKerusakan;
 use App\Models\LaporanLog;
+use App\Models\Pengumuman;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -26,18 +27,46 @@ class KaryawanController extends Controller
 
         $barangFasilitas = BarangFasilitas::all();
 
+        // Hitung data untuk card ringkasan dashboard
+        $totalPengaduan = $laporanku->count();
+        
+        $perbaikanAktif = LaporanKerusakan::where('id_user', $userId)
+                            ->where('status_laporan', '!=', 'Selesai')
+                            ->count();
+
+        $pengadaanBarang = \App\Models\PengadaanBarang::where('id_user', $userId)->count();
+
+        $pengadaanDisetujui = \App\Models\PengadaanBarang::where('id_user', $userId)
+                                ->where('status_approval', 'selesai') 
+                                ->count();
+
         // 2. Ambil 3-5 log aktivitas terbaru milik user ini untuk dikirim ke view
         $logs = LaporanLog::whereHas('laporan', function($query) use ($userId) {
                         $query->where('id_user', $userId);
                     })
                     ->with(['laporan.barang'])
                     ->latest()
-                    ->take(5)
+                    ->take(3)
                     ->get();
 
-        return view('karyawan.dashboard', compact('laporanku', 'barangFasilitas', 'logs'));
-    }
+        // 3. Ambil pengumuman aktif yang ditujukan untuk karyawan atau semua
+        $pengumumans = Pengumuman::where('is_active', true)
+            ->whereIn('target_role', ['karyawan', 'semua'])
+            ->latest()
+            ->take(3)
+            ->get();
 
+        return view('karyawan.dashboard', compact(
+            'laporanku', 
+            'barangFasilitas', 
+            'logs', 
+            'totalPengaduan', 
+            'perbaikanAktif', 
+            'pengadaanBarang', 
+            'pengadaanDisetujui',
+            'pengumumans'
+        ));
+    }
     // ==========================================
     // HALAMAN RIWAYAT LAPORAN (INDEX)
     // ==========================================
@@ -84,8 +113,10 @@ class KaryawanController extends Controller
 
     public function storeLaporan(Request $request)
     {
+        // 1. Tambahkan validasi prioritas di sini
         $request->validate([
             'id_barang' => 'required',
+            'prioritas' => 'required|in:Rendah,Sedang,Darurat', // <-- BARIS BARU
             'deskripsi_kerusakan' => 'required|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
@@ -121,6 +152,7 @@ class KaryawanController extends Controller
         $laporan = LaporanKerusakan::create([
             'id_user' => Auth::id(),
             'id_barang' => $idBarang,
+            'prioritas' => $request->prioritas, // <-- BARIS BARU (Simpan ke database)
             'deskripsi_kerusakan' => $request->deskripsi_kerusakan,
             'foto_kondisi' => $pathFoto,
             'status_laporan' => 'Menunggu',
@@ -130,15 +162,15 @@ class KaryawanController extends Controller
         $user = Auth::user();
         $namaUser = $user ? $user->name : 'Karyawan';
         
+        // (Opsional) Menambahkan info prioritas di log agar riwayatnya lebih lengkap
         LaporanLog::create([
             'id_laporan' => $laporan->id_laporan ?? $laporan->id,
             'status_sekarang' => 'Menunggu',
-            'keterangan' => 'Laporan pengaduan "' . $request->deskripsi_kerusakan . '" berhasil dikirim oleh ' . $namaUser,
+            'keterangan' => 'Laporan pengaduan "' . $request->deskripsi_kerusakan . '" (Prioritas: ' . $request->prioritas . ') berhasil dikirim oleh ' . $namaUser,
         ]);
 
         return redirect()->route('laporan.index')->with('success', 'Laporan dan data barang baru berhasil dikirim!');
     }
-
     // ==========================================
     // FITUR: EDIT, UPDATE, & BATALKAN LAPORAN
     // ==========================================
@@ -164,23 +196,14 @@ class KaryawanController extends Controller
             return redirect()->route('laporan.index')->with('error', 'Laporan yang sudah diproses tidak dapat diubah.');
         }
 
-        // 1. Validasi input form edit
+        // 1. Validasi input form edit disesuaikan dengan data yang dikirim form (id_barang)
         $request->validate([
-            'nama_barang' => 'required|string|max:255',
-            'lokasi' => 'nullable|string|max:255',
+            'id_barang' => 'required',
             'deskripsi_kerusakan' => 'required|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // 2. Update nama barang dan lokasi pada tabel barang terkait
-        if ($laporan->barang) {
-            $laporan->barang->update([
-                'nama_barang' => $request->nama_barang,
-                'lokasi' => $request->lokasi ?? $laporan->barang->lokasi,
-            ]);
-        }
-
-        // 3. Proses upload foto baru jika ada
+        // 2. Proses upload foto baru jika ada
         $pathFoto = $laporan->foto_kondisi;
         if ($request->hasFile('foto')) {
             if ($laporan->foto_kondisi && Storage::disk('public')->exists($laporan->foto_kondisi)) {
@@ -189,15 +212,16 @@ class KaryawanController extends Controller
             $pathFoto = $request->file('foto')->store('laporan_kerusakan', 'public');
         }
 
-        // 4. Update deskripsi dan foto pada laporan kerusakan
+        // 3. Update id_barang, deskripsi, dan foto pada laporan kerusakan
         $laporan->update([
+            'id_barang' => $request->id_barang,
             'deskripsi_kerusakan' => $request->deskripsi_kerusakan,
             'foto_kondisi' => $pathFoto,
         ]);
 
         // Catat log update
-       $user = Auth::user();
-        $namaUser = $user ? $user->nama : 'Karyawan';
+        $user = Auth::user();
+        $namaUser = $user ? ($user->nama ?? $user->name) : 'Karyawan';
 
         LaporanLog::create([
             'id_laporan'      => $laporan->id_laporan ?? $laporan->id,
@@ -206,7 +230,7 @@ class KaryawanController extends Controller
         ]);
 
         return redirect()->route('laporan.index')->with('success', 'Laporan berhasil diperbarui.');
-    }
+    } 
 
     public function destroyLaporan($id)
     {

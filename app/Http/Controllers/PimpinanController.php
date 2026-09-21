@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\LaporanKerusakan;
 use App\Models\BarangFasilitas;
 use App\Models\PengadaanBarang;
+use App\Models\Pengumuman;
 
 class PimpinanController extends Controller
 {
@@ -20,7 +21,18 @@ class PimpinanController extends Controller
         $laporanMenunggu = LaporanKerusakan::where('status_laporan', 'Menunggu')->count();
         $laporanDiproses = LaporanKerusakan::where('status_laporan', 'Diproses')->count();
         $laporanSelesai = LaporanKerusakan::where('status_laporan', 'Selesai')->count();
+        
         $totalBarang = BarangFasilitas::count();
+        $daftarBarang = BarangFasilitas::latest()->get(); // Ambil data unit untuk modal aset
+
+        // Hitung pengadaan barang yang masih menunggu persetujuan
+        $pengadaanMenunggu = PengadaanBarang::where('status_approval', 'menunggu')->count();
+
+        // Ambil pengumuman aktif yang ditujukan untuk pimpinan atau semua role
+        $pengumumans = Pengumuman::where('is_active', true)
+            ->whereIn('target_role', ['pimpinan', 'semua'])
+            ->latest()
+            ->get();
 
         return view('pimpinan.dashboard', compact(
             'laporan', 
@@ -28,14 +40,17 @@ class PimpinanController extends Controller
             'laporanMenunggu', 
             'laporanDiproses', 
             'laporanSelesai', 
-            'totalBarang'
+            'totalBarang',
+            'daftarBarang',
+            'pengumumans',
+            'pengadaanMenunggu'
         ));
     }
 
     public function cetakLaporan()
     {
         $laporan = LaporanKerusakan::with(['user', 'barang'])->latest()->get();
-        return view('pimpinan.cetak', compact('laporan'));
+        return view('pimpinan.print', compact('laporan'));
     }
 
     public function indexPengadaan(Request $request)
@@ -45,9 +60,9 @@ class PimpinanController extends Controller
         
         // Mengambil data pengajuan barang baru dengan paginasi dan tetap menggunakan $daftarPengadaan
         $daftarPengadaan = PengadaanBarang::with('pemohon')
-                                ->latest()
-                                ->paginate($perPage)
-                                ->withQueryString();
+                            ->latest()
+                            ->paginate($perPage)
+                            ->withQueryString();
 
         return view('pimpinan.pengadaan.index', compact('daftarPengadaan'));
     }
@@ -74,12 +89,19 @@ class PimpinanController extends Controller
         return redirect()->back()->with('success', 'Pengajuan barang telah ditolak!');
     }
 
-    public function rekapLaporan()
+    public function rekapLaporan(Request $request)
     {
-        // Mengambil data laporan kerusakan beserta relasi pelapor dan barangnya
-        $laporan = LaporanKerusakan::with(['user', 'barang'])->latest()->get();
+        // Ambil status dari query parameter (jika ada)
+        $statusFilter = $request->input('status');
 
-        // Mengarahkan ke file resources/views/pimpinan/cetak.blade.php
-        return view('pimpinan.cetak', compact('laporan'));
+        $query = LaporanKerusakan::with(['user', 'barang']);
+
+        if ($statusFilter) {
+            $query->where('status_laporan', $statusFilter);
+        }
+
+        $laporan = $query->latest()->get();
+
+        return view('pimpinan.cetak', compact('laporan', 'statusFilter'));
     }
 }

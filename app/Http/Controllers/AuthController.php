@@ -14,7 +14,6 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    // Menambahkan method showRegister yang sebelumnya belum ada
     public function showRegister()
     {
         return view('auth.register');
@@ -47,13 +46,15 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
-            // Pengalihan halaman otomatis berdasarkan role
+            // Pengalihan halaman otomatis berdasarkan role dengan pesan sukses
+            $nama = $user->nama;
+
             if ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard');
+                return redirect()->route('admin.dashboard')->with('success', 'Selamat datang, ' . $nama . '! Anda masuk sebagai Administrator.');
             } elseif ($user->role === 'pimpinan') {
-                return redirect()->route('pimpinan.dashboard');
+                return redirect()->route('pimpinan.dashboard')->with('success', 'Selamat datang, ' . $nama . '! Anda masuk sebagai Pimpinan.');
             }
-            return redirect()->route('karyawan.dashboard');
+            return redirect()->route('karyawan.dashboard')->with('success', 'Selamat datang, ' . $nama . '!');
         }
 
         return back()->with('error', 'Email atau password salah!');
@@ -70,17 +71,15 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
+            'nama'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users',
-            'nik'      => 'required|string|max:50|unique:users',
             'divisi'   => 'required|string|max:100',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:6|confirmed',
         ]);
 
         User::create([
-            'nama'     => $request->name,
+            'nama'     => $request->nama,
             'email'    => $request->email,
-            'nik'      => $request->nik,
             'divisi'   => $request->divisi,
             'password' => Hash::make($request->password),
             'role'     => 'karyawan',
