@@ -18,7 +18,6 @@
     </div>
 
     <!-- Alert Sukses -->
-    <!-- Alert Sukses (Otomatis hilang setelah 3 detik dengan JavaScript) -->
     @if(session('success'))
         <div id="success-alert" class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl text-xs font-medium flex items-center gap-2.5 shadow-sm transition-opacity duration-500">
             <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,7 +30,7 @@
                 const alertBox = document.getElementById('success-alert');
                 if (alertBox) {
                     alertBox.style.opacity = '0';
-                    setTimeout(() => alertBox.style.display = 'none', 500); // Menghilangkan elemen setelah efek pudar selesai
+                    setTimeout(() => alertBox.style.display = 'none', 500);
                 }
             }, 3000);
         </script>
@@ -80,6 +79,7 @@
                             $namaPemohon = $item->pemohon->nama ?? $item->pemohon->name ?? 'Karyawan';
                             $emailPemohon = $item->pemohon->email ?? '-';
                             $status = strtolower($item->status_approval ?? $item->status ?? 'pending');
+                            $idPengadaan = $item->id_pengadaan ?? $item->id;
                             
                             $badge = [
                                 'pending'   => 'bg-amber-100 text-amber-700 border-amber-200',
@@ -87,7 +87,9 @@
                                 'ditolak'   => 'bg-rose-100 text-rose-700 border-rose-200',
                             ][$status] ?? 'bg-slate-100 text-slate-700 border-slate-200';
                         @endphp
-                        <tr class="hover:bg-slate-50 transition">
+                        
+                        <!-- Baris Tabel dengan Pengecekan Highlight -->
+                        <tr class="{{ request('highlight_pengadaan') == $idPengadaan ? 'bg-indigo-50 ring-2 ring-indigo-400 transition-all duration-700 animate-pulse' : 'hover:bg-slate-50' }} transition">
                             <td class="p-3.5 font-semibold text-slate-500">
                                 {{ ($daftarPengadaan->currentPage() - 1) * $daftarPengadaan->perPage() + $index + 1 }}
                             </td>
@@ -168,7 +170,7 @@
                                         @if($status === 'pending')
                                             <!-- Option 2 & 3: Keputusan Setujui / Tolak -->
                                             <div class="py-0.5">
-                                                <form action="{{ route('pimpinan.pengadaan.setujui', $item->id_pengadaan ?? $item->id) }}" method="POST">
+                                                <form action="{{ route('pimpinan.pengadaan.setujui', $idPengadaan) }}" method="POST">
                                                     @csrf
                                                     @method('PUT')
                                                     <button type="submit" onclick="return confirm('Setujui permohonan pengadaan barang ini?')" class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-emerald-600 hover:bg-emerald-50 transition flex items-center gap-1.5 cursor-pointer">
@@ -179,7 +181,7 @@
                                                     </button>
                                                 </form>
 
-                                                <form action="{{ route('pimpinan.pengadaan.tolak', $item->id_pengadaan ?? $item->id) }}" method="POST">
+                                                <form action="{{ route('pimpinan.pengadaan.tolak', $idPengadaan) }}" method="POST">
                                                     @csrf
                                                     @method('PUT')
                                                     <button type="submit" onclick="return confirm('Tolak permohonan pengadaan barang ini?')" class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-rose-600 hover:bg-rose-50 transition flex items-center gap-1.5 cursor-pointer">
@@ -286,4 +288,18 @@
     </div>
 
 </div>
+
+<!-- Skrip Pembersih URL Parameter Highlight agar hilang saat di-refresh -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (window.URLSearchParams) {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('highlight_pengadaan')) {
+                urlParams.delete('highlight_pengadaan');
+                const newRelativePathQuery = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+                history.replaceState(null, '', newRelativePathQuery);
+            }
+        }
+    });
+</script>
 @endsection
