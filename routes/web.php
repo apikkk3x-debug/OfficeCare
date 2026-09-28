@@ -28,6 +28,10 @@ Route::middleware(['guest'])->group(function () {
 // ==========================================
 Route::middleware(['auth'])->group(function () {
 
+    // Rute Global untuk Menandai Notifikasi Dibaca (Mengarah ke KaryawanController)
+    Route::post('/notifications/{id}/read', [KaryawanController::class, 'markNotificationAsRead'])->name('notifications.read');
+    Route::post('/notifications/mark-all-read', [KaryawanController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+
     // Rute Logout (Hanya untuk user yang sudah login)
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('throttle:10,1')->name('logout');
 
@@ -71,7 +75,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
         Route::get('/profil/ganti-password', [ProfileController::class, 'editPassword'])->name('karyawan.password.edit');
-        Route::put('/profil/ganti-password', [ProfileController::class, 'updatePassword'])->name('karyawan.password.update');
+        Route::put('/profil/ganti-password', [ProfileController::class, 'updatePassword'])->middleware('throttle:3,1')->name('karyawan.password.update');
         Route::get('/profil/ganti-password/update', function () {
             return redirect()->route('karyawan.password.edit');
         });
@@ -91,7 +95,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/profile', [ProfileController::class, 'index'])->name('admin.profile');
         Route::put('/profile/update', [ProfileController::class, 'update'])->name('admin.profile.update');
         Route::get('/profile/ganti-password', [ProfileController::class, 'editPassword'])->name('admin.password.edit');
-        Route::put('/profile/ganti-password', [ProfileController::class, 'updatePassword'])->name('admin.password.update');
+        Route::put('/profile/ganti-password', [ProfileController::class, 'updatePassword'])->middleware('throttle:3,1')->name('admin.password.update');
         Route::post('/profile/ganti-password/send-otp', [ProfileController::class, 'sendOtp'])->middleware('throttle:3,1')->name('admin.password.sendOtp');
         Route::post('/profile/ganti-password/verify-update', [ProfileController::class, 'verifyAndUpdatePassword'])->middleware('throttle:5,1')->name('admin.password.verifyUpdate');
         
@@ -145,7 +149,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/profil', [ProfileController::class, 'index'])->name('pimpinan.profile');
         Route::put('/profil/update', [ProfileController::class, 'update'])->name('pimpinan.profile.update');
         Route::get('/profil/ganti-password', [ProfileController::class, 'editPassword'])->name('pimpinan.password.edit');
-        Route::put('/profil/ganti-password', [ProfileController::class, 'updatePassword'])->name('pimpinan.password.update');
+        Route::put('/profil/ganti-password', [ProfileController::class, 'updatePassword'])->middleware('throttle:3,1')->name('pimpinan.password.update');
         Route::post('/profil/ganti-password/send-otp', [ProfileController::class, 'sendOtp'])->middleware('throttle:3,1')->name('pimpinan.password.sendOtp');
         Route::post('/profil/ganti-password/verify-update', [ProfileController::class, 'verifyAndUpdatePassword'])->middleware('throttle:5,1')->name('pimpinan.password.verifyUpdate');
     });
