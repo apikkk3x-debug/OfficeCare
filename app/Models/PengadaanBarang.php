@@ -22,6 +22,7 @@ class PengadaanBarang extends Model
         'status_approval',
         'tanggal_approval',
         'link_referensi',
+        "catatan_pimpinan",
     ];
 
     // Relasi: Pengajuan ini dibuat oleh 1 User (Pemohon)

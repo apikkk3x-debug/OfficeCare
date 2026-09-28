@@ -12,6 +12,8 @@ class LaporanKerusakan extends Model
 
     protected $table = 'laporan_kerusakan';
     protected $primaryKey = 'id_laporan';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     protected $fillable = [
         'id_user',
@@ -20,6 +22,7 @@ class LaporanKerusakan extends Model
         'deskripsi_kerusakan',
         'foto_kondisi',
         'status_laporan',
+        'prioritas',
     ];
 
     // Relasi: Laporan ini dibuat oleh 1 User (Karyawan)
@@ -40,11 +43,13 @@ class LaporanKerusakan extends Model
         return $this->hasOne(Perbaikan::class, 'id_laporan', 'id_laporan');
     }
 
+    // Relasi: 1 Laporan memiliki banyak Log
     public function logs()
     {
         return $this->hasMany(LaporanLog::class, 'id_laporan', 'id_laporan');
     }
 
+    // Relasi: 1 Laporan memiliki banyak Komentar / Diskusi
     public function komentars()
     {
         return $this->hasMany(LaporanKomentar::class, 'id_laporan', 'id_laporan');
