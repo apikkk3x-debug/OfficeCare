@@ -18,10 +18,10 @@
     </div>
 
     <!-- Layout 2 Kolom Atas (Kiri: Informasi Laporan, Kanan: Diskusi & Catatan) -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
         
         <!-- KOLOM KIRI: Detail Laporan (Lebar 7 Kolom) -->
-        <div class="lg:col-span-7 bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 space-y-4 flex flex-col justify-between">
+        <div class="lg:col-span-7 bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 space-y-4 flex flex-col justify-between h-full">
             <div class="space-y-4">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2">Informasi Laporan</h3>
                 
@@ -91,9 +91,9 @@
         </div>
 
         <!-- KOLOM KANAN: Diskusi & Catatan / Chat (Gaya WhatsApp) -->
-        <div class="lg:col-span-5 bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 space-y-4 flex flex-col justify-between">
-            <div class="space-y-3">
-                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div class="lg:col-span-5 bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between h-full">
+            <div class="space-y-3 flex-1 flex flex-col">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2 shrink-0">
                     <div>
                         <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Diskusi & Catatan Laporan</h3>
                         <p class="text-slate-400 text-[11px]">Pesan atau instruksi tambahan.</p>
@@ -105,8 +105,8 @@
                     </div>
                 </div>
                 
-                <!-- Kotak Daftar Pesan (Gaya Gelembung WhatsApp) -->
-                <div class="space-y-3 max-h-[240px] overflow-y-auto pr-2 custom-scrollbar">
+                <!-- Kotak Daftar Pesan (Gaya Gelembung WhatsApp) - Mengisi penuh ruang secara vertikal -->
+                <div class="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-[220px]">
                     @forelse($laporan->komentars as $komentar)
                         @php
                             $isMe = $komentar->id_user == Auth::id();
@@ -141,8 +141,8 @@
                 </div>
             </div>
 
-            <!-- Form Kirim Pesan -->
-            <form action="{{ route('laporan.komentar.store', $laporan->id_laporan) }}" method="POST" class="pt-2 flex gap-2">
+            <!-- Form Kirim Pesan (Menempel rapi di bagian paling bawah) -->
+            <form action="{{ route('laporan.komentar.store', $laporan->id_laporan) }}" method="POST" class="pt-3 mt-3 border-t border-slate-200/60 flex gap-2 shrink-0">
                 @csrf
                 <input type="text" name="pesan" placeholder="Tulis pesan..." class="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm" required>
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-md shadow-indigo-600/20 shrink-0">
