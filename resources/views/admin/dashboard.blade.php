@@ -13,17 +13,6 @@
             <p class="text-xs text-indigo-100/80 mt-1">Pantau seluruh operasional kantor, inventaris aset, permohonan pengadaan, dan pengaduan real-time.</p>
         </div>
     </div>
-
-    <!-- Alert Sukses -->
-    @if(session('success'))
-        <div id="success-alert" class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl text-xs font-medium transition-opacity duration-500 flex items-center gap-2.5 shadow-sm">
-            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
     <!-- 6 Kartu Statistik Terpadu (Grid 3 Kolom yang Simetris & Seragam) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         
@@ -45,7 +34,7 @@
         </a>
 
         <!-- Card 2: Status Menunggu -->
-        <a href="{{ route('admin.laporan.index') }}" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-amber-400 hover:shadow-md group">
+       <a href="{{ route('admin.laporan.index', ['status' => 'Menunggu']) }}" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-amber-400 hover:shadow-md group">
             <div>
                 <div class="flex justify-between items-start">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-amber-600">Laporan Menunggu</span>

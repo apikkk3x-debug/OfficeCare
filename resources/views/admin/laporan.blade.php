@@ -64,12 +64,12 @@
                             $lokasi = $item->barang->lokasi ?? $item->lokasi ?? '-';
                             $deskripsi = $item->deskripsi_kerusakan ?? $item->deskripsi ?? $item->keterangan ?? '-';
                             $status = $item->status_laporan ?? 'Menunggu';
-                            $prioritas = $item->prioritas ?? 'Sedang'; // Mengambil data prioritas
+                            $prioritas = $item->prioritas ?? 'Sedang';
                             $idLaporan = $item->id_laporan ?? $item->id;
                         @endphp
                         
-                        <!-- Baris Tabel dengan Pengecekan Highlight -->
-                        <tr class="{{ request('highlight_log') == $idLaporan ? 'bg-indigo-50 ring-2 ring-indigo-400 transition-all duration-700 animate-pulse' : 'hover:bg-slate-50/80' }} transition">
+                        <!-- Baris Tabel dengan ID Spesifik untuk Highlight Otomatis oleh JavaScript -->
+                        <tr id="laporan-{{ $idLaporan }}" class="hover:bg-slate-50/80 transition">
                             
                             <!-- Tanggal -->
                             <td class="p-3.5 font-medium text-slate-600 whitespace-nowrap">
@@ -116,7 +116,7 @@
                                     </span>
                                 </div>
 
-                                <!-- Prioritas Badge (Fitur Baru) -->
+                                <!-- Prioritas Badge -->
                                 <div>
                                     <span class="px-2 py-0.5 text-[9px] font-bold uppercase rounded-md border inline-flex items-center gap-1
                                         @if($prioritas == 'Darurat') bg-red-50 text-red-700 border-red-200 animate-pulse
@@ -127,11 +127,11 @@
                                 </div>
                             </td>
 
-                            <!-- Form Aksi Ubah Status & Tombol Kelola (Detail + Chat) -->
+                            <!-- Form Aksi Ubah Status & Tombol Kelola -->
                             <td class="p-3.5 text-center align-middle whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-2">
                                     <!-- Select Status -->
-                                    <form action="{{ route('admin.laporan.updateStatus', $idLaporan) }}" method="POST" class="inline-block">
+                                    <form action="{{ route('admin.laporan.updateStatus', $item->id_laporan) }}" method="POST" class="inline-block">
                                         @csrf
                                         @method('PUT')
                                         <select name="status_laporan" onchange="this.form.submit()" class="text-[11px] bg-white border border-slate-300 rounded-xl px-2 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer font-medium text-slate-700 shadow-sm">
