@@ -26,7 +26,7 @@ class PimpinanController extends Controller
         $daftarBarang = BarangFasilitas::latest()->get(); // Ambil data unit untuk modal aset
 
         // Hitung pengadaan barang yang masih menunggu persetujuan
-        $pengadaanMenunggu = PengadaanBarang::where('status_approval', 'menunggu')->count();
+        $pengadaanMenunggu = PengadaanBarang::whereIn('status_approval', ['pending', 'Pending', 'menunggu', 'Menunggu'])->count();
 
         // Ambil pengumuman aktif yang ditujukan untuk pimpinan atau semua role
         $pengumumans = Pengumuman::where('is_active', true)
@@ -67,23 +67,33 @@ class PimpinanController extends Controller
         return view('pimpinan.pengadaan.index', compact('daftarPengadaan'));
     }
 
-    public function setujuiPengadaan(PengadaanBarang $pengadaan)
+    public function setujuiPengadaan(Request $request, PengadaanBarang $pengadaan)
     {
+        $request->validate([
+            'catatan_pimpinan' => 'nullable|string|max:1000',
+        ]);
+
         $pengadaan->update([
             'status_approval'  => 'disetujui',
-            'id_pimpinan' => Auth::user()->id_user,
+            'id_pimpinan'      => Auth::id() ?? Auth::user()->id_user,
             'tanggal_approval' => now(),
+            'catatan_pimpinan' => $request->catatan_pimpinan, // Simpan catatan pimpinan
         ]);
 
         return redirect()->back()->with('success', 'Pengajuan barang telah disetujui!');
     }
 
-    public function tolakPengadaan(PengadaanBarang $pengadaan)
+    public function tolakPengadaan(Request $request, PengadaanBarang $pengadaan)
     {
+        $request->validate([
+            'catatan_pimpinan' => 'nullable|string|max:1000',
+        ]);
+
         $pengadaan->update([
             'status_approval'  => 'ditolak',
-            'id_pimpinan' => Auth::user()->id_user,
+            'id_pimpinan'      => Auth::id() ?? Auth::user()->id_user,
             'tanggal_approval' => now(),
+            'catatan_pimpinan' => $request->catatan_pimpinan, // Simpan alasan penolakan
         ]);
 
         return redirect()->back()->with('success', 'Pengajuan barang telah ditolak!');

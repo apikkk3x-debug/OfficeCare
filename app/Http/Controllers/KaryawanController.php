@@ -13,6 +13,78 @@ use Illuminate\Support\Facades\Storage;
 class KaryawanController extends Controller
 {
     // ==========================================
+    // MARK NOTIFICATION AS READ (AJAX)
+    // ==========================================
+    public function markNotificationAsRead($id = null)
+    {
+        $id = $id ?? request()->route('id') ?? request('id');
+        $user = Auth::user();
+        $userId = $user->id_user ?? $user->id ?? Auth::id();
+
+        if ($id && $userId) {
+            \Illuminate\Support\Facades\DB::table('notification_reads')->updateOrInsert(
+                [
+                    'id_user'         => $userId,
+                    'notification_id' => (string) $id,
+                ],
+                [
+                    'read_at'    => now(),
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Notifikasi ditandai telah dibaca.'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'ID notifikasi tidak valid.'
+        ], 400);
+    }
+
+    // ==========================================
+    // MARK ALL NOTIFICATIONS AS READ (AJAX)
+    // ==========================================
+    public function markAllAsRead(Request $request)
+    {
+        $user = Auth::user();
+        $userId = $user->id_user ?? $user->id ?? Auth::id();
+        $ids = $request->input('notification_ids', []);
+
+        if ($userId && is_array($ids) && count($ids) > 0) {
+            foreach ($ids as $notifId) {
+                if (!empty($notifId)) {
+                    \Illuminate\Support\Facades\DB::table('notification_reads')->updateOrInsert(
+                        [
+                            'id_user'         => $userId,
+                            'notification_id' => (string) $notifId,
+                        ],
+                        [
+                            'read_at'    => now(),
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                        ]
+                    );
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Semua notifikasi berhasil ditandai telah dibaca.'
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tidak ada notifikasi untuk ditandai.'
+        ]);
+    }
+
+    // ==========================================
     // DASHBOARD KARYAWAN
     // ==========================================
     public function dashboard()
@@ -162,12 +234,11 @@ class KaryawanController extends Controller
         $user = Auth::user();
         $namaUser = $user ? $user->name : 'Karyawan';
         
-        // (Opsional) Menambahkan info prioritas di log agar riwayatnya lebih lengkap
-        LaporanLog::create([
-            'id_laporan' => $laporan->id_laporan ?? $laporan->id,
-            'status_sekarang' => 'Menunggu',
-            'keterangan' => 'Laporan pengaduan "' . $request->deskripsi_kerusakan . '" (Prioritas: ' . $request->prioritas . ') berhasil dikirim oleh ' . $namaUser,
-        ]);
+       LaporanLog::create([
+    'id_laporan' => $laporan->getKey(), // Mengambil primary key yang valid
+    'status_sekarang' => 'Menunggu',
+    'keterangan' => 'Laporan pengaduan "' . $request->deskripsi_kerusakan . '" (Prioritas: ' . $request->prioritas . ') berhasil dikirim oleh ' . $namaUser,
+    ]);
 
         return redirect()->route('laporan.index')->with('success', 'Laporan dan data barang baru berhasil dikirim!');
     }

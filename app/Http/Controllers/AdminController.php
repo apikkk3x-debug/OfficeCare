@@ -32,9 +32,7 @@ class AdminController extends Controller
 
         // Data Tambahan Aset, Pengadaan, & Pengguna
         $totalAset = BarangFasilitas::count();
-        $pengadaanPending = PengadaanBarang::where('status_approval', 'pending')
-            ->orWhere('status_approval', 'menunggu')
-            ->count();
+        $pengadaanPending = PengadaanBarang::whereIn('status_approval', ['pending', 'Pending', 'menunggu', 'Menunggu'])->count();
         $totalUsers = User::count();
 
         // Ambil Pengumuman Terbaru (Aman jika model belum ada)
@@ -65,15 +63,23 @@ class AdminController extends Controller
     /**
      * Menampilkan Halaman Data Laporan Pengaduan
      */
+    /**
+     * Menampilkan Halaman Data Laporan Pengaduan
+     */
     public function laporan(Request $request)
     {
         $perPage = $request->get('per_page', 10);
         
-        // Pastikan menggunakan paginate, bukan get() atau all()
-        $laporan = LaporanKerusakan::with(['user', 'barang'])
-                        ->latest()
-                        ->paginate($perPage)
-                        ->withQueryString();
+        // Mulai query dengan relasi
+        $query = LaporanKerusakan::with(['user', 'barang'])->latest();
+
+        // Jika ada filter status dari URL (contoh: ?status=Menunggu)
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status_laporan', $request->status);
+        }
+
+        // Ambil data dengan paginasi dan pertahankan query string
+        $laporan = $query->paginate($perPage)->withQueryString();
 
         return view('admin.laporan', compact('laporan'));
     }
@@ -85,6 +91,7 @@ class AdminController extends Controller
     {
         $request->validate([
             'status_laporan' => 'required|in:Menunggu,Diproses,Selesai,Ditolak',
+            'keterangan'     => 'nullable|string|max:500',
         ]);
 
         $laporan = LaporanKerusakan::findOrFail($id);
@@ -97,13 +104,17 @@ class AdminController extends Controller
         ]);
 
         $user = Auth::user();
-        $namaAdmin = $user->name ?? $user->nama ?? $user->username ?? 'Admin';
+        $namaAdmin = $user->nama ?? $user->name ?? $user->username ?? 'Admin';
+
+        $keteranganLog = $request->filled('keterangan')
+            ? $request->keterangan . " (Oleh Admin: {$namaAdmin})"
+            : "Status diperbarui menjadi '{$statusBaru}' oleh Admin ({$namaAdmin})";
 
         LaporanLog::create([
-            'id_laporan'         => $laporan->id_laporan ?? $laporan->id,
+            'id_laporan'        => $laporan->id_laporan ?? $laporan->id,
             'status_sebelumnya' => $statusLama,
             'status_sekarang'   => $statusBaru,
-            'keterangan'        => "Status diperbarui menjadi '{$statusBaru}' oleh Admin ({$namaAdmin})"
+            'keterangan'        => $keteranganLog,
         ]);
 
         return redirect()->back()->with('success', 'Status laporan berhasil diperbarui!');
@@ -184,7 +195,7 @@ class AdminController extends Controller
      */
     public function showLaporan($id)
     {
-        $laporan = LaporanKerusakan::with(['user', 'barang', 'komentars.user'])->findOrFail($id);
+        $laporan = LaporanKerusakan::with(['user', 'barang', 'komentars.user', 'logs'])->findOrFail($id);
 
         return view('admin.laporan.show', compact('laporan'));
     }
