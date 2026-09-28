@@ -99,7 +99,7 @@
         <!-- Wrapper Utama (Hanya Tampil Jika Sudah Login) -->
         <div class="min-h-screen flex bg-slate-50">
             
-            <!-- ================= SIDEBAR KIRI DESKTOP (Fixed) ================= -->
+            <!-- ================= SIDEBAR KIRI DESKTOP (Fixed & Berbasis Kategori) ================= -->
             <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between hidden md:flex shadow-xl fixed inset-y-0 left-0 z-30">
                 <div>
                     <!-- Logo / Judul Brand -->
@@ -114,8 +114,8 @@
                         </span>
                     </div>
 
-                    <!-- Menu Navigasi Samping Dinamis (3 Role) -->
-                    <nav class="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-8rem)]">
+                    <!-- Menu Navigasi Samping Dinamis dengan Kategori Profesional -->
+                    <nav class="p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
                         @php
                             $userRole = strtolower(Auth::user()->role ?? 'karyawan');
                             $profileRoute = match($userRole) {
@@ -126,125 +126,111 @@
                         @endphp
 
                         @if($userRole === 'admin')
-                            <!-- 1. MENU ADMIN -->
-                            <a href="{{ route('admin.dashboard') }}" 
-                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-                                </svg>
-                                Dashboard Admin
-                            </a>
+                            <!-- 1. KATEGORI UTAMA ADMIN -->
+                            <div class="space-y-1">
+                                <span class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Menu Utama</span>
+                                <a href="{{ route('admin.dashboard') }}" 
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                                    Dashboard Admin
+                                </a>
+                                <a href="{{ route('admin.users') }}" 
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.users*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                    Kelola Pengguna
+                                </a>
+                            </div>
 
-                            <a href="{{ route('admin.users') }}" 
-                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.users*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                                </svg>
-                                Kelola Pengguna
-                            </a>
-
-                            <a href="{{ route('admin.laporan.index') }}" 
-                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.laporan.*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                                </svg>
-                                Data Laporan
-                            </a>
-
-                            <a href="{{ route('admin.pengadaan.index') }}" 
-                            class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.pengadaan.*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                                </svg>
-                                Pengadaan Barang
-                            </a>
-
-                            <a href="{{ route('admin.barang.index') }}" 
-                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.barang*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                                </svg>
-                                Manajemen Aset
-                            </a>
-
-                            <!-- Menu Sidebar: Kelola Pengumuman -->
-                            <a href="{{ route('admin.pengumuman.index') }}" 
-                            class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition {{ request()->routeIs('admin.pengumuman*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:bg-white/5 hover:text-white' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
-                                </svg>
-                                Pengumuman Kantor
-                            </a>
+                            <!-- KATEGORI OPERASIONAL ADMIN -->
+                            <div class="space-y-1 pt-2">
+                                <span class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Operasional Sarpras</span>
+                                <a href="{{ route('admin.laporan.index') }}" 
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.laporan.*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                                    Data Laporan
+                                </a>
+                                <a href="{{ route('admin.pengadaan.index') }}" 
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.pengadaan.*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                    Pengadaan Barang
+                                </a>
+                                <a href="{{ route('admin.barang.index') }}" 
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.barang*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                    Manajemen Aset
+                                </a>
+                                <a href="{{ route('admin.pengumuman.index') }}" 
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('admin.pengumuman*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+                                    Pengumuman Kantor
+                                </a>
+                            </div>
 
                         @elseif($userRole === 'pimpinan')
-                            <!-- 2. MENU PIMPINAN -->
-                            <a href="{{ route('pimpinan.dashboard') }}" 
-                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('pimpinan.dashboard') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                                </svg>
-                                Dashboard
-                            </a>
+                            <!-- 2. KATEGORI UTAMA PIMPINAN -->
+                            <div class="space-y-1">
+                                <span class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Executive Command</span>
+                                <a href="{{ route('pimpinan.dashboard') }}" 
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('pimpinan.dashboard') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                                    Dashboard
+                                </a>
+                            </div>
 
-                            <a href="{{ route('pimpinan.pengadaan.index') }}" 
-                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('pimpinan.pengadaan.*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Persetujuan Pengadaan
-                            </a>
-
-                            <a href="{{ route('pimpinan.rekap') }}" 
-                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('pimpinan.rekap') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                                </svg>
-                                Rekap & Cetak
-                            </a>
+                            <div class="space-y-1 pt-2">
+                                <span class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Persetujuan & Monitoring</span>
+                                <a href="{{ route('pimpinan.pengadaan.index') }}" 
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('pimpinan.pengadaan.*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    Persetujuan Pengadaan
+                                </a>
+                                <a href="{{ route('pimpinan.rekap') }}" 
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('pimpinan.rekap') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                    Rekap & Cetak
+                                </a>
+                            </div>
 
                         @else
-                            <!-- 3. MENU KARYAWAN -->
-                            <a href="{{ route('karyawan.dashboard') }}" 
-                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('karyawan.dashboard') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                                </svg>
-                                Dashboard
-                            </a>
+                            <!-- 3. KATEGORI UTAMA KARYAWAN -->
+                            <div class="space-y-1">
+                                <span class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Menu Utama</span>
+                                <a href="{{ route('karyawan.dashboard') }}" 
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('karyawan.dashboard') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                                    Dashboard
+                                </a>
+                            </div>
 
-                            <a href="{{ route('laporan.create') }}" 
-                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('laporan.create') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Buat Laporan
-                            </a>
-
-                            <a href="{{ route('laporan.index') }}" 
-                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('laporan.index') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                Riwayat Laporan
-                            </a>
-
-                            <a href="{{ route('karyawan.pengadaan.index') }}" 
-                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('karyawan.pengadaan.*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                                </svg>
-                                Pengadaan Barang
-                            </a>
+                            <div class="space-y-1 pt-2">
+                                <span class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Layanan & Fasilitas</span>
+                                <a href="{{ route('laporan.create') }}" 
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('laporan.create') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    Buat Laporan
+                                </a>
+                                <a href="{{ route('laporan.index') }}" 
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('laporan.index') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    Riwayat Laporan
+                                </a>
+                                <a href="{{ route('karyawan.pengadaan.index') }}" 
+                                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('karyawan.pengadaan.*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                    Pengadaan Barang
+                                </a>
+                            </div>
                         @endif
 
                         <!-- Menu Profil Umum -->
-                        <a href="{{ $profileRoute }}" 
-                           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('*.profile*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                            Profil Saya
-                        </a>
+                        <div class="space-y-1 pt-2">
+                            <span class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Pengaturan Akun</span>
+                            <a href="{{ $profileRoute }}" 
+                               class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 {{ request()->routeIs('*.profile*') ? 'bg-slate-200 text-black font-semibold shadow-lg shadow-indigo-600/25' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                Profil Saya
+                            </a>
+                        </div>
                     </nav>
                 </div>
                 <!-- INFORMASI KONTAK & LAYANAN DI BAWAH SIDEBAR -->
@@ -285,7 +271,7 @@
                             $headerProfileRoute = $profileRoute;
                         @endphp
               <!-- ================= PUSAT NOTIFIKASI MODERN & PERSISTENT ================= -->
-                            <script>
+                        <script>
                             window.globalNotifications = @json($globalNotifications ?? []);
                         </script>
                         
@@ -293,10 +279,10 @@
                              x-data="{ 
                                 openNotification: false,
                                 dismissed: JSON.parse(localStorage.getItem('officecare_dismissed_notifs') || '[]'),
-                                notifications: window.globalNotifications,
+                                notifications: window.globalNotifications || [],
                                 
                                 get activeNotifications() {
-                                    return this.notifications.filter(n => !this.dismissed.includes(n.id));
+                                    return (this.notifications || []).filter(n => !this.dismissed.includes(n.id));
                                 },
                                 
                                 dismiss(id) {
@@ -304,6 +290,32 @@
                                         this.dismissed.push(id);
                                         localStorage.setItem('officecare_dismissed_notifs', JSON.stringify(this.dismissed));
                                     }
+                                    fetch(`/notifications/${id}/read`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                        }
+                                    }).catch(e => console.error(e));
+                                },
+
+                                markAllAsRead() {
+                                    const activeIds = this.activeNotifications.map(n => n.id);
+                                    activeIds.forEach(id => {
+                                        if (!this.dismissed.includes(id)) {
+                                            this.dismissed.push(id);
+                                        }
+                                    });
+                                    localStorage.setItem('officecare_dismissed_notifs', JSON.stringify(this.dismissed));
+
+                                    fetch('/notifications/mark-all-read', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                        },
+                                        body: JSON.stringify({ notification_ids: activeIds })
+                                    }).catch(e => console.error(e));
                                 }
                              }">
                             
@@ -323,24 +335,31 @@
 
                             <!-- Dropdown Pop-up Notifikasi -->
                             <div x-show="openNotification" 
-                                 @click.outside="openNotification = false"
-                                 x-transition:enter="transition ease-out duration-200"
-                                 x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
-                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                                 x-transition:leave="transition ease-in duration-150"
-                                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                                 x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-                                 style="display: none;"
-                                 class="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-3 z-50">
+                                   @click.outside="openNotification = false"
+                                   x-transition:enter="transition ease-out duration-200"
+                                   x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                                   x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                   x-transition:leave="transition ease-in duration-150"
+                                   x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                   x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                                   style="display: none;"
+                                   class="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-3 z-50">
                                 
                                 <div class="px-4 pb-3 border-b border-slate-100 flex items-center justify-between">
                                     <div class="flex items-center gap-2">
                                         <div class="w-2 h-2 rounded-full bg-indigo-600"></div>
                                         <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Pusat Notifikasi</h4>
                                     </div>
-                                    <span class="text-[10px] bg-indigo-50 text-indigo-600 font-semibold px-2 py-0.5 rounded-md border border-indigo-100"
-                                          x-text="activeNotifications.length + ' Baru'">
-                                    </span>
+                                    <div class="flex items-center gap-2">
+                                        <template x-if="activeNotifications.length > 0">
+                                            <button type="button" @click="markAllAsRead()" class="text-[10px] text-indigo-600 hover:text-indigo-800 font-semibold hover:underline cursor-pointer">
+                                                Tandai Semua Dibaca
+                                            </button>
+                                        </template>
+                                        <span class="text-[10px] bg-indigo-50 text-indigo-600 font-semibold px-2 py-0.5 rounded-md border border-indigo-100"
+                                              x-text="activeNotifications.length + ' Baru'">
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div class="max-h-80 overflow-y-auto px-2 py-2 space-y-1.5">
@@ -348,58 +367,70 @@
                                         <div class="group relative bg-slate-50/60 hover:bg-indigo-50/40 rounded-xl p-3 border border-slate-200/60 hover:border-indigo-200 transition">
                                             <div class="flex items-start justify-between gap-2.5">
                                                 
-                                                <!-- LINK DETAIL NOTIFIKASI -->
-                                            <a :href="notif.url" class="flex items-start gap-3 flex-1 min-w-0">
-                                                
-                                                <!-- 1. Ikon Pengumuman (Warna Amber/Kuning) -->
-                                                <template x-if="notif.type === 'pengumuman'">
-                                                    <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0 border border-amber-500/20 mt-0.5">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
-                                                        </svg>
-                                                    </div>
-                                                </template>
+                                                <!-- LINK DETAIL NOTIFIKASI DENGAN FUNGSI AJAX MARK AS READ -->
+                                                <a :href="notif.url" 
+                                                   @click.prevent="handleNotificationClick($event, notif.id, notif.url)" 
+                                                   class="flex items-start gap-3 flex-1 min-w-0">
+                                                    
+                                                    <!-- 1. Ikon Pengumuman (Warna Amber/Kuning) -->
+                                                    <template x-if="notif.type === 'pengumuman'">
+                                                        <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0 border border-amber-500/20 mt-0.5">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </template>
 
-                                                <!-- 2. Ikon Pengadaan Barang (Warna Biru) -->
-                                                <template x-if="notif.type === 'pengadaan'">
-                                                    <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0 border border-blue-500/20 mt-0.5">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                                                        </svg>
-                                                    </div>
-                                                </template>
+                                                    <!-- 2. Ikon Pengadaan Barang (Warna Biru) -->
+                                                    <template x-if="notif.type === 'pengadaan'">
+                                                        <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0 border border-blue-500/20 mt-0.5">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </template>
 
-                                                <!-- 3. Ikon Komentar (Warna Ungu) -->
-                                                <template x-if="notif.type === 'komentar'">
-                                                    <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0 border border-purple-500/20 mt-0.5">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-                                                        </svg>
-                                                    </div>
-                                                </template>
+                                                    <!-- 3. Ikon Komentar (Warna Ungu) -->
+                                                    <template x-if="notif.type === 'komentar'">
+                                                        <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0 border border-purple-500/20 mt-0.5">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </template>
 
-                                                <!-- 4. Ikon Laporan Kerusakan (Warna Indigo) -->
-                                                <template x-if="notif.type === 'laporan'">
-                                                    <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-500/20 mt-0.5">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                        </svg>
-                                                    </div>
-                                                </template>
+                                                    <!-- 4. Ikon Laporan Kerusakan (Warna Indigo) -->
+                                                    <template x-if="notif.type === 'laporan'">
+                                                        <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-500/20 mt-0.5">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </template>
 
-                                                <!-- Konten Teks -->
-                                                <div class="flex-1 min-w-0 pr-4">
-                                                    <div class="flex items-center gap-1.5 mb-1">
-                                                        <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border"
-                                                            :class="notif.badge_style"
-                                                            x-text="notif.badge"></span>
+                                                    <!-- 5. Ikon Pengguna Baru / Akun (Warna Sky Blue) -->
+                                                    <template x-if="notif.type === 'user'">
+                                                        <div class="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-600 flex items-center justify-center shrink-0 border border-sky-500/20 mt-0.5">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </template>
+
+                                                    <!-- Konten Teks -->
+                                                    <div class="flex-1 min-w-0 pr-4">
+                                                        <div class="flex items-center justify-between gap-1.5 mb-1">
+                                                            <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border"
+                                                                :class="notif.badge_style"
+                                                                x-text="notif.badge"></span>
+                                                            <span class="text-[10px] text-slate-400 font-medium" x-text="notif.time_ago"></span>
+                                                        </div>
+                                                        <h5 class="text-xs font-bold text-slate-800 truncate group-hover:text-indigo-600 transition" 
+                                                            x-text="notif.title"></h5>
+                                                        <p class="text-[11px] text-slate-600 mt-0.5 line-clamp-2 leading-tight" 
+                                                            x-text="notif.desc"></p>
                                                     </div>
-                                                    <h5 class="text-xs font-bold text-slate-800 truncate group-hover:text-indigo-600 transition" 
-                                                        x-text="notif.title"></h5>
-                                                    <p class="text-[11px] text-slate-600 mt-0.5 line-clamp-2 leading-tight" 
-                                                    x-text="notif.desc"></p>
-                                                </div>
-                                            </a>
+                                                </a>
 
                                                 <button @click="dismiss(notif.id)" 
                                                         class="text-slate-400 hover:text-rose-500 hover:bg-rose-50 p-1 rounded-lg transition cursor-pointer shrink-0" 
@@ -442,15 +473,15 @@
 
                             <!-- Dropdown Menu Box -->
                             <div x-show="open" 
-                                 @click.away="open = false"
-                                 x-transition:enter="transition ease-out duration-100"
-                                 x-transition:enter-start="transform opacity-0 scale-95"
-                                 x-transition:enter-end="transform opacity-100 scale-100"
-                                 x-transition:leave="transition ease-in duration-75"
-                                 x-transition:leave-start="transform opacity-100 scale-100"
-                                 x-transition:leave-end="transform opacity-0 scale-95"
-                                 class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50 space-y-3"
-                                 style="display: none;">
+                                   @click.away="open = false"
+                                   x-transition:enter="transition ease-out duration-100"
+                                   x-transition:enter-start="transform opacity-0 scale-95"
+                                   x-transition:enter-end="transform opacity-100 scale-100"
+                                   x-transition:leave="transition ease-in duration-75"
+                                   x-transition:leave-start="transform opacity-100 scale-100"
+                                   x-transition:leave-end="transform opacity-0 scale-95"
+                                   class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50 space-y-3"
+                                   style="display: none;">
                             
                                 <!-- Header Info User -->
                                 <div class="flex items-center gap-3">
@@ -538,80 +569,137 @@
                 </footer>
             </div>
 
-        </div>
+            <!-- Navigasi Bawah Mobile (Khusus HP - Dinamis 3 Role) -->
+            @php
+                $mobileProfileRoute = $profileRoute;
+            @endphp
+            <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around p-2 z-30 shadow-lg">
+                @if($userRole === 'admin')
+                    <!-- Mobile Admin -->
+                    <a href="{{ route('admin.dashboard') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('admin.dashboard') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                        </svg>
+                        Dashboard
+                    </a>
+                    <a href="{{ route('admin.users') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('admin.users*') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                        Pengguna
+                    </a>
 
-        <!-- Navigasi Bawah Mobile (Khusus HP - Dinamis 3 Role) -->
-        @php
-            $mobileProfileRoute = $profileRoute;
-        @endphp
-        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around p-2 z-30 shadow-lg">
-            @if($userRole === 'admin')
-                <!-- Mobile Admin -->
-                <a href="{{ route('admin.dashboard') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('admin.dashboard') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
-                    <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-                    </svg>
-                    Dashboard
-                </a>
-                <a href="{{ route('admin.users') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('admin.users*') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
-                    <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                    </svg>
-                    Pengguna
-                </a>
+                @elseif($userRole === 'pimpinan')
+                    <!-- Mobile Pimpinan -->
+                    <a href="{{ route('pimpinan.dashboard') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('pimpinan.dashboard') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6m2 0h2a2 2 0 002-2v-5a2 2 0 00-2-2h-2m-4-6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z"></path>
+                        </svg>
+                        Executive
+                    </a>
+                    <a href="{{ route('pimpinan.rekap') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('pimpinan.rekap*') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                        </svg>
+                        Rekap & Cetak
+                    </a>
 
-            @elseif($userRole === 'pimpinan')
-                <!-- Mobile Pimpinan -->
-                <a href="{{ route('pimpinan.dashboard') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('pimpinan.dashboard') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
-                    <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6m2 0h2a2 2 0 002-2v-5a2 2 0 00-2-2h-2m-4-6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z"></path>
-                    </svg>
-                    Executive
-                </a>
-                <a href="{{ route('pimpinan.rekap') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('pimpinan.rekap*') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
-                    <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                    </svg>
-                    Rekap & Cetak
-                </a>
+                @else
+                    <!-- Mobile Karyawan -->
+                    <a href="{{ route('karyawan.dashboard') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('karyawan.dashboard') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                        Dashboard
+                    </a>
+                    <a href="{{ route('laporan.create') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('laporan.create') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Buat
+                    </a>
+                    <a href="{{ route('laporan.index') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('laporan.index') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Riwayat
+                    </a>
+                @endif
 
-            @else
-                <!-- Mobile Karyawan -->
-                <a href="{{ route('karyawan.dashboard') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('karyawan.dashboard') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
+                <a href="{{ $mobileProfileRoute }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('*.profile*') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
                     <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
-                    Dashboard
+                    Profil
                 </a>
-                <a href="{{ route('laporan.create') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('laporan.create') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
-                    <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    Buat
-                </a>
-                <a href="{{ route('laporan.index') }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('laporan.index') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
-                    <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    Riwayat
-                </a>
-            @endif
+            </nav>
+        @else
+            <!-- ================= JIKA BELUM LOGIN (HALAMAN TAMU / LOGIN & REGISTER) ================= -->
+            <main class="w-full min-h-screen flex items-center justify-center p-0 md:p-6">
+                <div class="w-full">
+                    @yield('content')
+                </div>
+            </main>
+        @endauth
 
-            <a href="{{ $mobileProfileRoute }}" class="flex flex-col items-center py-1 px-3 text-xs {{ request()->routeIs('*.profile*') ? 'text-indigo-400 font-bold' : 'text-slate-400' }}">
-                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                </svg>
-                Profil
-            </a>
-        </nav>
-    @else
-        <!-- ================= JIKA BELUM LOGIN (HALAMAN TAMU / LOGIN & REGISTER) ================= -->
-        <main class="w-full min-h-screen flex items-center justify-center p-0 md:p-6">
-            <div class="w-full">
-                @yield('content')
-            </div>
-        </main>
-    @endauth
+    <!-- ================= SCRIPT OTOMATIS HANDLE NOTIFIKASI AJAX & HIGHLIGHT ================= -->
+    <script>
+        function handleNotificationClick(event, notificationId, targetUrl) {
+            if (event) event.preventDefault();
+
+            // Segera simpan di localStorage agar langsung hilang dari tampilan lonceng
+            try {
+                let dismissed = JSON.parse(localStorage.getItem('officecare_dismissed_notifs') || '[]');
+                if (!dismissed.includes(notificationId)) {
+                    dismissed.push(notificationId);
+                    localStorage.setItem('officecare_dismissed_notifs', JSON.stringify(dismissed));
+                }
+            } catch(e) {}
+
+            // Kirim request ke backend untuk menandai telah dibaca di database
+            fetch(`/notifications/${notificationId}/read`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .catch(error => {
+                console.error('Status notifikasi gagal diperbarui via AJAX:', error);
+            })
+            .finally(() => {
+                window.location.href = targetUrl;
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            const highlightParams = ['highlight_log', 'highlight_laporan', 'highlight_pengadaan', 'highlight_pengumuman', 'highlight_komentar'];
+            
+            highlightParams.forEach(param => {
+                const targetId = urlParams.get(param);
+                if (targetId) {
+                    let el = document.getElementById(targetId) || 
+                             document.getElementById('laporan-' + targetId) || 
+                             document.getElementById('log-' + targetId) || 
+                             document.getElementById('pr-' + targetId) || 
+                             document.getElementById('p-' + targetId) || 
+                             document.getElementById('k-' + targetId);
+                    
+                    if (el) {
+                        el.classList.add('bg-amber-100', 'transition-all', 'duration-500', 'ring-2', 'ring-amber-400');
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        setTimeout(() => {
+                            el.classList.remove('bg-amber-100', 'ring-2', 'ring-amber-400');
+                            el.classList.add('duration-1000');
+                        }, 3000);
+                    }
+                }
+            });
+        });
+    </script>
 
 </body>
 </html>
