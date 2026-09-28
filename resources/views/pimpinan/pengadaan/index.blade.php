@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6" x-data="{ showModal: false, modalData: {} }">
+<div class="space-y-6" x-data="{ showModal: false, modalData: {}, approvalModal: false, approvalAction: '', approvalUrl: '', catatanPimpinan: '' }">
     
     <!-- Header Banner Khusus Pimpinan -->
     <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-indigo-700/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -10,7 +10,7 @@
                 Panel Pimpinan • Approval System
             </span>
             <h2 class="text-xl font-bold text-white tracking-wide">Persetujuan Pengadaan Barang</h2>
-            <p class="text-xs text-indigo-100/80 mt-1">Tinjau dan berikan keputusan persetujuan untuk permohonan fasilitas/barang baru dari karyawan.</p>
+            <p class="text-xs text-indigo-100/80 mt-1">Tinjau dan berikan keputusan persetujuan beserta catatan untuk permohonan fasilitas/barang dari karyawan.</p>
         </div>
         <span class="bg-white/15 backdrop-blur-md text-indigo-200 font-medium px-3.5 py-1.5 rounded-full text-xs border border-white/10 shrink-0 shadow-sm">
             Pimpinan / Management
@@ -67,7 +67,7 @@
                         <th class="p-3.5">Estimasi Harga</th>
                         <th class="p-3.5 text-center">Referensi</th>
                         <th class="p-3.5">Status</th>
-                        <th class="p-3.5">Tanggal Pengajuan</th>
+                        <th class="p-3.5">Catatan Pimpinan</th>
                         <th class="p-3.5 text-center">Aksi Keputusan</th>
                     </tr>
                 </thead>
@@ -80,6 +80,7 @@
                             $emailPemohon = $item->pemohon->email ?? '-';
                             $status = strtolower($item->status_approval ?? $item->status ?? 'pending');
                             $idPengadaan = $item->id_pengadaan ?? $item->id;
+                            $catatan = $item->catatan_pimpinan ?? '-';
                             
                             $badge = [
                                 'pending'   => 'bg-amber-100 text-amber-700 border-amber-200',
@@ -123,7 +124,12 @@
                                     {{ ucfirst($status) }}
                                 </span>
                             </td>
-                            <td class="p-3.5 text-slate-400 text-[11px] whitespace-nowrap">{{ $item->created_at ? $item->created_at->format('d M Y, H:i') : '-' }}</td>
+                            
+                            <!-- Kolom Catatan Pimpinan -->
+                            <td class="p-3.5 text-slate-600 max-w-[180px] truncate" title="{{ $catatan }}">
+                                {{ $catatan }}
+                            </td>
+
                             <td class="p-3.5 text-center relative whitespace-nowrap">
                                 
                                 <!-- DROPDOWN MENU TITIK TIGA (Alpine.js) -->
@@ -156,6 +162,7 @@
                                                     link: '{{ $item->link_referensi }}',
                                                     alasan: '{{ addslashes($alasanBarang) }}',
                                                     status: '{{ ucfirst($status) }}',
+                                                    catatan: '{{ addslashes($catatan) }}',
                                                     tanggal: '{{ $item->created_at ? $item->created_at->format('d/m/Y H:i') : '-' }}'
                                                 }; showModal = true;"
                                                 class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-1.5 cursor-pointer">
@@ -168,29 +175,25 @@
                                         </div>
 
                                         @if($status === 'pending')
-                                            <!-- Option 2 & 3: Keputusan Setujui / Tolak -->
+                                            <!-- Option 2 & 3: Keputusan Setujui / Tolak dengan Modal Catatan -->
                                             <div class="py-0.5">
-                                                <form action="{{ route('pimpinan.pengadaan.setujui', $idPengadaan) }}" method="POST">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <button type="submit" onclick="return confirm('Setujui permohonan pengadaan barang ini?')" class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-emerald-600 hover:bg-emerald-50 transition flex items-center gap-1.5 cursor-pointer">
-                                                        <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                        Setujui
-                                                    </button>
-                                                </form>
+                                                <button type="button" 
+                                                    @click="open = false; approvalAction = 'setujui'; approvalUrl = '{{ route('pimpinan.pengadaan.setujui', $idPengadaan) }}'; catatanPimpinan = ''; approvalModal = true;"
+                                                    class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-emerald-600 hover:bg-emerald-50 transition flex items-center gap-1.5 cursor-pointer">
+                                                    <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                    Setujui
+                                                </button>
 
-                                                <form action="{{ route('pimpinan.pengadaan.tolak', $idPengadaan) }}" method="POST">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <button type="submit" onclick="return confirm('Tolak permohonan pengadaan barang ini?')" class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-rose-600 hover:bg-rose-50 transition flex items-center gap-1.5 cursor-pointer">
-                                                        <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                        Tolak
-                                                    </button>
-                                                </form>
+                                                <button type="button" 
+                                                    @click="open = false; approvalAction = 'tolak'; approvalUrl = '{{ route('pimpinan.pengadaan.tolak', $idPengadaan) }}'; catatanPimpinan = ''; approvalModal = true;"
+                                                    class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-rose-600 hover:bg-rose-50 transition flex items-center gap-1.5 cursor-pointer">
+                                                    <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                    Tolak
+                                                </button>
                                             </div>
                                         @endif
                                     </div>
@@ -214,6 +217,52 @@
             {{ $daftarPengadaan->links() }}
         </div>
 
+    </div>
+
+    <!-- ================= MODAL INPUT CATATAN DISPOSISI ================= -->
+    <div x-show="approvalModal" style="display: none;" 
+         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+        
+        <div @click.outside="approvalModal = false" 
+             class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4 relative">
+            
+            <div class="flex justify-between items-start border-b border-slate-100 pb-3">
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md"
+                          :class="approvalAction === 'setujui' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'"
+                          x-text="approvalAction === 'setujui' ? 'Konfirmasi Persetujuan' : 'Konfirmasi Penolakan'"></span>
+                    <h3 class="text-base font-bold text-slate-800 mt-1">Berikan Catatan / Alasan Pimpinan</h3>
+                </div>
+                <button @click="approvalModal = false" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form :action="approvalUrl" method="POST" class="space-y-4">
+                @csrf
+                @method('PUT')
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Catatan / Instruksi (Opsional)</label>
+                    <textarea name="catatan_pimpinan" x-model="catatanPimpinan" rows="3" 
+                              placeholder="Tuliskan catatan, instruksi budget, atau alasan keputusan di sini..."
+                              class="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 transition"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                    <button type="button" @click="approvalModal = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 text-white rounded-xl text-xs font-semibold transition shadow-md cursor-pointer"
+                            :class="approvalAction === 'setujui' ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20' : 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'"
+                            x-text="approvalAction === 'setujui' ? 'Ya, Setujui' : 'Ya, Tolak'">
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Modal Pop-up Detail Pengadaan Khusus Pimpinan (Alpine.js) -->
@@ -255,6 +304,11 @@
                 <div>
                     <span class="text-slate-400 block font-medium">Status Pengajuan</span>
                     <span class="font-bold text-slate-700" x-text="modalData.status"></span>
+                </div>
+
+                <div class="col-span-2" x-show="modalData.catatan && modalData.catatan !== '-'">
+                    <span class="text-slate-400 block font-medium mb-1">Catatan Pimpinan</span>
+                    <p class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 text-indigo-900 font-medium leading-relaxed" x-text="modalData.catatan"></p>
                 </div>
 
                 <div class="col-span-2">
