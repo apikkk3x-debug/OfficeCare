@@ -35,8 +35,9 @@
         </svg>
         <span id="global-alert-msg"></span>
     </div>
+
     <!-- GRID LAYOUT UTAMA -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         
         <!-- KOLOM KIRI: BIODATA -->
         <div class="lg:col-span-2 bg-slate-100/80 p-6 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between">
@@ -54,11 +55,12 @@
                         @method('PUT')
                         <input type="hidden" name="nama" value="{{ $user->nama }}">
                         <input type="hidden" name="email" value="{{ $user->email }}">
-                        <input type="file" name="foto" id="fotoInputDirect" accept="image/*" onchange="document.getElementById('formFotoAuto').submit();">
+                        <input type="file" name="foto" id="fotoInputDirect" accept="image/*" onchange="handlePhotoUpload(event)">
                     </form>
 
                     <div class="relative shrink-0">
-                        <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-indigo-100 border-2 border-indigo-200 shadow-sm flex items-center justify-center">
+                        <!-- Avatar Container dengan Loading Overlay -->
+                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-indigo-100 border-2 border-indigo-200 shadow-sm flex items-center justify-center">
                             @if(!empty($user->foto))
                                 <img src="{{ asset('storage/' . $user->foto) }}" alt="Foto Profil" class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition" onclick="openPhotoModal('{{ asset('storage/' . $user->foto) }}')" title="Klik untuk memperbesar foto">
                             @else
@@ -66,6 +68,15 @@
                                     {{ strtoupper(substr($user->nama ?? $user->name, 0, 1)) }}
                                 </span>
                             @endif
+
+                            <!-- Indikator Loading Upload (Hidden Default) -->
+                            <div id="uploadLoader" class="absolute inset-0 bg-slate-900/70 backdrop-blur-xs flex flex-col items-center justify-center text-white hidden">
+                                <svg class="animate-spin h-6 w-6 text-white mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span class="text-[9px] font-medium tracking-wide">Memproses...</span>
+                            </div>
                         </div>
 
                         <button type="button" onclick="document.getElementById('fotoInputDirect').click();" class="absolute bottom-0 right-0 bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-full shadow-md transition transform hover:scale-105 cursor-pointer" title="Ganti Foto Profil">
@@ -133,8 +144,8 @@
             </div>
         </div>
 
-        <!-- KOLOM KANAN: KARTU KEAMANAN -->
-        <div class="space-y-6">
+        <!-- KOLOM KANAN: KARTU KEAMANAN & HAK AKSES -->
+        <div class="flex flex-col justify-between h-full gap-6">
             <div class="bg-slate-100/80 p-6 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between">
                 <div>
                     <div class="flex items-center gap-2 mb-3">
@@ -159,7 +170,7 @@
                 </button>
             </div>
 
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 flex-1 flex flex-col justify-center">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Hak Akses Sistem</h3>
                 <div class="space-y-2 text-xs text-slate-700">
                     @if(Auth::user()->role == 'admin' || Auth::user()->role == 'Admin')
@@ -194,7 +205,6 @@
 <div id="passwordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-all duration-300">
     <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full p-6 sm:p-7 transform scale-95 transition-all duration-300 relative" id="modalCard">
         
-        <!-- Header Modal -->
         <div class="flex items-center justify-between pb-4 border-b border-slate-100">
             <div class="flex items-center gap-3">
                 <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100">
@@ -212,10 +222,8 @@
 
         <div id="modalAlert" class="hidden mt-4 p-3.5 rounded-xl text-xs font-semibold"></div>
 
-        <!-- MODE 1: UBAH SANDI NORMAL (AJAX DENGAN TOGGLE MATA) -->
+        <!-- MODE 1: UBAH SANDI NORMAL -->
         <form id="modeDirect" onsubmit="submitDirectPassword(event)" class="mt-5 space-y-4">
-            
-            <!-- Kata Sandi Saat Ini -->
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Kata Sandi Saat Ini</label>
                 <div class="relative">
@@ -229,7 +237,6 @@
                 </div>
             </div>
 
-            <!-- Kata Sandi Baru -->
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Kata Sandi Baru</label>
                 <div class="relative">
@@ -243,7 +250,6 @@
                 </div>
             </div>
 
-            <!-- Konfirmasi Kata Sandi Baru -->
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Konfirmasi Kata Sandi Baru</label>
                 <div class="relative">
@@ -289,14 +295,13 @@
             </div>
         </div>
 
-        <!-- MODE 2 (STEP B): INPUT OTP & PASSWORD BARU DENGAN TOGGLE MATA -->
+        <!-- MODE 2 (STEP B): INPUT OTP & PASSWORD BARU -->
         <form id="modeOtpStep2" onsubmit="submitNewPassword(event)" class="hidden mt-5 space-y-4">
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Kode OTP Gmail (6 Digit)</label>
                 <input type="text" id="inputOtp" maxlength="6" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-center text-lg tracking-widest font-mono text-indigo-700 font-bold focus:outline-none focus:border-indigo-600 focus:bg-white" placeholder="123456" required>
             </div>
 
-            <!-- Kata Sandi Baru (OTP) -->
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Kata Sandi Baru</label>
                 <div class="relative">
@@ -310,7 +315,6 @@
                 </div>
             </div>
 
-            <!-- Konfirmasi Kata Sandi Baru (OTP) -->
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Konfirmasi Kata Sandi Baru</label>
                 <div class="relative">
@@ -335,9 +339,7 @@
 <!-- ================= MODAL POP-UP FOTO PROFIL ================= -->
 <div id="photoModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-all duration-300" onclick="closePhotoModal()">
     <div class="relative max-w-lg w-full bg-white rounded-3xl p-3 shadow-2xl transform scale-95 transition-all duration-300" onclick="event.stopPropagation()">
-        <button type="button" onclick="closePhotoModal()" class="absolute -top-3 -right-3 bg-slate-900 hover:bg-slate-800 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition z-10 cursor-pointer">
-            ✕
-        </button>
+        <button type="button" onclick="closePhotoModal()" class="absolute -top-3 -right-3 bg-slate-900 hover:bg-slate-800 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition z-10 cursor-pointer">✕</button>
         <div class="overflow-hidden rounded-2xl bg-slate-100 flex items-center justify-center max-h-[80vh]">
             <img id="modalImageSrc" src="" alt="Foto Profil Besar" class="w-full h-auto object-contain max-h-[75vh]">
         </div>
@@ -358,7 +360,18 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-// Fungsi Toggle Lihat/Sembunyikan Sandi (Ikon Mata)
+// Fungsi Handler Auto-Submit Foto dengan Loading Spinner
+function handlePhotoUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const loader = document.getElementById('uploadLoader');
+        if (loader) {
+            loader.classList.remove('hidden');
+        }
+        document.getElementById('formFotoAuto').submit();
+    }
+}
+
 function togglePassword(fieldId, iconId) {
     const passwordField = document.getElementById(fieldId);
     const eyeIcon = document.getElementById(iconId);
@@ -377,7 +390,6 @@ function togglePassword(fieldId, iconId) {
     }
 }
 
-// Fungsi Pop-Up Foto Profil (Global)
 function openPhotoModal(imageUrl) {
     const modal = document.getElementById('photoModal');
     const modalImg = document.getElementById('modalImageSrc');
@@ -475,7 +487,6 @@ function showModalAlert(msg, isSuccess = true) {
     alert.innerText = msg;
 }
 
-// FUNGSI AJAX MODE UBAH PASSWORD BIASA (DIRECT)
 function submitDirectPassword(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSubmitDirect');
@@ -522,7 +533,6 @@ function submitDirectPassword(e) {
     });
 }
 
-// FUNGSI KIRIM OTP KE GMAIL ASLI AKUN MASING-MASING
 function triggerSendOtp() {
     const btn = document.getElementById('btnSendOtp');
     btn.disabled = true;
@@ -554,7 +564,6 @@ function triggerSendOtp() {
     });
 }
 
-// FUNGSI VERIFIKASI OTP & UPDATE PASSWORD BARU
 function submitNewPassword(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSubmitPassword');
