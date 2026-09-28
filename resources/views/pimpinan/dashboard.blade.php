@@ -16,17 +16,6 @@
             Role: Pimpinan / Manager
         </span>
     </div>
-
-    <!-- Alert Sukses -->
-    @if(session('success'))
-        <div id="success-alert" class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl text-xs font-medium transition-opacity duration-500 flex items-center gap-2.5 shadow-sm">
-            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
     <!-- Pengumuman / Info Eksekutif (Jika Ada) -->
     @foreach($pengumumans as $p)
     <div x-data="{ showAnnouncement: true }" 
