@@ -289,30 +289,6 @@ class AppServiceProvider extends ServiceProvider
                             ];
                         });
                     $allNotifications = $allNotifications->concat($pendingUsers);
-
-                    // E. Pengumuman Aktif untuk Admin
-                    if (class_exists(Pengumuman::class)) {
-                        $pengumumanAdmin = Pengumuman::where('is_active', true)
-                            ->whereIn('target_role', ['admin', 'semua'])
-                            ->latest()
-                            ->take(2)
-                            ->get()
-                            ->map(function ($p) {
-                                return [
-                                    'id'          => 'p-' . $p->id,
-                                    'type'        => 'pengumuman',
-                                    'title'       => 'Pengumuman: ' . $p->judul,
-                                    'desc'        => Str::limit($p->pesan, 50),
-                                    'time'        => $p->created_at,
-                                    'time_ago'    => $p->created_at ? $p->created_at->diffForHumans() : 'Baru saja',
-                                    'url'         => route('admin.pengumuman.index'),
-                                    'badge'       => 'Info',
-                                    'badge_style' => 'bg-amber-100 text-amber-700 border-amber-200',
-                                ];
-                            });
-                        $allNotifications = $allNotifications->concat($pengumumanAdmin);
-                    }
-
                 // ==========================================
                 // 3. NOTIFIKASI KHUSUS PIMPINAN
                 // ==========================================
