@@ -130,18 +130,6 @@
                             <!-- Form Aksi Ubah Status & Tombol Kelola -->
                             <td class="p-3.5 text-center align-middle whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-2">
-                                    <!-- Select Status -->
-                                    <form action="{{ route('admin.laporan.updateStatus', $item->id_laporan) }}" method="POST" class="inline-block">
-                                        @csrf
-                                        @method('PUT')
-                                        <select name="status_laporan" onchange="this.form.submit()" class="text-[11px] bg-white border border-slate-300 rounded-xl px-2 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer font-medium text-slate-700 shadow-sm">
-                                            <option value="Menunggu" {{ $status == 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                            <option value="Diproses" {{ $status == 'Diproses' ? 'selected' : '' }}>Diproses</option>
-                                            <option value="Selesai" {{ $status == 'Selesai' ? 'selected' : '' }}>Selesai</option>
-                                            <option value="Ditolak" {{ $status == 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
-                                        </select>
-                                    </form>
-
                                     <!-- Tombol Menuju Halaman Detail & Ruang Diskusi Terpadu -->
                                     <a href="{{ route('admin.laporan.show', $idLaporan) }}" 
                                         title="Buka Detail & Ruang Diskusi"
