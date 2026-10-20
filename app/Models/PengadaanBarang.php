@@ -13,6 +13,7 @@ class PengadaanBarang extends Model
     protected $primaryKey = 'id_pengadaan';
 
     protected $fillable = [
+        'id_laporan',
         'id_user',
         'id_pimpinan',
         'nama_barang_baru',
@@ -22,8 +23,14 @@ class PengadaanBarang extends Model
         'status_approval',
         'tanggal_approval',
         'link_referensi',
-        "catatan_pimpinan",
+        'catatan_pimpinan',
     ];
+
+    // Relasi: Pengajuan pengadaan berasal dari 1 Laporan Kerusakan
+    public function laporan()
+    {
+        return $this->belongsTo(LaporanKerusakan::class, 'id_laporan', 'id_laporan');
+    }
 
     // Relasi: Pengajuan ini dibuat oleh 1 User (Pemohon)
     public function pemohon()

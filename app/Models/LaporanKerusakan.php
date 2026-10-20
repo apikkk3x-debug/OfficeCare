@@ -54,4 +54,10 @@ class LaporanKerusakan extends Model
     {
         return $this->hasMany(LaporanKomentar::class, 'id_laporan', 'id_laporan');
     }
-}
+
+        // Relasi: 1 Laporan bisa dialihkan ke 1 Pengadaan Barang
+    public function pengadaan()
+    {
+        return $this->hasOne(PengadaanBarang::class, 'id_laporan', 'id_laporan');
+    }
+    }
