@@ -20,6 +20,7 @@
             <span>Tambah Aset Baru</span>
         </button>
     </div>
+
     <!-- Tabel Daftar Aset Kantor (Card Pembungkus Utama) -->
     <div class="bg-slate-100/80 p-6 rounded-2xl shadow-sm border border-slate-200/90 space-y-4">
         
@@ -80,9 +81,27 @@
                             <!-- Kode & Kondisi -->
                             <td class="p-3.5">
                                 <span class="font-mono text-indigo-600 font-semibold block">{{ $item->kode_barang ?? '-' }}</span>
-                                <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block mt-0.5 {{ $item->kondisi == 'Baik' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200' }}">
-                                    {{ $item->kondisi }}
-                                </span>
+                                @if($item->kondisi == 'Baik')
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block mt-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        Baik
+                                    </span>
+                                @elseif($item->kondisi == 'Perbaikan Ringan')
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block mt-0.5 bg-amber-50 text-amber-700 border border-amber-200">
+                                        Perbaikan Ringan
+                                    </span>
+                                @elseif($item->kondisi == 'Rusak')
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block mt-0.5 bg-rose-50 text-rose-700 border border-rose-200">
+                                        Rusak
+                                    </span>
+                                @elseif($item->kondisi == 'Diapkir')
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block mt-0.5 bg-slate-100 text-slate-600 border border-slate-300">
+                                        Diapkir
+                                    </span>
+                                @else
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full font-medium inline-block mt-0.5 bg-slate-50 text-slate-700 border border-slate-200">
+                                        {{ $item->kondisi }}
+                                    </span>
+                                @endif
                             </td>
 
                             <!-- Menu Aksi Titik Tiga -->
@@ -107,8 +126,8 @@
                                         
                                         <!-- Tombol Detail -->
                                         <button type="button" 
-                                            onclick="openDetailModal('{{ addslashes($item->nama_barang) }}', '{{ addslashes($item->kategori_barang ?? '-') }}', '{{ addslashes($item->lokasi ?? '-') }}', '{{ addslashes($item->kode_barang ?? '-') }}', '{{ addslashes($item->kondisi ?? '-') }}', '{{ $item->created_at ? $item->created_at->format('d/m/Y H:i') : '-' }}')" 
-                                            class="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition cursor-pointer">
+                                                onclick="openDetailModal('{{ addslashes($item->nama_barang) }}', '{{ addslashes($item->kategori_barang ?? '-') }}', '{{ addslashes($item->lokasi ?? '-') }}', '{{ addslashes($item->kode_barang ?? '-') }}', '{{ addslashes($item->kondisi ?? '-') }}', '{{ $item->created_at ? $item->created_at->format('d/m/Y H:i') : '-' }}')" 
+                                                class="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition cursor-pointer">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -305,10 +324,17 @@
 
         const kondisiEl = document.getElementById('detailKondisi');
         kondisiEl.innerText = kondisi;
+        
         if (kondisi === 'Baik') {
             kondisiEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 inline-block';
-        } else {
+        } else if (kondisi === 'Perbaikan Ringan') {
+            kondisiEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-50 text-amber-700 border border-amber-200 inline-block';
+        } else if (kondisi === 'Rusak') {
             kondisiEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-rose-50 text-rose-700 border border-rose-200 inline-block';
+        } else if (kondisi === 'Diapkir') {
+            kondisiEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-slate-100 text-slate-600 border border-slate-300 inline-block';
+        } else {
+            kondisiEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-slate-50 text-slate-700 border border-slate-200 inline-block';
         }
 
         toggleDetailModal(true);
