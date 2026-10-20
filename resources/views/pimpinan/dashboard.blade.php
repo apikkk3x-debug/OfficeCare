@@ -47,7 +47,7 @@
     <!-- 6 Kartu Statistik Eksekutif (Grid 3 Kolom - Seragam dengan Standar Admin) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         
-        <!-- Card 1: Persetujuan Pengadaan (Fokus Utama Keputusan Pimpinan) -->
+        <!-- Card 1: Persetujuan Pengadaan (Fokus Utama Keputusan Pimpinan) - BISA DIKLIK -->
         <a href="{{ route('pimpinan.pengadaan.index') }}" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-purple-400 hover:shadow-md group">
             <div>
                 <div class="flex justify-between items-start">
@@ -64,7 +64,7 @@
             </span>
         </a>
 
-        <!-- Card 2: Inventaris Aset (Memicu Modal Live Search) -->
+        <!-- Card 2: Inventaris Aset (Memicu Modal Live Search) - BISA DIKLIK -->
         <button @click="assetModalOpen = true" type="button" class="text-left bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-emerald-400 hover:shadow-md group cursor-pointer w-full">
             <div>
                 <div class="flex justify-between items-start">
@@ -81,58 +81,52 @@
             </span>
         </button>
 
-        <!-- Card 3: Operasional (Laporan Diproses) -->
-        <a href="{{ route('pimpinan.rekap', ['status' => 'Diproses']) }}" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-blue-400 hover:shadow-md group">
+        <!-- Card 3: Operasional (Laporan Diproses) - HANYA INFORMASI -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between">
             <div>
                 <div class="flex justify-between items-start">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Operasional Tim</span>
-                    <div class="p-2.5 bg-blue-50/60 text-blue-600 rounded-xl shadow-sm border border-blue-200/60 group-hover:bg-blue-600 group-hover:text-white transition">
+                    <div class="p-2.5 bg-blue-50/60 text-blue-600 rounded-xl shadow-sm border border-blue-200/60">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     </div>
                 </div>
                 <h4 class="text-3xl font-extrabold text-blue-600 mt-3">{{ $laporanDiproses ?? 0 }}</h4>
                 <p class="text-slate-500 text-xs mt-1">Laporan dalam pengerjaan teknisi</p>
             </div>
-            <span class="text-xs font-semibold text-blue-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                Pantau progres &rarr;
-            </span>
-        </a>
+            <span class="text-[11px] font-medium text-slate-400 mt-4">Pengerjaan oleh tim teknisi</span>
+        </div>
 
-        <!-- Card 4: Laporan Menunggu -->
-        <a href="{{ route('pimpinan.rekap', ['status' => 'Menunggu']) }}" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-amber-400 hover:shadow-md group">
+        <!-- Card 4: Laporan Menunggu - HANYA INFORMASI -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between">
             <div>
                 <div class="flex justify-between items-start">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-amber-600">Laporan Menunggu</span>
-                    <div class="p-2.5 bg-amber-50/60 text-amber-600 rounded-xl shadow-sm border border-amber-200/60 group-hover:bg-amber-500 group-hover:text-white transition">
+                    <div class="p-2.5 bg-amber-50/60 text-amber-600 rounded-xl shadow-sm border border-amber-200/60">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
                 </div>
                 <h4 class="text-3xl font-extrabold text-amber-600 mt-3">{{ $laporanMenunggu ?? 0 }}</h4>
                 <p class="text-slate-500 text-xs mt-1">Laporan baru belum ditangani</p>
             </div>
-            <span class="text-xs font-semibold text-amber-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                Tinjau laporan &rarr;
-            </span>
-        </a>
+            <span class="text-[11px] font-medium text-slate-400 mt-4">Menunggu disposisi admin</span>
+        </div>
 
-        <!-- Card 5: Performa Selesai -->
-        <a href="{{ route('pimpinan.rekap', ['status' => 'Selesai']) }}" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-indigo-400 hover:shadow-md group">
+        <!-- Card 5: Performa Selesai - HANYA INFORMASI -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between">
             <div>
                 <div class="flex justify-between items-start">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600">Performa Selesai</span>
-                    <div class="p-2.5 bg-indigo-50/60 text-indigo-600 rounded-xl shadow-sm border border-indigo-200/60 group-hover:bg-indigo-600 group-hover:text-white transition">
+                    <div class="p-2.5 bg-indigo-50/60 text-indigo-600 rounded-xl shadow-sm border border-indigo-200/60">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
                 </div>
                 <h4 class="text-3xl font-extrabold text-indigo-600 mt-3">{{ $laporanSelesai ?? 0 }}</h4>
                 <p class="text-slate-500 text-xs mt-1">Perbaikan fasilitas tuntas</p>
             </div>
-            <span class="text-xs font-semibold text-indigo-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                Lihat riwayat &rarr;
-            </span>
-        </a>
+            <span class="text-[11px] font-medium text-slate-400 mt-4">Perbaikan fasilitas tuntas</span>
+        </div>
 
-        <!-- Card 6: Rekap & Cetak Laporan PDF -->
+        <!-- Card 6: Rekap & Cetak Laporan PDF - BISA DIKLIK -->
         <a href="{{ route('pimpinan.rekap') }}" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-slate-400 hover:shadow-md group">
             <div>
                 <div class="flex justify-between items-start">
