@@ -10,20 +10,30 @@ class CheckRole
 {
     public function handle(Request $request, Closure $next, string $role)
     {
-        // Jika belum login atau role-nya tidak cocok
-        if (!Auth::check() || Auth::user()->role !== $role) {
-            $userRole = Auth::user()->role ?? null;
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
 
-            // Kembalikan ke dashboard sesuai hak akses aslinya
+        $userRole = Auth::user()->role;
+
+        if ($userRole !== $role) {
             if ($userRole === 'admin') {
-                return redirect()->route('admin.dashboard')->with('error', 'Akses ditolak!');
-            } elseif ($userRole === 'karyawan') {
-                return redirect()->route('karyawan.dashboard')->with('error', 'Akses ditolak!');
-            } elseif ($userRole === 'pimpinan') {
-                return redirect()->route('pimpinan.dashboard')->with('error', 'Akses ditolak!');
+                return redirect()->route('admin.dashboard')
+                    ->with('error', 'Akses ditolak!');
             }
 
-            return redirect()->route('login');
+            if ($userRole === 'karyawan') {
+                return redirect()->route('karyawan.dashboard')
+                    ->with('error', 'Akses ditolak!');
+            }
+
+            if ($userRole === 'pimpinan') {
+                return redirect()->route('pimpinan.dashboard')
+                    ->with('error', 'Akses ditolak!');
+            }
+
+            return redirect()->route('login')
+                ->with('error', 'Akses ditolak!');
         }
 
         return $next($request);
