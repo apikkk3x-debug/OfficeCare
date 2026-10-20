@@ -153,42 +153,66 @@
 
     </div> <!-- TUTUP GRID 2 KOLOM ATAS -->
 
-    <!-- ================= BAGIAN BAWAH: TIMELINE / LOG RIWAYAT ================= -->
-    <div class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 space-y-3 w-full">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2">Log Riwayat & Status Laporan</h3>
-        
-        <div class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-            <div class="relative border-l-2 border-slate-300 ml-3 space-y-4 pt-1 pb-1 overflow-visible">
-                @forelse($laporan->logs ?? [] as $log)
-                    <div class="relative pl-6 pr-2 py-1 group transition-all duration-300">
-                        
-                        <!-- Titik/Dot Timeline -->
-                        <div class="absolute -left-[9px] top-3 h-4 w-4 rounded-full bg-indigo-600 border-2 border-white shadow-sm z-10 shrink-0"></div>
-                        
-                        <!-- Card Log -->
-                        <div id="log-{{ $log->id_log ?? $log->id }}" 
-                            class="bg-white border border-slate-200/80 p-3 rounded-xl shadow-sm transition-all duration-500
-                                    target:bg-indigo-100 target:border-indigo-400 target:ring-2 target:ring-indigo-500/50 target:shadow-md target:scale-[1.02]">
-                            <p class="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                                Status: 
-                                <span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold text-[10px]">
-                                    {{ $log->status_sekarang }}
-                                </span>
-                            </p>
-                            <p class="text-[11px] text-slate-600 mt-1 leading-relaxed break-words break-all">
-                                {{ $log->created_at->format('d M Y, H:i') }} • {{ $log->keterangan }}
-                            </p>
-                        </div>
+   <!-- ================= BAGIAN BAWAH: TIMELINE / LOG RIWAYAT ================= -->
+
+<div class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 space-y-3 w-full">
+
+    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2">Log Riwayat & Status Laporan</h3>
+
+    <div class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+
+        <div class="relative border-l-2 border-slate-300 ml-3 space-y-4 pt-1 pb-1 overflow-visible">
+
+            @forelse($laporan->logs ?? [] as $log)
+
+                @php
+                    $keteranganLog = $log->keterangan;
+                    if (str_ends_with(trim($keteranganLog), 'oleh')) {
+                        $keteranganLog .= ' ' . ($laporan->user->name ?? $laporan->user->nama ?? 'Karyawan');
+                    }
+
+                    if ($log->status_sekarang === 'Menunggu') {
+                        $dotColor = 'bg-amber-500';
+                        $statusColor = 'bg-amber-100 text-amber-800';
+                    } elseif ($log->status_sekarang === 'Diproses') {
+                        $dotColor = 'bg-blue-600';
+                        $statusColor = 'bg-blue-100 text-blue-800';
+                    } elseif ($log->status_sekarang === 'Selesai') {
+                        $dotColor = 'bg-emerald-600';
+                        $statusColor = 'bg-emerald-100 text-emerald-800';
+                    } elseif ($log->status_sekarang === 'Ditolak' || $log->status_sekarang === 'Dibatalkan') {
+                        $dotColor = 'bg-slate-500';
+                        $statusColor = 'bg-slate-200 text-slate-700';
+                    } else {
+                        $dotColor = 'bg-slate-500';
+                        $statusColor = 'bg-slate-100 text-slate-700';
+                    }
+                @endphp
+                <div class="relative pl-6 pr-2 py-1 group transition-all duration-300">
+                    <div class="absolute -left-[9px] top-3 h-4 w-4 rounded-full {{ $dotColor }} border-2 border-white shadow-sm z-10 shrink-0"></div>
+                    <!-- Card Log -->
+                    <div id="log-{{ $log->id_log ?? $log->id }}" 
+                        class="bg-white border border-slate-200/80 p-3 rounded-xl shadow-sm transition-all duration-500
+                                target:bg-indigo-100 target:border-indigo-400 target:ring-2 target:ring-indigo-500/50 target:shadow-md target:scale-[1.02]">
+                        <p class="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                            Status: 
+                            <span class="{{ $statusColor }} px-2 py-0.5 rounded font-bold text-[10px]">
+                                {{ $log->status_sekarang }}
+                            </span>
+                        </p>
+                        <p class="text-[11px] text-slate-600 mt-1 leading-relaxed break-words break-all">
+                            {{ $log->created_at->format('d M Y, H:i') }} • {{ $keteranganLog }}
+                        </p>
                     </div>
-                @empty
-                    <div class="pl-6 py-4">
-                        <p class="text-[11px] text-slate-500 italic">Belum ada catatan riwayat perubahan untuk laporan ini.</p>
-                    </div>
-                @endforelse
-            </div>
+                </div>
+            @empty
+                <div class="pl-6 py-4">
+                    <p class="text-[11px] text-slate-500 italic">Belum ada catatan riwayat perubahan untuk laporan ini.</p>
+                </div>
+            @endforelse
         </div>
     </div>
-
+</div>
 </div>
 
 <!-- ================= MODAL MODAL PREVIEW FOTO ================= -->

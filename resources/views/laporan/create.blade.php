@@ -45,7 +45,7 @@
                     
                     <!-- Input untuk mencari -->
                     <div class="p-2 border-b border-slate-200 bg-slate-50">
-                        <input type="text" x-model="search" placeholder="Ketik untuk mencari nama barang atau lokasi..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-600 text-xs">
+                        <input type="text" x-model="search" placeholder="Ketik kode barang, nama, atau lokasi..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-600 text-xs">
                     </div>
 
                     <!-- Daftar Pilihan -->
@@ -55,10 +55,10 @@
                         </div>
 
                         @foreach($barangFasilitas as $barang)
-                            <div x-show="('{{ strtolower($barang->nama_barang . ' ' . $barang->lokasi) }}').includes(search.toLowerCase())"
-                                 @click="selectedId = '{{ $barang->id_barang }}'; selectedText = '{{ $barang->nama_barang }} — (Lokasi: {{ $barang->lokasi }})'; open = false;"
+                            <div x-show="('{{ strtolower($barang->kode_barang . ' ' . $barang->nama_barang . ' ' . $barang->lokasi) }}').includes(search.toLowerCase())"
+                                 @click="selectedId = '{{ $barang->id_barang }}'; selectedText = '[{{ $barang->kode_barang }}] {{ $barang->nama_barang }} — (Lokasi: {{ $barang->lokasi }})'; open = false;"
                                  class="px-3 py-2 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer text-slate-700 border-b border-slate-100 last:border-none">
-                                {{ $barang->nama_barang }} — (Lokasi: {{ $barang->lokasi }})
+                                <span class="font-mono text-indigo-600 font-semibold">[{{ $barang->kode_barang }}]</span> {{ $barang->nama_barang }} — (Lokasi: {{ $barang->lokasi }})
                             </div>
                         @endforeach
                     </div>
