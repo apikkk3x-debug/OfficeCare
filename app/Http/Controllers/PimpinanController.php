@@ -73,30 +73,53 @@ class PimpinanController extends Controller
             'catatan_pimpinan' => 'nullable|string|max:1000',
         ]);
 
+        $status = strtolower($pengadaan->status_approval ?? '');
+
+        if ($status !== 'pending') {
+            return redirect()->back()->with(
+                'error',
+                'Pengajuan ini sudah diproses dan tidak dapat disetujui kembali.'
+            );
+        }
+
         $pengadaan->update([
-            'status_approval'  => 'disetujui',
-            'id_pimpinan'      => Auth::id() ?? Auth::user()->id_user,
+            'status_approval'  => 'Disetujui',
+            'id_pimpinan'      => Auth::id(),
             'tanggal_approval' => now(),
-            'catatan_pimpinan' => $request->catatan_pimpinan, // Simpan catatan pimpinan
+            'catatan_pimpinan' => $request->catatan_pimpinan,
         ]);
 
-        return redirect()->back()->with('success', 'Pengajuan barang telah disetujui!');
+        return redirect()->back()->with(
+            'success',
+            'Pengajuan barang telah disetujui!'
+        );
     }
-
-    public function tolakPengadaan(Request $request, PengadaanBarang $pengadaan)
+        public function tolakPengadaan(Request $request, PengadaanBarang $pengadaan)
     {
         $request->validate([
             'catatan_pimpinan' => 'nullable|string|max:1000',
         ]);
 
+        $status = strtolower($pengadaan->status_approval ?? '');
+
+        if ($status !== 'pending') {
+            return redirect()->back()->with(
+                'error',
+                'Pengajuan ini sudah diproses dan tidak dapat ditolak kembali.'
+            );
+        }
+
         $pengadaan->update([
-            'status_approval'  => 'ditolak',
-            'id_pimpinan'      => Auth::id() ?? Auth::user()->id_user,
+            'status_approval'  => 'Ditolak',
+            'id_pimpinan'      => Auth::id(),
             'tanggal_approval' => now(),
-            'catatan_pimpinan' => $request->catatan_pimpinan, // Simpan alasan penolakan
+            'catatan_pimpinan' => $request->catatan_pimpinan,
         ]);
 
-        return redirect()->back()->with('success', 'Pengajuan barang telah ditolak!');
+        return redirect()->back()->with(
+            'success',
+            'Pengajuan barang telah ditolak!'
+        );
     }
 
     public function rekapLaporan(Request $request)

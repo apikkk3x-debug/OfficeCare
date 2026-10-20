@@ -8,6 +8,7 @@ use App\Models\LaporanKerusakan;
 use App\Models\LaporanLog;
 use App\Models\Pengumuman;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class KaryawanController extends Controller
@@ -22,17 +23,32 @@ class KaryawanController extends Controller
         $userId = $user->id_user ?? $user->id ?? Auth::id();
 
         if ($id && $userId) {
-            \Illuminate\Support\Facades\DB::table('notification_reads')->updateOrInsert(
-                [
-                    'id_user'         => $userId,
-                    'notification_id' => (string) $id,
-                ],
-                [
-                    'read_at'    => now(),
-                    'updated_at' => now(),
-                    'created_at' => now(),
-                ]
-            );
+            $notificationId = (string) $id;
+            $now = now();
+
+            $exists = \Illuminate\Support\Facades\DB::table('notification_reads')
+                ->where('id_user', $userId)
+                ->where('notification_id', $notificationId)
+                ->exists();
+
+            if ($exists) {
+                \Illuminate\Support\Facades\DB::table('notification_reads')
+                    ->where('id_user', $userId)
+                    ->where('notification_id', $notificationId)
+                    ->update([
+                        'read_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+            } else {
+                \Illuminate\Support\Facades\DB::table('notification_reads')
+                    ->insert([
+                        'id_user' => $userId,
+                        'notification_id' => $notificationId,
+                        'read_at' => $now,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+            }
 
             return response()->json([
                 'success' => true,
@@ -57,18 +73,35 @@ class KaryawanController extends Controller
 
         if ($userId && is_array($ids) && count($ids) > 0) {
             foreach ($ids as $notifId) {
-                if (!empty($notifId)) {
-                    \Illuminate\Support\Facades\DB::table('notification_reads')->updateOrInsert(
-                        [
-                            'id_user'         => $userId,
-                            'notification_id' => (string) $notifId,
-                        ],
-                        [
-                            'read_at'    => now(),
-                            'updated_at' => now(),
-                            'created_at' => now(),
-                        ]
-                    );
+                if (empty($notifId)) {
+                    continue;
+                }
+
+                $notificationId = (string) $notifId;
+                $now = now();
+
+                $exists = \Illuminate\Support\Facades\DB::table('notification_reads')
+                    ->where('id_user', $userId)
+                    ->where('notification_id', $notificationId)
+                    ->exists();
+
+                if ($exists) {
+                    \Illuminate\Support\Facades\DB::table('notification_reads')
+                        ->where('id_user', $userId)
+                        ->where('notification_id', $notificationId)
+                        ->update([
+                            'read_at' => $now,
+                            'updated_at' => $now,
+                        ]);
+                } else {
+                    \Illuminate\Support\Facades\DB::table('notification_reads')
+                        ->insert([
+                            'id_user' => $userId,
+                            'notification_id' => $notificationId,
+                            'read_at' => $now,
+                            'created_at' => $now,
+                            'updated_at' => $now,
+                        ]);
                 }
             }
 
@@ -97,7 +130,8 @@ class KaryawanController extends Controller
                     ->latest()
                     ->get();
 
-        $barangFasilitas = BarangFasilitas::all();
+        // Hanya ambil barang fasilitas yang tidak diapkir
+        $barangFasilitas = BarangFasilitas::where('kondisi', '!=', 'Diapkir')->get();
 
         // Hitung data untuk card ringkasan dashboard
         $totalPengaduan = $laporanku->count();
@@ -139,10 +173,11 @@ class KaryawanController extends Controller
             'pengumumans'
         ));
     }
+
     // ==========================================
     // HALAMAN RIWAYAT LAPORAN (INDEX)
     // ==========================================
-        public function index(Request $request)
+    public function index(Request $request)
     {
         $query = LaporanKerusakan::with(['barang'])
                     ->where('id_user', Auth::id());
@@ -179,141 +214,204 @@ class KaryawanController extends Controller
 
     public function createLaporan()
     {
-        $barangFasilitas = BarangFasilitas::all();
+        // Hanya ambil barang yang tidak diapkir
+        $barangFasilitas = BarangFasilitas::where('kondisi', '!=', 'Diapkir')->get();
         return view('laporan.create', compact('barangFasilitas'));
     }
 
     public function storeLaporan(Request $request)
     {
-        // 1. Tambahkan validasi prioritas di sini
         $request->validate([
             'id_barang' => 'required',
-            'prioritas' => 'required|in:Rendah,Sedang,Darurat', // <-- BARIS BARU
+            'prioritas' => 'required|in:Rendah,Sedang,Darurat',
             'deskripsi_kerusakan' => 'required|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $idBarang = $request->id_barang;
-
-        // Jika karyawan memilih menambah barang baru
-        if ($idBarang === 'tambah_baru') {
-            $request->validate([
-                'nama_barang_baru' => 'required|string|max:255',
-                'lokasi_baru' => 'required|string|max:255',
-            ]);
-
-            // Simpan data barang baru ke tabel barang_fasilitas
-            $barangBaru = BarangFasilitas::create([
-                'kode_barang' => 'BRG-' . rand(1000, 9999),
-                'nama_barang' => $request->nama_barang_baru,
-                'kategori_barang' => 'Umum',
-                'lokasi' => $request->lokasi_baru,
-                'kondisi' => 'Rusak',
-            ]);
-
-            $idBarang = $barangBaru->id_barang ?? $barangBaru->id;
-        }
-
-        // Proses upload foto
         $pathFoto = null;
-        if ($request->hasFile('foto')) {
-            $pathFoto = $request->file('foto')->store('laporan_kerusakan', 'public');
+
+        if ($idBarang !== 'tambah_baru') {
+            $request->validate([
+                'id_barang' => 'exists:barang_fasilitas,id_barang',
+            ]);
         }
 
-        // Simpan laporan kerusakan
-        $laporan = LaporanKerusakan::create([
-            'id_user' => Auth::id(),
-            'id_barang' => $idBarang,
-            'prioritas' => $request->prioritas, // <-- BARIS BARU (Simpan ke database)
-            'deskripsi_kerusakan' => $request->deskripsi_kerusakan,
-            'foto_kondisi' => $pathFoto,
-            'status_laporan' => 'Menunggu',
-        ]);
+        try {
+            if ($request->hasFile('foto')) {
+                $pathFoto = $request->file('foto')->store(
+                    'laporan_kerusakan',
+                    'public'
+                );
+            }
 
-        // Catat log otomatis saat laporan pertama kali dibuat
-        $user = Auth::user();
-        $namaUser = $user ? $user->name : 'Karyawan';
-        
-       LaporanLog::create([
-    'id_laporan' => $laporan->getKey(), // Mengambil primary key yang valid
-    'status_sekarang' => 'Menunggu',
-    'keterangan' => 'Laporan pengaduan "' . $request->deskripsi_kerusakan . '" (Prioritas: ' . $request->prioritas . ') berhasil dikirim oleh ' . $namaUser,
-    ]);
+            DB::transaction(function () use ($request, &$idBarang, $pathFoto) {
+                if ($idBarang === 'tambah_baru') {
+                    $request->validate([
+                        'nama_barang_baru' => 'required|string|max:255',
+                        'lokasi_baru' => 'required|string|max:255',
+                    ]);
 
-        return redirect()->route('laporan.index')->with('success', 'Laporan dan data barang baru berhasil dikirim!');
+                    do {
+                        $kodeBarang = 'BRG-' . date('Ymd') . '-' . rand(100, 999);
+                    } while (BarangFasilitas::where('kode_barang', $kodeBarang)->exists());
+
+                    $barangBaru = BarangFasilitas::create([
+                        'kode_barang' => $kodeBarang,
+                        'nama_barang' => $request->nama_barang_baru,
+                        'kategori_barang' => 'Umum',
+                        'lokasi' => $request->lokasi_baru,
+                        'kondisi' => 'Rusak',
+                    ]);
+
+                    $idBarang = $barangBaru->id_barang ?? $barangBaru->id;
+                }
+
+                $laporan = LaporanKerusakan::create([
+                    'id_user' => Auth::id(),
+                    'id_barang' => $idBarang,
+                    'prioritas' => $request->prioritas,
+                    'deskripsi_kerusakan' => $request->deskripsi_kerusakan,
+                    'foto_kondisi' => $pathFoto,
+                    'status_laporan' => 'Menunggu',
+                ]);
+
+                $user = Auth::user();
+                $namaUser = $user->nama ?? $user->name ?? 'Karyawan';
+
+                LaporanLog::create([
+                    'id_laporan' => $laporan->id_laporan ?? $laporan->getKey(),
+                    'status_sebelumnya' => null,
+                    'status_sekarang' => 'Menunggu',
+                    'keterangan' => 'Laporan pengaduan "' .
+                        $request->deskripsi_kerusakan .
+                        '" (Prioritas: ' .
+                        $request->prioritas .
+                        ') berhasil dikirim oleh ' .
+                        $namaUser,
+                ]);
+            });
+
+            return redirect()->route('laporan.index')->with(
+                'success',
+                'Laporan dan data barang baru berhasil dikirim!'
+            );
+        } catch (\Throwable $e) {
+            if (
+                $pathFoto &&
+                Storage::disk('public')->exists($pathFoto)
+            ) {
+                Storage::disk('public')->delete($pathFoto);
+            }
+
+            return redirect()->back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'Laporan gagal disimpan. Silakan coba lagi.'
+                );
+        }
     }
+
     // ==========================================
     // FITUR: EDIT, UPDATE, & BATALKAN LAPORAN
     // ==========================================
 
     public function editLaporan($id)
     {
-        $laporan = LaporanKerusakan::findOrFail($id);
+        $laporan = LaporanKerusakan::where('id_laporan', $id)
+            ->where('id_user', Auth::id())
+            ->firstOrFail();
 
-        // Keamanan: Hanya boleh diedit jika status masih 'Menunggu'
         if ($laporan->status_laporan != 'Menunggu') {
-            return redirect()->route('laporan.index')->with('error', 'Laporan yang sudah diproses tidak dapat diubah.');
+            return redirect()->route('laporan.index')->with(
+                'error',
+                'Laporan yang sudah diproses tidak dapat diubah.'
+            );
         }
 
-        $barangFasilitas = BarangFasilitas::all();
+        // Hanya ambil barang yang tidak diapkir
+        $barangFasilitas = BarangFasilitas::where('kondisi', '!=', 'Diapkir')->get();
+
         return view('laporan.edit', compact('laporan', 'barangFasilitas'));
     }
 
     public function updateLaporan(Request $request, $id)
     {
-        $laporan = LaporanKerusakan::findOrFail($id);
+        $laporan = LaporanKerusakan::where('id_laporan', $id)
+            ->where('id_user', Auth::id())
+            ->firstOrFail();
 
         if ($laporan->status_laporan != 'Menunggu') {
-            return redirect()->route('laporan.index')->with('error', 'Laporan yang sudah diproses tidak dapat diubah.');
+            return redirect()->route('laporan.index')->with(
+                'error',
+                'Laporan yang sudah diproses tidak dapat diubah.'
+            );
         }
 
-        // 1. Validasi input form edit disesuaikan dengan data yang dikirim form (id_barang)
         $request->validate([
-            'id_barang' => 'required',
+            'id_barang' => 'required|exists:barang_fasilitas,id_barang',
             'deskripsi_kerusakan' => 'required|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // 2. Proses upload foto baru jika ada
         $pathFoto = $laporan->foto_kondisi;
+
         if ($request->hasFile('foto')) {
-            if ($laporan->foto_kondisi && Storage::disk('public')->exists($laporan->foto_kondisi)) {
+            if (
+                $laporan->foto_kondisi &&
+                Storage::disk('public')->exists($laporan->foto_kondisi)
+            ) {
                 Storage::disk('public')->delete($laporan->foto_kondisi);
             }
-            $pathFoto = $request->file('foto')->store('laporan_kerusakan', 'public');
+
+            $pathFoto = $request->file('foto')->store(
+                'laporan_kerusakan',
+                'public'
+            );
         }
 
-        // 3. Update id_barang, deskripsi, dan foto pada laporan kerusakan
         $laporan->update([
             'id_barang' => $request->id_barang,
             'deskripsi_kerusakan' => $request->deskripsi_kerusakan,
             'foto_kondisi' => $pathFoto,
         ]);
 
-        // Catat log update
         $user = Auth::user();
         $namaUser = $user ? ($user->nama ?? $user->name) : 'Karyawan';
 
         LaporanLog::create([
-            'id_laporan'      => $laporan->id_laporan ?? $laporan->id,
-            'status_sekarang' => $laporan->status_laporan,
-            'keterangan'      => 'Diperbarui oleh ' . $namaUser . ' • "' . $request->deskripsi_kerusakan . '"',
+            'id_laporan'        => $laporan->id_laporan ?? $laporan->id,
+            'status_sebelumnya' => $laporan->status_laporan,
+            'status_sekarang'   => $laporan->status_laporan,
+            'keterangan'        => 'Diperbarui oleh ' . $namaUser . ' • "' . $request->deskripsi_kerusakan . '"',
         ]);
 
-        return redirect()->route('laporan.index')->with('success', 'Laporan berhasil diperbarui.');
+        return redirect()->route('laporan.index')->with(
+            'success',
+            'Laporan berhasil diperbarui.'
+        );
     } 
 
     public function destroyLaporan($id)
     {
-        $laporan = LaporanKerusakan::findOrFail($id);
+        $laporan = LaporanKerusakan::where('id_laporan', $id)
+            ->where('id_user', Auth::id())
+            ->firstOrFail();
 
         if ($laporan->status_laporan != 'Menunggu') {
-            return redirect()->route('laporan.index')->with('error', 'Laporan tidak dapat dibatalkan karena sudah diproses oleh Admin.');
+            return redirect()->route('laporan.index')->with(
+                'error',
+                'Laporan tidak dapat dibatalkan karena sudah diproses oleh Admin.'
+            );
         }
 
         $laporan->delete();
 
-        return redirect()->route('laporan.index')->with('success', 'Laporan berhasil dibatalkan dan sudah dihapus dari sistem.');
+        return redirect()->route('laporan.index')->with(
+            'success',
+            'Laporan berhasil dibatalkan dan sudah dihapus dari sistem.'
+        );
     }
 
     // ==========================================
@@ -321,7 +419,14 @@ class KaryawanController extends Controller
     // ==========================================
     public function showLaporan($id)
     {
-        $laporan = LaporanKerusakan::with(['barang', 'logs', 'komentars.user'])->findOrFail($id);
+        $laporan = LaporanKerusakan::with([
+            'barang',
+            'logs',
+            'komentars.user'
+        ])
+            ->where('id_laporan', $id)
+            ->where('id_user', Auth::id())
+            ->firstOrFail();
 
         return view('laporan.show', compact('laporan'));
     }

@@ -18,7 +18,7 @@ class PengadaanController extends Controller
 {
     // Validasi data input dari karyawan
     $request->validate([
-        'nama_barang_baru' => 'required|string|max:255',
+        'nama_barang_baru' => 'required|string|max:150',
         'jumlah'           => 'required|integer|min:1',
         'estimasi_harga'   => 'required|numeric|min:0', // Sekarang wajib & harus angka positif
         'link_referensi'   => 'nullable|url|max:500',   // Opsional tapi harus berformat URL jika diisi
@@ -76,7 +76,7 @@ public function edit($id)
 public function update(Request $request, $id)
 {
     $request->validate([
-        'nama_barang_baru' => 'required|string|max:255',
+        'nama_barang_baru' => 'required|string|max:150',
         'jumlah'           => 'required|integer|min:1',
         'estimasi_harga'   => 'required|numeric|min:0',
         'link_referensi'   => 'nullable|url|max:500',

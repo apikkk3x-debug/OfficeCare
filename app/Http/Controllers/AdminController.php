@@ -10,6 +10,7 @@ use App\Models\LaporanLog;
 use App\Models\User;
 use App\Models\PengadaanBarang;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
@@ -18,7 +19,7 @@ class AdminController extends Controller
     public function dashboard()
     {
         $laporanMasuk = LaporanKerusakan::with(['user', 'barang'])->latest()->get();
-        $barangFasilitas = BarangFasilitas::all();
+        $barangFasilitas = BarangFasilitas::where('kondisi', '!=', 'Diapkir')->get();
 
         // Data Statistik Laporan & Prioritas
         $totalLaporan = LaporanKerusakan::count();
@@ -63,9 +64,6 @@ class AdminController extends Controller
     /**
      * Menampilkan Halaman Data Laporan Pengaduan
      */
-    /**
-     * Menampilkan Halaman Data Laporan Pengaduan
-     */
     public function laporan(Request $request)
     {
         $perPage = $request->get('per_page', 10);
@@ -85,23 +83,38 @@ class AdminController extends Controller
     }
 
     /**
-     * Memperbarui Status Laporan (Menunggu, Diproses, Selesai, Ditolak)
+     * Memperbarui Status Laporan (Menunggu, Diproses, Dialihkan ke Pengadaan, Selesai, Ditolak)
      */
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status_laporan' => 'required|in:Menunggu,Diproses,Selesai,Ditolak',
-            'keterangan'     => 'nullable|string|max:500',
+            'status_laporan'   => 'required|in:Menunggu,Diproses,Dialihkan ke Pengadaan,Selesai,Ditolak',
+            'keterangan'       => 'nullable|string|max:500',
+            'nama_barang_baru' => 'nullable|string|max:255',
+            'jumlah'           => 'nullable|integer|min:1',
+            'harga_satuan'     => 'nullable|numeric|min:0',
+            'link_referensi'   => 'nullable|url|max:255',
         ]);
 
-        $laporan = LaporanKerusakan::findOrFail($id);
-        
+        $laporan = LaporanKerusakan::with('barang')->findOrFail($id);
+
         $statusLama = $laporan->status_laporan;
         $statusBaru = $request->status_laporan;
 
-        $laporan->update([
-            'status_laporan' => $statusBaru,
-        ]);
+        $transisiDiizinkan = [
+            'Menunggu'               => ['Diproses', 'Ditolak', 'Dialihkan ke Pengadaan'],
+            'Diproses'               => ['Selesai', 'Dialihkan ke Pengadaan'],
+            'Dialihkan ke Pengadaan' => ['Selesai', 'Ditolak'],
+            'Selesai'                => [],
+            'Ditolak'                => [],
+        ];
+
+        if (!in_array($statusBaru, $transisiDiizinkan[$statusLama] ?? [], true)) {
+            return redirect()->back()->with(
+                'error',
+                "Status tidak dapat diubah dari '{$statusLama}' menjadi '{$statusBaru}'."
+            );
+        }
 
         $user = Auth::user();
         $namaAdmin = $user->nama ?? $user->name ?? $user->username ?? 'Admin';
@@ -110,14 +123,55 @@ class AdminController extends Controller
             ? $request->keterangan . " (Oleh Admin: {$namaAdmin})"
             : "Status diperbarui menjadi '{$statusBaru}' oleh Admin ({$namaAdmin})";
 
-        LaporanLog::create([
-            'id_laporan'        => $laporan->id_laporan ?? $laporan->id,
-            'status_sebelumnya' => $statusLama,
-            'status_sekarang'   => $statusBaru,
-            'keterangan'        => $keteranganLog,
-        ]);
+        DB::transaction(function () use (
+            $laporan,
+            $statusLama,
+            $statusBaru,
+            $keteranganLog,
+            $request
+        ) {
+            $laporan->update([
+                'status_laporan' => $statusBaru,
+            ]);
 
-        return redirect()->back()->with('success', 'Status laporan berhasil diperbarui!');
+            LaporanLog::create([
+                'id_laporan'        => $laporan->id_laporan ?? $laporan->id,
+                'status_sebelumnya' => $statusLama,
+                'status_sekarang'   => $statusBaru,
+                'keterangan'        => $keteranganLog,
+            ]);
+
+            // Otomatis buat draf pengadaan jika status dialihkan
+            if ($statusBaru === 'Dialihkan ke Pengadaan') {
+                $idLaporan = $laporan->id_laporan ?? $laporan->id;
+                $pengadaanEksis = PengadaanBarang::where('id_laporan', $idLaporan)->exists();
+
+                if (!$pengadaanEksis) {
+                    $jumlah = (int) $request->input('jumlah', 1);
+                    $hargaSatuan = (float) $request->input('harga_satuan', 0);
+                    $totalEstimasi = $jumlah * $hargaSatuan;
+
+                    $namaBarang = $request->input('nama_barang_baru')
+                        ?: ($laporan->barang->nama_barang ?? 'Barang Pengganti');
+
+                    PengadaanBarang::create([
+                        'id_laporan'       => $idLaporan,
+                        'id_user'          => Auth::id(),
+                        'nama_barang_baru' => $namaBarang,
+                        'jumlah'           => $jumlah,
+                        'alasan_pengadaan' => "Pengalihan dari Laporan Kerusakan #" . $idLaporan . ": " . $laporan->deskripsi_kerusakan,
+                        'estimasi_harga'   => $totalEstimasi,
+                        'link_referensi'   => $request->input('link_referensi'),
+                        'status_approval'  => 'Pending',
+                    ]);
+                }
+            }
+        });
+
+        return redirect()->back()->with(
+            'success',
+            'Status laporan berhasil diperbarui!'
+        );
     }
 
     /**
@@ -143,7 +197,7 @@ class AdminController extends Controller
     /**
      * Menyimpan Pengguna Baru dari Modal Admin
      */
-        public function storeUser(Request $request)
+    public function storeUser(Request $request)
     {
         $request->validate([
             'nama'     => 'required|string|max:255',
@@ -227,12 +281,12 @@ class AdminController extends Controller
         return view('admin.barang.index', compact('barangs'));
     }
     
-        public function indexPengadaan(Request $request)
+    public function indexPengadaan(Request $request)
     {
         $perPage = $request->get('per_page', 10);
         
-        // Pastikan menggunakan paginate dan withQueryString
-        $daftarPengadaan = PengadaanBarang::with('pemohon')
+        // Tambahkan 'laporan.barang' pada eager loading
+        $daftarPengadaan = PengadaanBarang::with(['pemohon', 'laporan.barang'])
                             ->latest()
                             ->paginate($perPage)
                             ->withQueryString();
@@ -313,29 +367,84 @@ class AdminController extends Controller
     }
 
     public function selesaikanPengadaan(Request $request, $id)
-    {
-        $request->validate([
-            'kategori' => 'required|string|max:255',
-            'lokasi'   => 'required|string|max:255',
-            'kondisi'  => 'nullable|string|max:255',
-        ]);
+{
+    $request->validate([
+        'kategori' => 'required|string|max:255',
+        'lokasi'   => 'required|string|max:255',
+        'kondisi'  => 'required|in:Baik,Perbaikan Ringan,Rusak,Diapkir',
+    ]);
 
-        $pengadaan = PengadaanBarang::findOrFail($id);
+    $pengadaan = PengadaanBarang::findOrFail($id);
 
+    $status = strtolower($pengadaan->status_approval ?? '');
+
+    if ($status !== 'disetujui') {
+        return redirect()->back()->with(
+            'error',
+            'Pengadaan hanya dapat difinalisasi setelah disetujui oleh Pimpinan.'
+        );
+    }
+
+    DB::transaction(function () use ($pengadaan, $request) {
+        // 1. Perbarui status pengadaan menjadi selesai
         $pengadaan->update([
             'status_approval' => 'selesai',
         ]);
 
-        BarangFasilitas::create([
-            'kode_barang'     => 'BRG-' . date('Ymd') . '-' . rand(100, 999),
-            'nama_barang'     => $pengadaan->nama_barang_baru ?? $pengadaan->nama_barang,
-            'kategori_barang' => $request->kategori,
-            'lokasi'          => $request->lokasi,
-            'kondisi'         => $request->kondisi ?? 'Baik',
-        ]);
+        // 2. Ambil jumlah unit yang dibeli (default 1 jika kosong)
+        $jumlahUnit = max(1, (int) ($pengadaan->jumlah ?? 1));
 
-        return redirect()->back()->with('success', 'Barang pengadaan telah dibeli dan resmi terdaftar di Master Aset kantor!');
-    }
+        // 3. Looping untuk membuat setiap unit barang dengan kode unik tersendiri
+        for ($i = 0; $i < $jumlahUnit; $i++) {
+            do {
+                $kodeBarang = 'BRG-' . date('Ymd') . '-' . rand(1000, 9999);
+            } while (BarangFasilitas::where('kode_barang', $kodeBarang)->exists());
+
+            BarangFasilitas::create([
+                'kode_barang'     => $kodeBarang,
+                'nama_barang'     => $pengadaan->nama_barang_baru ?? $pengadaan->nama_barang,
+                'kategori_barang' => $request->kategori,
+                'lokasi'          => $request->lokasi,
+                'kondisi'         => $request->kondisi,
+            ]);
+        }
+
+        // 4. Otomatis selesaikan Laporan Kerusakan asal & update barang lama
+        if (!empty($pengadaan->id_laporan)) {
+            $laporan = LaporanKerusakan::with('barang')->find($pengadaan->id_laporan);
+
+            if ($laporan) {
+                // A. Ubah kondisi barang lama menjadi 'Diapkir' agar terarsip
+                if ($laporan->barang) {
+                    $laporan->barang->update([
+                        'kondisi' => 'Diapkir',
+                    ]);
+                }
+
+                // B. Selesaikan status Laporan Kerusakan
+                if ($laporan->status_laporan !== 'Selesai') {
+                    $statusAwal = $laporan->status_laporan;
+
+                    $laporan->update([
+                        'status_laporan' => 'Selesai',
+                    ]);
+
+                    LaporanLog::create([
+                        'id_laporan'        => $laporan->id_laporan ?? $laporan->id,
+                        'status_sebelumnya' => $statusAwal,
+                        'status_sekarang'   => 'Selesai',
+                        'keterangan'        => "Laporan diselesaikan secara otomatis. Barang lama telah diapkir dan {$jumlahUnit} unit barang baru pengganti telah didaftarkan ke Master Aset.",
+                    ]);
+                }
+            }
+        }
+    });
+
+    return redirect()->back()->with(
+        'success',
+        'Barang pengadaan telah dibeli dan resmi terdaftar di Master Aset kantor! Barang lama berhasil diapkir.'
+    );
+}
 
     public function editUser($id)
     {
