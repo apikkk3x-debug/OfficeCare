@@ -37,7 +37,7 @@
                 <p class="text-slate-500 text-xs leading-relaxed mb-5">Laporkan kendala perangkat kerja seperti AC, pencahayaan, proyektor, atau fasilitas kantor lainnya.</p>
             </div>
                 
-            <a href="{{ route('laporan.create') }}" class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-xs transition shadow-xs w-full">
+            <a href="{{ route('laporan.create') }}" class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-xs transition shadow-xs w-full cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
@@ -52,7 +52,7 @@
                 <p class="text-slate-500 text-xs leading-relaxed mb-5">Ajukan proposal permohonan pengadaan barang atau fasilitas penunjang kerja baru kepada manajemen.</p>
             </div>
                 
-            <a href="{{ route('karyawan.pengadaan.create') }}" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2.5 rounded-xl text-xs transition shadow-xs w-full">
+            <a href="{{ route('karyawan.pengadaan.create') }}" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2.5 rounded-xl text-xs transition shadow-xs w-full cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -157,7 +157,7 @@
             <div>
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
                     <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-slate-800"></span>
+                        <span class="w-2 h-2 rounded-full bg-slate-600"></span>
                         Pengumuman & Informasi Kantor
                     </h3>
                     <span class="text-[11px] text-slate-400 font-medium">Internal</span>
@@ -166,7 +166,6 @@
                 <!-- Kontainer Daftar Pengumuman -->
                 <div id="pengumuman-list" class="space-y-3">
                     @forelse($pengumumans ?? [] as $p)
-                        <!-- Diberikan ID unik agar target notifikasi dapat langsung mengarah ke sini -->
                         <div id="pengumuman-item-{{ $p->id }}" class="pengumuman-item bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/25 rounded-xl p-3.5 shadow-xs flex items-center justify-between text-slate-800 transition-all duration-500" data-id="{{ $p->id }}">
                             
                             <div class="flex items-start gap-3">
@@ -216,7 +215,7 @@
             <div>
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
                     <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+                        <span class="w-2 h-2 rounded-full bg-slate-600"></span>
                         Log Riwayat & Status Laporan
                     </h3>
                     <span class="text-[11px] text-slate-400 font-medium">Aktivitas Sistem</span>
@@ -226,10 +225,11 @@
                     @forelse($logs ?? [] as $activity)
                         @php
                             $statusClasses = [
-                                'Menunggu' => 'bg-rose-50 text-rose-700 border-rose-200',
-                                'Diproses' => 'bg-amber-50 text-amber-700 border-amber-200',
-                                'Selesai'  => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                'Ditolak'  => 'bg-slate-100 text-slate-700 border-slate-200',
+                                'Menunggu'               => 'bg-rose-50 text-rose-700 border-rose-200',
+                                'Diproses'               => 'bg-amber-50 text-amber-700 border-amber-200',
+                                'Dialihkan ke Pengadaan' => 'bg-purple-50 text-purple-700 border-purple-200',
+                                'Selesai'                => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                'Ditolak'                => 'bg-slate-100 text-slate-700 border-slate-200',
                             ];
 
                             $badgeClass = $statusClasses[$activity->status_sekarang] ?? 'bg-indigo-50 text-indigo-700 border-indigo-100';

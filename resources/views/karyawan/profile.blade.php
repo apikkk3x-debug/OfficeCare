@@ -90,10 +90,6 @@
                     <div>
                         <h4 class="text-base font-bold text-slate-800">{{ $user->nama ?? $user->name }}</h4>
                         <p class="text-xs text-slate-500 mb-2.5">{{ $user->email }}</p>
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full border border-emerald-200">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                            {{ ucfirst($user->role ?? 'Karyawan') }} Aktif
-                        </span>
                     </div>
                 </div>
 
@@ -162,7 +158,7 @@
                     </p>
                 </div>
 
-                <button type="button" onclick="openPasswordModal()" class="w-full px-4 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-xs cursor-pointer">
+                <button type="button" onclick="openPasswordModal()" class="w-full px-4 py-2.5 bg-white border border-slate-300 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-xs cursor-pointer">
                     <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
                     </svg>
