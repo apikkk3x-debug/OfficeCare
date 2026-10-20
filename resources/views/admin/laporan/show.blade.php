@@ -39,7 +39,7 @@
 
                     <div>
                         <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Pelapor</span>
-                        <p class="text-slate-800 text-xs font-bold">{{ $laporan->user->name ?? 'Karyawan' }}</p>
+                        <p class="text-slate-800 text-xs font-bold">{{ $laporan->user->name ?? $laporan->user->nama ?? 'Karyawan' }}</p>
                         <p class="text-[11px] text-slate-400">{{ $laporan->user->email ?? '-' }}</p>
                     </div>
 
@@ -49,7 +49,8 @@
                             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold inline-block
                                 @if($laporan->status_laporan == 'Menunggu') bg-amber-50 text-amber-700 border border-amber-200
                                 @elseif($laporan->status_laporan == 'Diproses') bg-indigo-50 text-indigo-700 border border-indigo-200
-                                @elseif($laporan->status_laporan == 'Dibatalkan' || $laporan->status_laporan == 'Ditolak') bg-slate-200 text-slate-600 border border-slate-300 line-through
+                                @elseif($laporan->status_laporan == 'Dialihkan ke Pengadaan') bg-purple-50 text-purple-700 border border-purple-200
+                                @elseif($laporan->status_laporan == 'Ditolak') bg-rose-50 text-rose-700 border border-rose-200
                                 @else bg-emerald-50 text-emerald-700 border border-emerald-200 @endif">
                                 {{ $laporan->status_laporan }}
                             </span>
@@ -93,7 +94,7 @@
                 </div>
             </div>
 
-            <!-- Aksi Cepat Admin (Dipindah kembali ke kiri agar tinggi kolom seimbang) -->
+            <!-- Aksi Cepat Admin -->
             <div class="bg-indigo-50/70 border border-indigo-200/80 p-4 rounded-xl space-y-3 shadow-sm">
                 <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
                     <span>⚡ Aksi Cepat Admin</span>
@@ -106,25 +107,100 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Status Laporan</label>
-                            <select name="status_laporan" class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium text-slate-700 shadow-sm cursor-pointer">
-                                <option value="Menunggu" {{ $laporan->status_laporan == 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                <option value="Diproses" {{ $laporan->status_laporan == 'Diproses' ? 'selected' : '' }}>Diproses</option>
-                                <option value="Selesai" {{ $laporan->status_laporan == 'Selesai' ? 'selected' : '' }}>Selesai</option>
-                                <option value="Ditolak" {{ $laporan->status_laporan == 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
+                            <select name="status_laporan" id="statusLaporanSelect" onchange="toggleEstimasiHarga(this.value)"
+                                class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium text-slate-700 shadow-sm cursor-pointer">
+
+                                @if($laporan->status_laporan === 'Menunggu')
+                                    <option value="Menunggu" selected>Menunggu (Saat Ini)</option>
+                                    <option value="Diproses">Diproses</option>
+                                    <option value="Dialihkan ke Pengadaan">Dialihkan ke Pengadaan</option>
+                                    <option value="Ditolak">Ditolak</option>
+
+                                @elseif($laporan->status_laporan === 'Diproses')
+                                    <option value="Diproses" selected>Diproses (Saat Ini)</option>
+                                    <option value="Selesai">Selesai</option>
+                                    <option value="Dialihkan ke Pengadaan">Dialihkan ke Pengadaan</option>
+
+                                @elseif($laporan->status_laporan === 'Dialihkan ke Pengadaan')
+                                    <option value="Dialihkan ke Pengadaan" selected>Dialihkan ke Pengadaan (Saat Ini)</option>
+                                    <option value="Selesai">Selesai</option>
+                                    <option value="Ditolak">Ditolak</option>
+
+                                @elseif($laporan->status_laporan === 'Selesai')
+                                    <option value="Selesai" selected>Selesai</option>
+
+                                @elseif($laporan->status_laporan === 'Ditolak')
+                                    <option value="Ditolak" selected>Ditolak</option>
+                                @endif
+
                             </select>
                         </div>
                         
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Keterangan / Catatan Log</label>
-                            <input type="text" name="keterangan" placeholder="Contoh: Petugas menuju lokasi..." class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-700 shadow-sm">
+                            <input type="text" name="keterangan" placeholder="Contoh: Barang dialihkan ke pengadaan..." class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-700 shadow-sm">
                         </div>
                     </div>
 
-                    <div class="flex justify-end">
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-xl text-xs transition shadow-md shadow-indigo-600/20 cursor-pointer">
-                            Simpan Pembaruan 🚀
-                        </button>
+                    <!-- Area Input Detail Pengadaan (Muncul Otomatis Saat 'Dialihkan ke Pengadaan' Dipilih) -->
+                    <div id="areaDetailPengadaan" class="hidden space-y-3 p-3.5 bg-purple-50/80 border border-purple-200 rounded-xl mt-3">
+                        <span class="block text-[11px] font-bold uppercase tracking-wider text-purple-900">
+                            📦 Detail Pengajuan Pengadaan Barang
+                        </span>
+
+                        <!-- Input Nama Barang Pengganti -->
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-purple-700 mb-1">Nama Barang Pengganti</label>
+                            <input type="text" name="nama_barang_baru" value="{{ $laporan->barang->nama_barang ?? '' }}" 
+                                placeholder="Contoh: Kursi Kerja Ergonomis" 
+                                class="w-full text-xs bg-white border border-purple-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none text-slate-700 shadow-sm font-medium">
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <!-- Input Jumlah Unit -->
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-purple-700 mb-1">Jumlah Unit</label>
+                                <input type="number" id="inputJumlah" name="jumlah" value="1" min="1" oninput="hitungTotalEstimasi()" 
+                                    class="w-full text-xs bg-white border border-purple-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none text-slate-700 shadow-sm">
+                            </div>
+
+                            <!-- Input Harga per Unit -->
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-purple-700 mb-1">Harga Satuan (Rp)</label>
+                                <input type="number" id="inputHargaSatuan" name="harga_satuan" min="0" placeholder="0" oninput="hitungTotalEstimasi()" 
+                                    class="w-full text-xs bg-white border border-purple-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none text-slate-700 shadow-sm">
+                            </div>
+
+                            <!-- Total Estimasi (Hitung Otomatis) -->
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-purple-700 mb-1">Total Estimasi (Rp)</label>
+                                <input type="text" id="displayTotalEstimasi" readonly value="Rp 0" 
+                                    class="w-full text-xs bg-purple-100 border border-purple-300 rounded-xl px-3 py-2 font-bold text-purple-900 shadow-sm cursor-not-allowed">
+                            </div>
+                        </div>
+
+                        <!-- Input Link Referensi / Toko -->
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-purple-700 mb-1">Link Referensi / Toko (Opsional)</label>
+                            <input type="url" name="link_referensi" placeholder="https://tokopedia.com/contoh-item..." 
+                                class="w-full text-xs bg-white border border-purple-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none text-slate-700 shadow-sm">
+                        </div>
                     </div>
+
+                    @if(!in_array($laporan->status_laporan, ['Selesai', 'Ditolak']))
+                        <div class="flex justify-end">
+                            <button type="submit"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-xl text-xs transition shadow-md shadow-indigo-600/20 cursor-pointer">
+                                Simpan Pembaruan
+                            </button>
+                        </div>
+                    @else
+                        <div class="flex justify-end">
+                            <span class="text-[11px] font-medium text-slate-500 italic">
+                                Status laporan sudah final dan tidak dapat diubah.
+                            </span>
+                        </div>
+                    @endif
                 </form>
             </div>
         </div>
@@ -144,7 +220,7 @@
                     </div>
                 </div>
                 
-                <!-- Daftar Pesan dengan Tinggi yang Menyesuaikan Kiri -->
+                <!-- Daftar Pesan -->
                 <div class="space-y-3 max-h-[420px] min-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                     @forelse($laporan->komentars as $komentar)
                         @php
@@ -157,7 +233,7 @@
                                 
                                 <div class="flex justify-between items-center gap-4 text-[10px] {{ $isMe ? 'text-indigo-100' : 'text-slate-400' }}">
                                     <span class="font-bold">
-                                        {{ $isMe ? 'Anda (Admin)' : ($komentar->user->name ?? 'Pengguna') }}
+                                        {{ $isMe ? 'Anda (Admin)' : ($komentar->user->name ?? $komentar->user->nama ?? 'Pengguna') }}
                                         @if(!$isMe && ($komentar->user->role ?? false))
                                             <span class="opacity-80 font-normal">({{ ucfirst($komentar->user->role) }})</span>
                                         @endif
@@ -179,7 +255,7 @@
             </div>
 
             <!-- Form Kirim Pesan / Tanggapan -->
-            <form action="{{ route('laporan.komentar.store', $laporan->id_laporan) }}" method="POST" class="pt-3 flex gap-2 border-t border-slate-200/60 mt-4">
+            <form action="{{ route('admin.laporan.tanggapi', $laporan->id_laporan) }}" method="POST" class="pt-3 flex gap-2 border-t border-slate-200/60 mt-4">
                 @csrf
                 <input type="text" name="pesan" placeholder="Tulis tanggapan..." class="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm" required>
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-md shadow-indigo-600/20 shrink-0 cursor-pointer">
@@ -193,31 +269,54 @@
     <!-- ================= BAGIAN BAWAH: TIMELINE / LOG RIWAYAT ================= -->
     <div class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 space-y-3 w-full">
         <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2">Log Riwayat & Status Laporan</h3>
-        
+
         <div class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
             <div class="relative border-l-2 border-slate-300 ml-3 space-y-4 pt-1 pb-1 overflow-visible">
+
                 @forelse($laporan->logs ?? [] as $log)
                     @php
                         $keteranganLog = $log->keterangan;
                         if (str_ends_with(trim($keteranganLog), 'oleh')) {
                             $keteranganLog .= ' ' . ($laporan->user->name ?? $laporan->user->nama ?? 'Karyawan');
                         }
+
+                        if ($log->status_sekarang === 'Menunggu') {
+                            $dotColor = 'bg-amber-500';
+                            $statusColor = 'bg-amber-100 text-amber-800';
+                        } elseif ($log->status_sekarang === 'Diproses') {
+                            $dotColor = 'bg-indigo-600';
+                            $statusColor = 'bg-indigo-100 text-indigo-800';
+                        } elseif ($log->status_sekarang === 'Dialihkan ke Pengadaan') {
+                            $dotColor = 'bg-purple-600';
+                            $statusColor = 'bg-purple-100 text-purple-800';
+                        } elseif ($log->status_sekarang === 'Selesai') {
+                            $dotColor = 'bg-emerald-600';
+                            $statusColor = 'bg-emerald-100 text-emerald-800';
+                        } elseif ($log->status_sekarang === 'Ditolak') {
+                            $dotColor = 'bg-rose-600';
+                            $statusColor = 'bg-rose-100 text-rose-800';
+                        } else {
+                            $dotColor = 'bg-slate-500';
+                            $statusColor = 'bg-slate-100 text-slate-700';
+                        }
                     @endphp
 
                     <div class="relative pl-6 pr-2 py-1 group transition-all duration-300">
                         <!-- Titik/Dot Timeline -->
-                        <div class="absolute -left-[9px] top-3 h-4 w-4 rounded-full bg-indigo-600 border-2 border-white shadow-sm z-10 shrink-0"></div>
-                        
+                        <div class="absolute -left-[9px] top-3 h-4 w-4 rounded-full {{ $dotColor }} border-2 border-white shadow-sm z-10 shrink-0"></div>
+
                         <!-- Card Log -->
                         <div id="log-{{ $log->id_log ?? $log->id }}" 
                             class="bg-white border border-slate-200/80 p-3 rounded-xl shadow-sm transition-all duration-500
                                     target:bg-indigo-100 target:border-indigo-400 target:ring-2 target:ring-indigo-500/50 target:shadow-md target:scale-[1.02]">
+
                             <p class="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
                                 Status: 
-                                <span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold text-[10px]">
+                                <span class="{{ $statusColor }} px-2 py-0.5 rounded font-bold text-[10px]">
                                     {{ $log->status_sekarang }}
                                 </span>
                             </p>
+
                             <p class="text-[11px] text-slate-600 mt-1 leading-relaxed break-words break-all">
                                 {{ $log->created_at->format('d M Y, H:i') }} • {{ $keteranganLog }}
                             </p>
@@ -228,6 +327,7 @@
                         <p class="text-[11px] text-slate-500 italic">Belum ada catatan riwayat perubahan untuk laporan ini.</p>
                     </div>
                 @endforelse
+
             </div>
         </div>
     </div>
@@ -251,7 +351,7 @@
     </div>
 </div>
 
-<!-- Script Modal Foto & Deep Linking -->
+<!-- Script Modal Foto, Pengadaan, & Deep Linking -->
 <script>
 function bukaModalFoto(url) {
     const modal = document.getElementById('modalPreviewFoto');
@@ -268,7 +368,31 @@ function tutupModalFoto() {
     modal.classList.remove('flex');
 }
 
+function toggleEstimasiHarga(val) {
+    const field = document.getElementById('areaDetailPengadaan');
+    if (field) {
+        if (val === 'Dialihkan ke Pengadaan') {
+            field.classList.remove('hidden');
+        } else {
+            field.classList.add('hidden');
+        }
+    }
+}
+
+function hitungTotalEstimasi() {
+    const jumlah = parseFloat(document.getElementById('inputJumlah').value) || 0;
+    const hargaSatuan = parseFloat(document.getElementById('inputHargaSatuan').value) || 0;
+    const total = jumlah * hargaSatuan;
+
+    document.getElementById('displayTotalEstimasi').value = 'Rp ' + total.toLocaleString('id-ID');
+}
+
 document.addEventListener("DOMContentLoaded", function() {
+    const selectStatus = document.getElementById('statusLaporanSelect');
+    if (selectStatus) {
+        toggleEstimasiHarga(selectStatus.value);
+    }
+
     if (window.location.hash) {
         const targetCard = document.querySelector(window.location.hash);
         if (targetCard) {
