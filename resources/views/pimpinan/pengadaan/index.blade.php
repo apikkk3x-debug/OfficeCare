@@ -4,20 +4,20 @@
 <div class="space-y-6" x-data="{ showModal: false, modalData: {}, approvalModal: false, approvalAction: '', approvalUrl: '', catatanPimpinan: '' }">
     
     <!-- Header Banner Khusus Pimpinan -->
-    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-indigo-700/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-700/60 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <span class="inline-block px-2.5 py-0.5 bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-[10px] font-semibold tracking-wider uppercase rounded-md mb-1.5">
                 Panel Pimpinan • Approval System
             </span>
             <h2 class="text-xl font-bold text-white tracking-wide">Persetujuan Pengadaan Barang</h2>
-            <p class="text-xs text-indigo-100/80 mt-1">Tinjau dan berikan keputusan persetujuan beserta catatan untuk permohonan fasilitas/barang dari karyawan.</p>
+            <p class="text-xs text-indigo-100/80 mt-1">Tinjau dan berikan keputusan persetujuan beserta catatan untuk permohonan fasilitas/barang baru kantor.</p>
         </div>
-        <span class="bg-white/15 backdrop-blur-md text-indigo-200 font-medium px-3.5 py-1.5 rounded-full text-xs border border-white/10 shrink-0 shadow-sm">
+        <span class="bg-white/10 backdrop-blur-md text-indigo-200 font-medium px-3.5 py-1.5 rounded-xl text-xs border border-white/10 shrink-0 shadow-xs">
             Pimpinan / Management
         </span>
     </div>
 
-    <!-- Alert Sukses -->
+    <!-- Alert Sukses Notifikasi -->
     @if(session('success'))
         <div id="success-alert" class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl text-xs font-medium flex items-center gap-2.5 shadow-sm transition-opacity duration-500">
             <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,17 +36,56 @@
         </script>
     @endif
 
-    <!-- Tabel Daftar Pengajuan Seluruh Karyawan -->
-    <div class="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
+    <!-- Stat Cards Ringkasan Pengadaan Khusus Pimpinan -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Permohonan</p>
+                <h3 class="text-lg font-bold text-slate-800 mt-0.5">
+                    {{ method_exists($daftarPengadaan, 'total') ? $daftarPengadaan->total() : count($daftarPengadaan ?? []) }}
+                </h3>
+            </div>
+            <div class="p-2.5 bg-slate-100 text-slate-600 rounded-xl">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Butuh Approval</p>
+                <h3 class="text-lg font-bold text-amber-600 mt-0.5">
+                    {{ method_exists($daftarPengadaan, 'getCollection') ? $daftarPengadaan->getCollection()->whereIn('status_approval', ['pending', 'Pending', 'menunggu', 'Menunggu'])->count() : 0 }}
+                </h3>
+            </div>
+            <div class="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Telah Disetujui</p>
+                <h3 class="text-lg font-bold text-indigo-600 mt-0.5">
+                    {{ method_exists($daftarPengadaan, 'getCollection') ? $daftarPengadaan->getCollection()->whereIn('status_approval', ['disetujui', 'Disetujui', 'selesai', 'Selesai'])->count() : 0 }}
+                </h3>
+            </div>
+            <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabel Daftar Pengajuan (Card Pembungkus Utama) -->
+    <div class="bg-slate-100/80 p-6 rounded-2xl shadow-sm border border-slate-200/90 space-y-4">
         
         <!-- Baris Atas Tabel: Judul & Dropdown Tampilkan Data -->
-        <div class="flex justify-between items-center text-xs text-slate-700">
-            <h3 class="font-bold uppercase tracking-wider text-slate-700">DAFTAR PERMOHONAN MASUK</h3>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2 border-b border-slate-200/60">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Daftar Permohonan Masuk</h3>
             
-            <form method="GET" action="{{ route('pimpinan.pengadaan.index') }}" class="flex items-center gap-2">
+            <form method="GET" action="{{ route('pimpinan.pengadaan.index') }}" class="flex items-center gap-2 text-xs text-slate-600">
                 <span>Tampilkan</span>
                 <select name="per_page" onchange="this.form.submit()" 
-                        class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+                        class="bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-600 cursor-pointer shadow-sm">
                     <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
                     <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
                     <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
@@ -56,22 +95,23 @@
             </form>
         </div>
 
-        <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <!-- Wrapper Tabel -->
+        <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white">
             <table class="w-full text-left text-xs text-slate-600 border-collapse">
-                <thead class="bg-indigo-900 text-white uppercase font-bold text-[10px] tracking-wider">
-                    <tr>
-                        <th class="p-3.5">No</th>
-                        <th class="p-3.5">Pemohon (Karyawan)</th>
-                        <th class="p-3.5">Nama Barang Baru</th>
-                        <th class="p-3.5 text-center">Jumlah</th>
-                        <th class="p-3.5">Estimasi Harga</th>
-                        <th class="p-3.5 text-center">Referensi</th>
-                        <th class="p-3.5">Status</th>
-                        <th class="p-3.5">Catatan Pimpinan</th>
-                        <th class="p-3.5 text-center">Aksi Keputusan</th>
+                <thead>
+                    <tr class="text-slate-100 bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-800 border-b border-indigo-700/50">
+                        <th class="p-3.5 font-bold">No</th>
+                        <th class="p-3.5 font-bold">Pemohon</th>
+                        <th class="p-3.5 font-bold">Nama Barang Baru</th>
+                        <th class="p-3.5 font-bold text-center">Jumlah</th>
+                        <th class="p-3.5 font-bold">Estimasi Harga</th>
+                        <th class="p-3.5 font-bold text-center">Referensi</th>
+                        <th class="p-3.5 font-bold">Status</th>
+                        <th class="p-3.5 font-bold">Catatan Pimpinan</th>
+                        <th class="p-3.5 font-bold text-center">Aksi Keputusan</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200 bg-white">
+                <tbody class="divide-y divide-slate-200/80 bg-white">
                     @forelse($daftarPengadaan as $index => $item)
                         @php
                             $namaBarang = $item->nama_barang_baru ?? $item->nama_barang;
@@ -81,30 +121,52 @@
                             $status = strtolower($item->status_approval ?? $item->status ?? 'pending');
                             $idPengadaan = $item->id_pengadaan ?? $item->id;
                             $catatan = $item->catatan_pimpinan ?? '-';
+
+                            // Perhitungan Estimasi Biaya
+                            $jumlah = max(1, (int) ($item->jumlah ?? 1));
+                            $totalEstimasi = (float) ($item->estimasi_harga ?? 0);
+                            $hargaSatuan = $jumlah > 0 ? ($totalEstimasi / $jumlah) : 0;
                             
-                            $badge = [
-                                'pending'   => 'bg-amber-100 text-amber-700 border-amber-200',
-                                'disetujui' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
-                                'ditolak'   => 'bg-rose-100 text-rose-700 border-rose-200',
-                            ][$status] ?? 'bg-slate-100 text-slate-700 border-slate-200';
+                            $statusConfig = [
+                                'pending'   => ['bg' => 'bg-amber-50 text-amber-700 border-amber-200',   'label' => 'Menunggu Approval'],
+                                'menunggu'  => ['bg' => 'bg-amber-50 text-amber-700 border-amber-200',   'label' => 'Menunggu Approval'],
+                                'disetujui' => ['bg' => 'bg-indigo-50 text-indigo-700 border-indigo-200',  'label' => 'Disetujui'],
+                                'selesai'   => ['bg' => 'bg-emerald-50 text-emerald-700 border-emerald-200','label' => 'Selesai & Terbeli'],
+                                'ditolak'   => ['bg' => 'bg-rose-50 text-rose-700 border-rose-200',     'label' => 'Ditolak'],
+                            ];
+                            $config = $statusConfig[$status] ?? $statusConfig['pending'];
                         @endphp
                         
                         <!-- Baris Tabel dengan Pengecekan Highlight -->
-                        <tr class="{{ request('highlight_pengadaan') == $idPengadaan ? 'bg-indigo-50 ring-2 ring-indigo-400 transition-all duration-700 animate-pulse' : 'hover:bg-slate-50' }} transition">
+                        <tr class="{{ request('highlight_pengadaan') == $idPengadaan ? 'bg-indigo-50 ring-2 ring-indigo-400 transition-all duration-700 animate-pulse' : 'hover:bg-slate-50/80' }} transition">
                             <td class="p-3.5 font-semibold text-slate-500">
-                                {{ ($daftarPengadaan->currentPage() - 1) * $daftarPengadaan->perPage() + $index + 1 }}
+                                {{ method_exists($daftarPengadaan, 'firstItem') ? $daftarPengadaan->firstItem() + $index : $index + 1 }}
                             </td>
+
                             <td class="p-3.5">
                                 <span class="font-bold text-slate-800 block">{{ $namaPemohon }}</span>
                                 <span class="text-[10px] text-slate-400">{{ $emailPemohon }}</span>
                             </td>
-                            <td class="p-3.5 font-bold text-indigo-900 truncate max-w-[160px]" title="{{ $namaBarang }}">{{ $namaBarang }}</td>
-                            <td class="p-3.5 font-semibold text-slate-700 text-center whitespace-nowrap">{{ $item->jumlah }} Unit</td>
-                            <td class="p-3.5 font-medium text-slate-600 whitespace-nowrap">
-                                {{ $item->estimasi_harga ? 'Rp ' . number_format($item->estimasi_harga, 0, ',', '.') : '-' }}
+
+                            <td class="p-3.5 font-bold text-slate-800 truncate max-w-[160px]" title="{{ $namaBarang }}">
+                                {{ $namaBarang }}
+                            </td>
+
+                            <td class="p-3.5 font-semibold text-indigo-600 text-center whitespace-nowrap">
+                                {{ $jumlah }} Unit
+                            </td>
+
+                            <!-- Kolom Estimasi Harga (Total + Satuan) -->
+                            <td class="p-3.5 font-semibold text-slate-700 whitespace-nowrap">
+                                <div>Rp {{ number_format($totalEstimasi, 0, ',', '.') }}</div>
+                                @if($hargaSatuan > 0 && $jumlah > 1)
+                                    <div class="text-[10px] text-slate-400 font-normal">
+                                        (Rp {{ number_format($hargaSatuan, 0, ',', '.') }} / unit)
+                                    </div>
+                                @endif
                             </td>
                             
-                            <!-- Kolom Referensi dengan Simbol Standar Eksternal Link -->
+                            <!-- Kolom Referensi Eksternal -->
                             <td class="p-3.5 text-center whitespace-nowrap">
                                 @if(!empty($item->link_referensi))
                                     <a href="{{ $item->link_referensi }}" target="_blank" rel="noopener noreferrer"
@@ -119,9 +181,10 @@
                                 @endif
                             </td>
 
+                            <!-- Badge Status -->
                             <td class="p-3.5 whitespace-nowrap">
-                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border {{ $badge }}">
-                                    {{ ucfirst($status) }}
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border inline-block {{ $config['bg'] }}">
+                                    {{ $config['label'] }}
                                 </span>
                             </td>
                             
@@ -130,56 +193,54 @@
                                 {{ $catatan }}
                             </td>
 
-                            <td class="p-3.5 text-center relative whitespace-nowrap">
+                            <td class="p-3.5 text-center relative whitespace-nowrap align-middle">
                                 
                                 <!-- DROPDOWN MENU TITIK TIGA (Alpine.js) -->
                                 <div x-data="{ open: false }" class="relative inline-block text-left">
-                                    <button @click="open = !open" type="button" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 focus:outline-none transition cursor-pointer">
+                                    <button @click="open = !open" type="button" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition cursor-pointer inline-flex items-center justify-center">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                                         </svg>
                                     </button>
 
                                     <div x-show="open" 
-                                        @click.away="open = false"
-                                        x-transition:enter="transition ease-out duration-100"
-                                        x-transition:enter-start="transform opacity-0 scale-95"
-                                        x-transition:enter-end="transform opacity-100 scale-100"
-                                        x-transition:leave="transition ease-in duration-75"
-                                        x-transition:leave-start="transform opacity-100 scale-100"
-                                        x-transition:leave-end="transform opacity-0 scale-95"
-                                        class="absolute right-0 mt-1 w-36 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-50 divide-y divide-slate-100 text-left"
-                                        style="display: none;">
+                                         @click.away="open = false"
+                                         x-transition:enter="transition ease-out duration-100"
+                                         x-transition:enter-start="transform opacity-0 scale-95"
+                                         x-transition:enter-end="transform opacity-100 scale-100"
+                                         x-transition:leave="transition ease-in duration-75"
+                                         x-transition:leave-start="transform opacity-100 scale-100"
+                                         x-transition:leave-end="transform opacity-0 scale-95"
+                                         class="absolute right-full mr-2 top-1/2 -translate-y-1/2 w-36 bg-white border border-slate-200 rounded-xl shadow-xl z-50 py-1 text-left space-y-0.5"
+                                         style="display: none;">
                                         
-                                        <!-- Option 1: Detail -->
-                                        <div class="py-0.5">
-                                            <button type="button" 
+                                        <!-- Detail -->
+                                        <button type="button" 
                                                 @click="open = false; modalData = {
                                                     pemohon: '{{ addslashes($namaPemohon) }}',
                                                     nama: '{{ addslashes($namaBarang) }}',
-                                                    jumlah: '{{ $item->jumlah }}',
-                                                    harga: '{{ $item->estimasi_harga ? 'Rp ' . number_format($item->estimasi_harga, 0, ',', '.') : '-' }}',
-                                                    link: '{{ $item->link_referensi }}',
+                                                    jumlah: '{{ $jumlah }}',
+                                                    harga: 'Rp {{ number_format($totalEstimasi, 0, ',', '.') }} @if($jumlah > 1)(Satuan: Rp {{ number_format($hargaSatuan, 0, ',', '.') }})@endif',
+                                                    link: '{{ addslashes($item->link_referensi ?? '') }}',
                                                     alasan: '{{ addslashes($alasanBarang) }}',
-                                                    status: '{{ ucfirst($status) }}',
+                                                    status: '{{ $config['label'] }}',
                                                     catatan: '{{ addslashes($catatan) }}',
                                                     tanggal: '{{ $item->created_at ? $item->created_at->format('d/m/Y H:i') : '-' }}'
                                                 }; showModal = true;"
-                                                class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center gap-1.5 cursor-pointer">
-                                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                </svg>
-                                                Lihat Detail
-                                            </button>
-                                        </div>
+                                                class="w-full text-left px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition flex items-center gap-1.5 cursor-pointer">
+                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            Detail
+                                        </button>
 
-                                        @if($status === 'pending')
-                                            <!-- Option 2 & 3: Keputusan Setujui / Tolak dengan Modal Catatan -->
-                                            <div class="py-0.5">
+                                        @if(in_array($status, ['pending', 'menunggu']))
+                                            <!-- Keputusan Setujui / Tolak dengan Modal Catatan -->
+                                            <div class="border-t border-slate-100 pt-0.5 mt-0.5">
                                                 <button type="button" 
-                                                    @click="open = false; approvalAction = 'setujui'; approvalUrl = '{{ route('pimpinan.pengadaan.setujui', $idPengadaan) }}'; catatanPimpinan = ''; approvalModal = true;"
-                                                    class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-emerald-600 hover:bg-emerald-50 transition flex items-center gap-1.5 cursor-pointer">
+                                                        @click="open = false; approvalAction = 'setujui'; approvalUrl = '{{ route('pimpinan.pengadaan.setujui', $idPengadaan) }}'; catatanPimpinan = ''; approvalModal = true;"
+                                                        class="w-full text-left px-3 py-2 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 transition flex items-center gap-1.5 cursor-pointer">
                                                     <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                                     </svg>
@@ -187,13 +248,17 @@
                                                 </button>
 
                                                 <button type="button" 
-                                                    @click="open = false; approvalAction = 'tolak'; approvalUrl = '{{ route('pimpinan.pengadaan.tolak', $idPengadaan) }}'; catatanPimpinan = ''; approvalModal = true;"
-                                                    class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-rose-600 hover:bg-rose-50 transition flex items-center gap-1.5 cursor-pointer">
+                                                        @click="open = false; approvalAction = 'tolak'; approvalUrl = '{{ route('pimpinan.pengadaan.tolak', $idPengadaan) }}'; catatanPimpinan = ''; approvalModal = true;"
+                                                        class="w-full text-left px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition flex items-center gap-1.5 cursor-pointer">
                                                     <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                                     </svg>
                                                     Tolak
                                                 </button>
+                                            </div>
+                                        @else
+                                            <div class="px-3 py-2 text-slate-400 italic text-[11px] select-none border-t border-slate-100">
+                                                Selesai Ditinjau
                                             </div>
                                         @endif
                                     </div>
@@ -203,7 +268,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center py-8 text-slate-400">
+                            <td colspan="9" class="p-8 text-center text-slate-400">
                                 Belum ada permohonan pengadaan barang baru dari karyawan.
                             </td>
                         </tr>
@@ -213,9 +278,16 @@
         </div>
 
         <!-- Navigasi Paginasi Laravel -->
-        <div class="pt-3 border-t border-slate-200">
-            {{ $daftarPengadaan->links() }}
-        </div>
+        @if(method_exists($daftarPengadaan, 'links'))
+            <div class="pt-3 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+                <div>
+                    Menampilkan {{ $daftarPengadaan->firstItem() ?? 0 }} sampai {{ $daftarPengadaan->lastItem() ?? 0 }} dari total {{ $daftarPengadaan->total() }} data
+                </div>
+                <div class="[&_p]:hidden">
+                    {{ $daftarPengadaan->links() }}
+                </div>
+            </div>
+        @endif
 
     </div>
 
@@ -224,12 +296,12 @@
          class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
         
         <div @click.outside="approvalModal = false" 
-             class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4 relative">
+             class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4 relative animate-in fade-in zoom-in duration-200">
             
             <div class="flex justify-between items-start border-b border-slate-100 pb-3">
                 <div>
                     <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md"
-                          :class="approvalAction === 'setujui' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'"
+                          :class="approvalAction === 'setujui' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200'"
                           x-text="approvalAction === 'setujui' ? 'Konfirmasi Persetujuan' : 'Konfirmasi Penolakan'"></span>
                     <h3 class="text-base font-bold text-slate-800 mt-1">Berikan Catatan / Alasan Pimpinan</h3>
                 </div>
@@ -245,13 +317,13 @@
                 @method('PUT')
                 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Catatan / Instruksi (Opsional)</label>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Catatan / Instruksi Pimpinan (Opsional)</label>
                     <textarea name="catatan_pimpinan" x-model="catatanPimpinan" rows="3" 
                               placeholder="Tuliskan catatan, instruksi budget, atau alasan keputusan di sini..."
-                              class="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 transition"></textarea>
+                              class="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 transition leading-relaxed"></textarea>
                 </div>
 
-                <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
                     <button type="button" @click="approvalModal = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition cursor-pointer">
                         Batal
                     </button>
@@ -270,11 +342,11 @@
          class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
         
         <div @click.outside="showModal = false" 
-             class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg p-6 space-y-4 relative">
+             class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg p-6 space-y-4 relative animate-in fade-in zoom-in duration-200">
             
             <div class="flex justify-between items-start border-b border-slate-100 pb-3">
                 <div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-md">Rincian Permohonan</span>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-100">Rincian Permohonan</span>
                     <h3 class="text-base font-bold text-slate-800 mt-1" x-text="modalData.nama"></h3>
                 </div>
                 <button @click="showModal = false" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
@@ -287,23 +359,23 @@
             <div class="grid grid-cols-2 gap-4 text-xs">
                 <div>
                     <span class="text-slate-400 block font-medium">Nama Pemohon</span>
-                    <span class="font-bold text-slate-700" x-text="modalData.pemohon"></span>
+                    <span class="font-bold text-slate-700 mt-0.5 block" x-text="modalData.pemohon"></span>
                 </div>
                 <div>
                     <span class="text-slate-400 block font-medium">Tanggal Pengajuan</span>
-                    <span class="font-bold text-slate-700" x-text="modalData.tanggal"></span>
+                    <span class="font-bold text-slate-700 mt-0.5 block" x-text="modalData.tanggal"></span>
                 </div>
                 <div>
                     <span class="text-slate-400 block font-medium">Jumlah Unit</span>
-                    <span class="font-bold text-slate-700" x-text="modalData.jumlah + ' Unit'"></span>
+                    <span class="font-bold text-indigo-600 mt-0.5 block" x-text="modalData.jumlah + ' Unit'"></span>
                 </div>
                 <div>
-                    <span class="text-slate-400 block font-medium">Estimasi Harga</span>
-                    <span class="font-bold text-slate-700" x-text="modalData.harga"></span>
+                    <span class="text-slate-400 block font-medium">Estimasi Biaya</span>
+                    <span class="font-bold text-slate-700 mt-0.5 block" x-text="modalData.harga"></span>
                 </div>
                 <div>
                     <span class="text-slate-400 block font-medium">Status Pengajuan</span>
-                    <span class="font-bold text-slate-700" x-text="modalData.status"></span>
+                    <span class="font-bold text-slate-700 mt-0.5 block" x-text="modalData.status"></span>
                 </div>
 
                 <div class="col-span-2" x-show="modalData.catatan && modalData.catatan !== '-'">
@@ -313,7 +385,7 @@
 
                 <div class="col-span-2">
                     <span class="text-slate-400 block font-medium mb-1">Tautan Referensi Produk</span>
-                    <template x-if="modalData.link">
+                    <template x-if="modalData.link && modalData.link.trim() !== ''">
                         <a :href="modalData.link" target="_blank" rel="noopener noreferrer" 
                            class="inline-flex items-center gap-1.5 text-indigo-600 hover:underline font-semibold bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-200">
                             <span>Buka Link Produk Eksternal</span>
@@ -322,7 +394,7 @@
                             </svg>
                         </a>
                     </template>
-                    <template x-if="!modalData.link">
+                    <template x-if="!modalData.link || modalData.link.trim() === ''">
                         <span class="text-slate-400 italic">Tidak ada tautan referensi yang dilampirkan.</span>
                     </template>
                 </div>
@@ -343,7 +415,7 @@
 
 </div>
 
-<!-- Skrip Pembersih URL Parameter Highlight agar hilang saat di-refresh -->
+<!-- Skrip Pembersih URL Parameter Highlight -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         if (window.URLSearchParams) {
