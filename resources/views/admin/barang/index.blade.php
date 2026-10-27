@@ -4,7 +4,7 @@
 <div class="space-y-6">
     
     <!-- Banner Header Manajemen Aset -->
-    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-400/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <span class="inline-block px-2.5 py-0.5 bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-[10px] font-semibold tracking-wider uppercase rounded-md mb-1.5">
                 Manajemen Aset • Panel Admin
@@ -21,6 +21,21 @@
         </button>
     </div>
 
+    <!-- Alert Notifikasi -->
+    @if(session('success'))
+        <div id="success-alert" class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl text-xs font-medium flex items-center gap-2.5 shadow-sm transition-opacity duration-500">
+            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div id="error-alert" class="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-2xl text-xs font-medium flex items-center gap-2.5 shadow-sm transition-opacity duration-500">
+            <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>{{ session('error') }}</span>
+        </div>
+    @endif
+
     <!-- Tabel Daftar Aset Kantor (Card Pembungkus Utama) -->
     <div class="bg-slate-100/80 p-6 rounded-2xl shadow-sm border border-slate-200/90 space-y-4">
         
@@ -29,6 +44,10 @@
             <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Semua Aset Kantor</h3>
             
             <form method="GET" action="{{ route('admin.barang.index') }}" class="flex items-center gap-2 text-xs text-slate-600">
+                @if(request('search')) <input type="hidden" name="search" value="{{ request('search') }}"> @endif
+                @if(request('kategori')) <input type="hidden" name="kategori" value="{{ request('kategori') }}"> @endif
+                @if(request('kondisi')) <input type="hidden" name="kondisi" value="{{ request('kondisi') }}"> @endif
+
                 <span>Tampilkan</span>
                 <select name="per_page" onchange="this.form.submit()" 
                         class="bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-600 cursor-pointer shadow-sm">
@@ -40,6 +59,54 @@
                 <span>data</span>
             </form>
         </div>
+
+        <!-- ================= BARIS FILTER & PENCARIAN MULTI-KRITERIA ================= -->
+        <form method="GET" action="{{ route('admin.barang.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 pb-2 border-b border-slate-200/60">
+            @if(request()->has('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+            @endif
+
+            <!-- Input Pencarian Teks -->
+            <div class="sm:col-span-5">
+                <input type="text" name="search" value="{{ request('search') }}" 
+                       placeholder="Cari kode aset, nama barang, lokasi..." 
+                       class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
+            </div>
+
+            <!-- Dropdown Filter Kategori -->
+            <div class="sm:col-span-3">
+                <select name="kategori" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+                    <option value="">-- Semua Kategori --</option>
+                    <option value="Furnitur" {{ request('kategori') == 'Furnitur' ? 'selected' : '' }}>Furnitur & Mebel</option>
+                    <option value="Elektronik" {{ request('kategori') == 'Elektronik' ? 'selected' : '' }}>Perangkat IT & Elektronik</option>
+                    <option value="Kantor" {{ request('kategori') == 'Kantor' ? 'selected' : '' }}>Peralatan Kantor</option>
+                    <option value="Fasilitas Umum" {{ request('kategori') == 'Fasilitas Umum' ? 'selected' : '' }}>Fasilitas Umum</option>
+                </select>
+            </div>
+
+            <!-- Dropdown Filter Kondisi -->
+            <div class="sm:col-span-2">
+                <select name="kondisi" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+                    <option value="">-- Semua Kondisi --</option>
+                    <option value="Baik" {{ request('kondisi') == 'Baik' ? 'selected' : '' }}>Baik</option>
+                    <option value="Perbaikan Ringan" {{ request('kondisi') == 'Perbaikan Ringan' ? 'selected' : '' }}>Perbaikan Ringan</option>
+                    <option value="Rusak" {{ request('kondisi') == 'Rusak' ? 'selected' : '' }}>Rusak</option>
+                    <option value="Diapkir" {{ request('kondisi') == 'Diapkir' ? 'selected' : '' }}>Diapkir</option>
+                </select>
+            </div>
+
+            <!-- Tombol Cari & Reset Filter -->
+            <div class="sm:col-span-2 flex gap-1.5">
+                <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition shadow-sm cursor-pointer py-2">
+                    Cari
+                </button>
+                @if(request()->hasAny(['search', 'kategori', 'kondisi']))
+                    <a href="{{ route('admin.barang.index') }}" title="Reset Filter" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center">
+                        ✕
+                    </a>
+                @endif
+            </div>
+        </form>
 
         <!-- Wrapper Tabel -->
         <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white">
@@ -61,7 +128,7 @@
                                 {{ method_exists($barangs, 'firstItem') ? $barangs->firstItem() + $index : $index + 1 }}
                             </td>
                             
-                            <!-- Nama Barang (Dipendekkan jika kepanjangan, lengkap dengan title tooltip) -->
+                            <!-- Nama Barang -->
                             <td class="p-3.5">
                                 <div class="font-bold text-slate-800 truncate max-w-[180px]" title="{{ $item->nama_barang }}">
                                     {{ $item->nama_barang }}
@@ -152,7 +219,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-8 text-slate-400">Belum ada aset terdaftar di sistem.</td>
+                            <td colspan="6" class="text-center py-8 text-slate-400">Tidak ada aset yang sesuai dengan kriteria pencarian/filter.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -341,11 +408,19 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        const alert = document.getElementById('success-alert');
-        if (alert) {
+        const successAlert = document.getElementById('success-alert');
+        if (successAlert) {
             setTimeout(() => {
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 500);
+                successAlert.style.opacity = '0';
+                setTimeout(() => successAlert.remove(), 500);
+            }, 3000);
+        }
+
+        const errorAlert = document.getElementById('error-alert');
+        if (errorAlert) {
+            setTimeout(() => {
+                errorAlert.style.opacity = '0';
+                setTimeout(() => errorAlert.remove(), 500);
             }, 3000);
         }
     });
