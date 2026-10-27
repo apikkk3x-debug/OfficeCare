@@ -103,16 +103,12 @@
                 <div>
                     <!-- Logo / Judul Brand -->
                     <div class="h-16 flex items-center px-6 border-b border-slate-800/80">
-                        <span class="text-xl font-bold tracking-wide text-white flex items-center gap-3">
-                            <div class="p-2 bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-600/30">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0v-5a2 2 0 012-2h2a2 2 0 012 2v5">
-                                    </path>
-                                </svg>
-                            </div>
-                            OfficeCare
-                        </span>
+                        <div class="flex items-center gap-3">
+                            <img src="{{ asset('images/logo.svg') }}" alt="OfficeCare Logo" class="w-9 h-9 object-contain drop-shadow-md">
+                            <span class="text-xl font-extrabold tracking-wider uppercase">
+                                <span class="text-white">Office</span><span class="text-blue-500">Care</span>
+                            </span>
+                        </div>
                     </div>
                     <!-- Menu Navigasi Samping Dinamis dengan Kategori Profesional -->
                     <nav class="p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
