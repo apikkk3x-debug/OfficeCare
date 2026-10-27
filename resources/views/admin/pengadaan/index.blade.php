@@ -54,7 +54,7 @@
             <div>
                 <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Siap Terbitkan Aset</p>
                 <h3 class="text-lg font-bold text-indigo-600 mt-0.5">
-                    {{ method_exists($daftarPengadaan, 'getCollection') ?$daftarPengadaan->getCollection()->whereIn('status_approval', ['disetujui', 'Disetujui'])->count() : 0 }}
+                    {{ method_exists($daftarPengadaan, 'getCollection') ? $daftarPengadaan->getCollection()->whereIn('status_approval', ['disetujui', 'Disetujui'])->count() : 0 }}
                 </h3>
             </div>
             <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
@@ -66,7 +66,7 @@
             <div>
                 <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Selesai & Terdaftar</p>
                 <h3 class="text-lg font-bold text-emerald-600 mt-0.5">
-                    {{ method_exists($daftarPengadaan, 'getCollection') ?$daftarPengadaan->getCollection()->whereIn('status_approval', ['selesai', 'Selesai'])->count() : 0 }}
+                    {{ method_exists($daftarPengadaan, 'getCollection') ? $daftarPengadaan->getCollection()->whereIn('status_approval', ['selesai', 'Selesai'])->count() : 0 }}
                 </h3>
             </div>
             <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
@@ -83,6 +83,9 @@
             <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Daftar Pengajuan Pengadaan</h3>
             
             <form method="GET" action="{{ route('admin.pengadaan.index') }}" class="flex items-center gap-2 text-xs text-slate-600">
+                @if(request('search')) <input type="hidden" name="search" value="{{ request('search') }}"> @endif
+                @if(request('status')) <input type="hidden" name="status" value="{{ request('status') }}"> @endif
+
                 <span>Tampilkan</span>
                 <select name="per_page" onchange="this.form.submit()" 
                         class="bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-600 cursor-pointer shadow-sm">
@@ -94,6 +97,43 @@
                 <span>data</span>
             </form>
         </div>
+
+        <!-- ================= BARIS FILTER & PENCARIAN MULTI-KRITERIA ================= -->
+        <form method="GET" action="{{ route('admin.pengadaan.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 pb-2 border-b border-slate-200/60">
+            @if(request()->has('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+            @endif
+
+            <!-- Input Pencarian Teks -->
+            <div class="sm:col-span-6">
+                <input type="text" name="search" value="{{ request('search') }}" 
+                       placeholder="Cari nama barang pengganti, pemohon, alasan..." 
+                       class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
+            </div>
+
+            <!-- Dropdown Filter Status Progress -->
+            <div class="sm:col-span-4">
+                <select name="status" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+                    <option value="">-- Semua Status Progress --</option>
+                    <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Menunggu ACC</option>
+                    <option value="Disetujui" {{ request('status') == 'Disetujui' ? 'selected' : '' }}>Siap Dibeli</option>
+                    <option value="Selesai" {{ request('status') == 'Selesai' ? 'selected' : '' }}>Selesai & Terdaftar</option>
+                    <option value="Ditolak" {{ request('status') == 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
+                </select>
+            </div>
+
+            <!-- Tombol Cari & Reset Filter -->
+            <div class="sm:col-span-2 flex gap-1.5">
+                <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition shadow-sm cursor-pointer py-2">
+                    Cari
+                </button>
+                @if(request()->hasAny(['search', 'status']))
+                    <a href="{{ route('admin.pengadaan.index') }}" title="Reset Filter" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center">
+                        ✕
+                    </a>
+                @endif
+            </div>
+        </form>
 
         <!-- Wrapper Tabel -->
         <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white shadow-xs">
@@ -110,7 +150,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200/80 bg-white">
-                    @forelse($daftarPengadaan as $index =>$item)
+                    @forelse($daftarPengadaan as $index => $item)
                         @php
                             $namaBarang = $item->nama_barang_baru ?? $item->nama_barang;
                             $status = strtolower($item->status_approval ?? $item->status ?? 'pending');
@@ -119,12 +159,12 @@
                             // Perhitungan Estimasi Biaya
                             $jumlah = max(1, (int) ($item->jumlah ?? 1));
                             $totalEstimasi = (float) ($item->estimasi_harga ?? 0);
-                            $hargaSatuan =$jumlah > 0 ? ($totalEstimasi / $jumlah) : 0;
+                            $hargaSatuan = $jumlah > 0 ? ($totalEstimasi / $jumlah) : 0;
                         @endphp
                         
                         <tr class="{{ request('highlight_pengadaan') == $idPengadaan ? 'bg-indigo-50/90 ring-2 ring-indigo-400/50 transition-all duration-700 animate-pulse' : 'hover:bg-slate-50/80' }} transition">
                             <td class="p-3.5 font-semibold text-slate-400 text-center">
-                                {{ method_exists($daftarPengadaan, 'firstItem') ?$daftarPengadaan->firstItem() + $index :$index + 1 }}
+                                {{ method_exists($daftarPengadaan, 'firstItem') ? $daftarPengadaan->firstItem() + $index : $index + 1 }}
                             </td>
                             <td class="p-3.5 whitespace-nowrap">
                                 <span class="font-bold text-slate-800 block">{{ $item->pemohon->nama ?? $item->pemohon->name ?? 'Karyawan' }}</span>
@@ -136,10 +176,10 @@
                                 {{ $jumlah }} Unit
                             </td>
                             
-                            <!-- Kolom Estimasi Harga (Total + Satuan) -->
+                            <!-- Kolom Estimasi Harga -->
                             <td class="p-3.5 font-bold text-slate-700 text-right whitespace-nowrap">
                                 <div>Rp {{ number_format($totalEstimasi, 0, ',', '.') }}</div>
-                                @if($hargaSatuan > 0 &&$jumlah > 1)
+                                @if($hargaSatuan > 0 && $jumlah > 1)
                                     <div class="text-[10px] text-slate-400 font-normal">
                                         (Rp {{ number_format($hargaSatuan, 0, ',', '.') }} / unit)
                                     </div>
@@ -210,8 +250,8 @@
                         <tr>
                             <td colspan="7" class="text-center py-10 text-slate-400 bg-slate-50/50">
                                 <div class="space-y-1">
-                                    <p class="text-sm font-semibold text-slate-500">Belum Ada Pengajuan Pengadaan</p>
-                                    <p class="text-xs text-slate-400">Data pengadaan barang pengganti akan muncul di sini.</p>
+                                    <p class="text-sm font-semibold text-slate-500">Tidak Ada Data Pengadaan</p>
+                                    <p class="text-xs text-slate-400">Data tidak ditemukan untuk kriteria pencarian/filter yang dipilih.</p>
                                 </div>
                             </td>
                         </tr>
@@ -224,7 +264,7 @@
         @if(method_exists($daftarPengadaan, 'links'))
             <div class="pt-3 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
                 <div>
-                    Menampilkan {{ $daftarPengadaan->firstItem() ?? 0 }} sampai {{ $daftarPengadaan->lastItem() ?? 0 }} dari total {{$daftarPengadaan->total() }} data
+                    Menampilkan {{ $daftarPengadaan->firstItem() ?? 0 }} sampai {{ $daftarPengadaan->lastItem() ?? 0 }} dari total {{ $daftarPengadaan->total() }} data
                 </div>
                 <div class="[&_p]:hidden">
                     {{ $daftarPengadaan->links() }}
@@ -345,12 +385,11 @@
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Kategori Barang</label>
                 <select name="kategori" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:bg-white cursor-pointer">
-                    <option value="">-- Pilih Kategori --</option>
-                    <option value="Peralatan Kantor">Peralatan Kantor</option>
-                    <option value="Elektronik">Elektronik</option>
-                    <option value="Furniture">Furniture</option>
-                    <option value="Komputer & Jaringan">Komputer & Jaringan</option>
-                    <option value="Kendaraan">Kendaraan</option>
+                    <option value="">-- Pilih Kategori Aset --</option>
+                    <option value="Perangkat IT & Elektronik">Perangkat IT & Elektronik (PC, Printer, AC, TV, Jaringan)</option>
+                    <option value="Furnitur & Mebel">Furnitur & Mebel (Meja, Kursi, Lemari, Rak)</option>
+                    <option value="Perlengkapan Kantor">Perlengkapan Kantor (Dispenser, Brankas, Alat Fasilitas)</option>
+                    <option value="Kendaraan Operasional">Kendaraan Operasional (Mobil / Motor Dinas)</option>
                     <option value="Lainnya">Lainnya</option>
                 </select>
             </div>
@@ -396,7 +435,8 @@
         document.getElementById('detail_nama_barang').innerText = data.nama_barang_baru || data.nama_barang || 'Barang Pengganti';
         document.getElementById('detail_pemohon').innerText = data.pemohon?.nama || data.pemohon?.name || 'Karyawan';
         
-        const qty = max(1, parseInt(data.jumlah || 1));
+        // PERBAIKAN: Menggunakan Math.max agar tidak error di JavaScript
+        const qty = Math.max(1, parseInt(data.jumlah || 1));
         document.getElementById('detail_jumlah').innerText = qty + ' Unit';
         
         const total = Math.round(parseFloat(data.estimasi_harga) || 0);
