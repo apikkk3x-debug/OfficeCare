@@ -3,8 +3,8 @@
 @section('content')
 <div class="space-y-6" x-data="{ showModal: false, modalData: {} }">
     
-    <!-- Header Banner -->
-    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-400/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <!-- Banner Header Karyawan -->
+    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <span class="inline-block px-2.5 py-0.5 bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-[10px] font-semibold tracking-wider uppercase rounded-md mb-1.5">
                 Pengadaan Barang • Karyawan
@@ -64,21 +64,61 @@
     <div class="bg-slate-100/80 p-6 rounded-2xl shadow-sm border border-slate-200/90 space-y-4">
         
         <!-- Baris Atas Tabel: Judul & Dropdown Tampilkan Data -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2 border-b border-slate-200/60">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-slate-200/60">
             <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Daftar Pengajuan Saya</h3>
             
             <form method="GET" action="{{ route('karyawan.pengadaan.index') }}" class="flex items-center gap-2 text-xs text-slate-600">
+                @if(request('search')) <input type="hidden" name="search" value="{{ request('search') }}"> @endif
+                @if(request('status')) <input type="hidden" name="status" value="{{ request('status') }}"> @endif
+                
                 <span>Tampilkan</span>
                 <select name="per_page" onchange="this.form.submit()" 
                         class="bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-600 cursor-pointer shadow-sm">
-                    <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
-                    <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
-                    <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
-                    <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                    <option value="10" {{ (isset($perPage) && $perPage == 10) || request('per_page') == 10 ? 'selected' : '' }}>10</option>
+                    <option value="25" {{ (isset($perPage) && $perPage == 25) || request('per_page') == 25 ? 'selected' : '' }}>25</option>
+                    <option value="50" {{ (isset($perPage) && $perPage == 50) || request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                    <option value="100" {{ (isset($perPage) && $perPage == 100) || request('per_page') == 100 ? 'selected' : '' }}>100</option>
                 </select>
                 <span>data</span>
             </form>
         </div>
+
+        <!-- ================= BARIS FILTER & PENCARIAN (GRID SYSTEM SELARAS ADMIN) ================= -->
+        <form method="GET" action="{{ route('karyawan.pengadaan.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 pb-2 border-b border-slate-200/60">
+            @if(request()->has('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+            @endif
+
+            <!-- Input Pencarian Teks -->
+            <div class="sm:col-span-6">
+                <input type="text" name="search" value="{{ request('search') }}" 
+                       placeholder="Cari nama barang, alasan kebutuhan..." 
+                       class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
+            </div>
+
+            <!-- Dropdown Filter Status -->
+            <div class="sm:col-span-4">
+                <select name="status" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+                    <option value="">-- Semua Status --</option>
+                    <option value="pending" {{ request('status') == 'pending' || request('status') == 'Menunggu' ? 'selected' : '' }}>Menunggu Approval</option>
+                    <option value="disetujui" {{ request('status') == 'disetujui' || request('status') == 'Disetujui' ? 'selected' : '' }}>Disetujui Pimpinan</option>
+                    <option value="selesai" {{ request('status') == 'selesai' || request('status') == 'Selesai' ? 'selected' : '' }}>Selesai & Terbeli</option>
+                    <option value="ditolak" {{ request('status') == 'ditolak' || request('status') == 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
+                </select>
+            </div>
+
+            <!-- Tombol Cari & Reset Filter -->
+            <div class="sm:col-span-2 flex gap-1.5">
+                <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition shadow-sm cursor-pointer py-2">
+                    Cari
+                </button>
+                @if(request()->hasAny(['search', 'status']))
+                    <a href="{{ route('karyawan.pengadaan.index') }}" title="Reset Filter" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center">
+                        ✕
+                    </a>
+                @endif
+            </div>
+        </form>
 
         <!-- Wrapper Tabel -->
         <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white">
@@ -224,8 +264,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="p-8 text-center text-slate-500">
-                                Belum ada riwayat pengajuan barang baru.
+                            <td colspan="8" class="p-8 text-center text-slate-400">
+                                Belum ada data riwayat pengajuan barang baru yang sesuai kriteria pencarian/filter.
                             </td>
                         </tr>
                     @endforelse
