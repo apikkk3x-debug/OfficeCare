@@ -128,6 +128,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/pengumuman', [PengumumanController::class, 'store'])->name('admin.pengumuman.store');
         Route::patch('/pengumuman/{id}/toggle', [PengumumanController::class, 'toggle'])->name('admin.pengumuman.toggle');
         Route::delete('/pengumuman/{id}', [PengumumanController::class, 'destroy'])->name('admin.pengumuman.destroy');
+
+        Route::post('/pengingat/{id}/read', [AdminController::class, 'markPengingatRead'])->name('admin.pengingat.read');
     });
 
     // ------------------------------------------
@@ -152,6 +154,10 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/profil/ganti-password', [ProfileController::class, 'updatePassword'])->middleware('throttle:3,1')->name('pimpinan.password.update');
         Route::post('/profil/ganti-password/send-otp', [ProfileController::class, 'sendOtp'])->middleware('throttle:3,1')->name('pimpinan.password.sendOtp');
         Route::post('/profil/ganti-password/verify-update', [ProfileController::class, 'verifyAndUpdatePassword'])->middleware('throttle:5,1')->name('pimpinan.password.verifyUpdate');
+
+        // Route Pengingat dikoreksi menjadi 'pimpinan.kirim_pengingat'
+        Route::post('/kirim-pengingat', [PimpinanController::class, 'kirimPengingat'])->name('pimpinan.kirim_pengingat');
+        
     });
 
 });
