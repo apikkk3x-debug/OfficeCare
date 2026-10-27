@@ -1,9 +1,42 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6" x-data="{ assetModalOpen: false, searchAsset: '' }">
+<div class="space-y-6" x-data="{ 
+    assetModalOpen: false, 
+    searchAsset: '',
     
-    <!-- Header Pimpinan Executive Banner (Selaras dengan Admin) -->
+    // Data laporan dari backend
+    laporanMenungguData: {{ \Illuminate\Support\Js::from($laporanMenungguList ?? []) }},
+    laporanDiprosesData: {{ \Illuminate\Support\Js::from($laporanDiprosesList ?? []) }},
+
+    // State Modal List Laporan
+    laporanModalOpen: false,
+    laporanModalTitle: '',
+    laporanModalType: '',
+    searchLaporan: '',
+    laporanList: [],
+    
+    // State Modal Kirim Pengingat
+    pingModalOpen: false,
+    selectedLaporan: {},
+    pingPesanDefault: '',
+
+    openLaporanModal(type, title) {
+        this.laporanModalType = type;
+        this.laporanModalTitle = title;
+        this.laporanList = (type === 'menunggu') ? this.laporanMenungguData : this.laporanDiprosesData;
+        this.searchLaporan = '';
+        this.laporanModalOpen = true;
+    },
+
+    openPingModal(laporan) {
+        this.selectedLaporan = laporan;
+        this.pingPesanDefault = 'Mohon prioritaskan penanganan laporan ' + (laporan.barang?.nama_barang || laporan.barang?.nama || 'fasilitas') + ' dari ' + (laporan.user?.nama || laporan.user?.name || 'Karyawan') + '.';
+        this.pingModalOpen = true;
+    }
+}">
+    
+    <!-- Header Pimpinan Executive Banner -->
     <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-indigo-700/50 rounded-2xl p-6 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <span class="inline-block px-2.5 py-0.5 bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-[10px] font-semibold tracking-wider uppercase rounded-md mb-1.5">
@@ -16,7 +49,8 @@
             Role: Pimpinan / Manager
         </span>
     </div>
-    <!-- Pengumuman / Info Eksekutif (Jika Ada) -->
+
+    <!-- Pengumuman / Info Eksekutif -->
     @foreach($pengumumans as $p)
     <div x-data="{ showAnnouncement: true }" 
          x-show="showAnnouncement" 
@@ -44,10 +78,10 @@
     </div>
     @endforeach
 
-    <!-- 6 Kartu Statistik Eksekutif (Grid 3 Kolom - Seragam dengan Standar Admin) -->
+    <!-- 6 Kartu Statistik Eksekutif -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         
-        <!-- Card 1: Persetujuan Pengadaan (Fokus Utama Keputusan Pimpinan) - BISA DIKLIK -->
+        <!-- Card 1: Persetujuan Pengadaan -->
         <a href="{{ route('pimpinan.pengadaan.index') }}" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-purple-400 hover:shadow-md group">
             <div>
                 <div class="flex justify-between items-start">
@@ -64,7 +98,7 @@
             </span>
         </a>
 
-        <!-- Card 2: Inventaris Aset (Memicu Modal Live Search) - BISA DIKLIK -->
+        <!-- Card 2: Inventaris Aset -->
         <button @click="assetModalOpen = true" type="button" class="text-left bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-emerald-400 hover:shadow-md group cursor-pointer w-full">
             <div>
                 <div class="flex justify-between items-start">
@@ -81,37 +115,45 @@
             </span>
         </button>
 
-        <!-- Card 3: Operasional (Laporan Diproses) - HANYA INFORMASI -->
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between">
+        <!-- Card 3: Operasional Tim -->
+        <button @click="openLaporanModal('diproses', 'Laporan Dalam Pengerjaan Teknisi')" 
+                type="button" 
+                class="text-left bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-blue-400 hover:shadow-md group cursor-pointer w-full">
             <div>
                 <div class="flex justify-between items-start">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Operasional Tim</span>
-                    <div class="p-2.5 bg-blue-50/60 text-blue-600 rounded-xl shadow-sm border border-blue-200/60">
+                    <div class="p-2.5 bg-blue-50/60 text-blue-600 rounded-xl shadow-sm border border-blue-200/60 group-hover:bg-blue-600 group-hover:text-white transition">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     </div>
                 </div>
                 <h4 class="text-3xl font-extrabold text-blue-600 mt-3">{{ $laporanDiproses ?? 0 }}</h4>
                 <p class="text-slate-500 text-xs mt-1">Laporan dalam pengerjaan teknisi</p>
             </div>
-            <span class="text-[11px] font-medium text-slate-400 mt-4">Pengerjaan oleh tim teknisi</span>
-        </div>
+            <span class="text-xs font-semibold text-blue-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                Pantau pengerjaan &rarr;
+            </span>
+        </button>
 
-        <!-- Card 4: Laporan Menunggu - HANYA INFORMASI -->
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between">
+        <!-- Card 4: Laporan Menunggu -->
+        <button @click="openLaporanModal('menunggu', 'Daftar Laporan Menunggu Penanganan')" 
+                type="button" 
+                class="text-left bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-amber-400 hover:shadow-md group cursor-pointer w-full">
             <div>
                 <div class="flex justify-between items-start">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-amber-600">Laporan Menunggu</span>
-                    <div class="p-2.5 bg-amber-50/60 text-amber-600 rounded-xl shadow-sm border border-amber-200/60">
+                    <div class="p-2.5 bg-amber-50/60 text-amber-600 rounded-xl shadow-sm border border-amber-200/60 group-hover:bg-amber-500 group-hover:text-white transition">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
                 </div>
                 <h4 class="text-3xl font-extrabold text-amber-600 mt-3">{{ $laporanMenunggu ?? 0 }}</h4>
                 <p class="text-slate-500 text-xs mt-1">Laporan baru belum ditangani</p>
             </div>
-            <span class="text-[11px] font-medium text-slate-400 mt-4">Menunggu disposisi admin</span>
-        </div>
+            <span class="text-xs font-semibold text-amber-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                Tinjau rincian laporan &rarr;
+            </span>
+        </button>
 
-        <!-- Card 5: Performa Selesai - HANYA INFORMASI -->
+        <!-- Card 5: Performa Selesai -->
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between">
             <div>
                 <div class="flex justify-between items-start">
@@ -126,7 +168,7 @@
             <span class="text-[11px] font-medium text-slate-400 mt-4">Perbaikan fasilitas tuntas</span>
         </div>
 
-        <!-- Card 6: Rekap & Cetak Laporan PDF - BISA DIKLIK -->
+        <!-- Card 6: Rekap & Cetak Laporan PDF -->
         <a href="{{ route('pimpinan.rekap') }}" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-slate-400 hover:shadow-md group">
             <div>
                 <div class="flex justify-between items-start">
@@ -145,7 +187,7 @@
 
     </div>
 
-    <!-- Quick Action Footer (Selaras dengan Admin) -->
+    <!-- Quick Action Footer Banner -->
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
             <h3 class="text-base font-bold text-slate-800">Pusat Keputusan Eksekutif</h3>
@@ -157,79 +199,229 @@
         </a>
     </div>
 
-    <!-- ================= MODAL DAFTAR ASET (DENGAN LIVE SEARCH) ================= -->
-    <div x-show="assetModalOpen" 
-         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
-         style="display: none;"
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100">
-        
-        <div @click.away="assetModalOpen = false" 
-             class="bg-white rounded-3xl shadow-xl max-w-2xl w-full p-6 space-y-4 text-left border border-slate-200 max-h-[85vh] flex flex-col">
+    <!-- ================= MODAL 1: RINCIAN LIST LAPORAN ================= -->
+    <template x-teleport="body">
+        <div x-show="laporanModalOpen && !pingModalOpen" 
+             class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
+             style="display: none;"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100">
             
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                    </svg>
-                    Daftar Inventaris & Aset Kantor Terdaftar
-                </h3>
-                <button @click="assetModalOpen = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-2xl hover:bg-slate-100 transition cursor-pointer">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
+            <div @click.away="if(!pingModalOpen) laporanModalOpen = false" 
+                 class="bg-white rounded-3xl shadow-xl max-w-3xl w-full p-6 space-y-4 text-left border border-slate-200 max-h-[85vh] flex flex-col">
+                
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100" x-text="laporanModalType === 'menunggu' ? 'Status: Menunggu' : 'Status: Diproses'"></span>
+                        <h3 class="text-sm font-bold text-slate-900 mt-1" x-text="laporanModalTitle"></h3>
+                    </div>
+                    <button @click="laporanModalOpen = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-2xl hover:bg-slate-100 transition cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
 
-            <div>
-                <input type="text" 
-                       x-model="searchAsset" 
-                       placeholder="Cari nama barang atau aset..." 
-                       class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-indigo-500 transition">
-            </div>
+                <div>
+                    <input type="text" 
+                           x-model="searchLaporan" 
+                           placeholder="Cari nama pelapor, nama barang, atau lokasi..." 
+                           class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-indigo-500 transition">
+                </div>
 
-            <div class="overflow-y-auto flex-1 pr-1 max-h-[50vh]">
-                <table class="w-full text-left border-collapse text-xs">
-                    <thead>
-                        <tr class="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase">
-                            <th class="py-2 px-3">Nama Barang / Aset</th>
-                            <th class="py-2 px-3">Kategori</th>
-                            <th class="py-2 px-3">Kondisi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 text-slate-700">
-                        @forelse($daftarBarang as $barang)
-                        <tr x-show="searchAsset === '' || '{{ strtolower($barang->nama_barang ?? $barang->nama ?? '') }}'.includes(searchAsset.toLowerCase())">
-                            <td class="py-2.5 px-3 font-bold text-slate-900">{{ $barang->nama_barang ?? $barang->nama ?? 'Barang Kantor' }}</td>
-                            <td class="py-2.5 px-3">
-                                <span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[10px] font-bold uppercase">
-                                    {{ $barang->kategori ?? 'Umum' }}
-                                </span>
-                            </td>
-                            <td class="py-2.5 px-3">
-                                <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-md text-[10px] font-bold">
-                                    {{ $barang->kondisi ?? 'Baik' }}
-                                </span>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="3" class="py-6 text-center text-slate-400">Belum ada data aset terdaftar.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                <div class="overflow-y-auto flex-1 pr-1 max-h-[50vh]">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase">
+                                <th class="py-2 px-3">Pelapor</th>
+                                <th class="py-2 px-3">Fasilitas / Kerusakan</th>
+                                <th class="py-2 px-3">Lokasi</th>
+                                <th class="py-2 px-3 text-center">Aksi Pimpinan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-slate-700">
+                            <template x-for="(item, index) in laporanList" :key="index">
+                                <tr x-show="searchLaporan === '' || JSON.stringify(item).toLowerCase().includes(searchLaporan.toLowerCase())">
+                                    <td class="py-2.5 px-3">
+                                        <span class="font-bold text-slate-900 block" x-text="item.user?.nama || item.user?.name || 'Karyawan'"></span>
+                                        <span class="text-[10px] text-slate-400" x-text="item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'"></span>
+                                    </td>
+                                    <td class="py-2.5 px-3">
+                                        <span class="font-bold text-indigo-900 block" x-text="item.barang?.nama_barang || item.barang?.nama || 'Fasilitas Kantor'"></span>
+                                        <span class="text-[10px] text-slate-500 line-clamp-1" x-text="item.deskripsi_kerusakan || item.deskripsi || '-'"></span>
+                                    </td>
+                                    <td class="py-2.5 px-3 text-slate-600 font-medium" x-text="item.lokasi || item.barang?.lokasi || '-'"></td>
+                                    <td class="py-2.5 px-3 text-center">
+                                        <button @click="openPingModal(item)" 
+                                                type="button" 
+                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-[11px] font-semibold transition cursor-pointer">
+                                            <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                                            <span>Ingatkan Admin</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
 
-            <div class="pt-2 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-400">
-                <span>Total keseluruhan: {{ count($daftarBarang) }} unit terdaftar</span>
-                <button @click="assetModalOpen = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs transition cursor-pointer">
-                    Tutup
-                </button>
+                            <template x-if="!laporanList || laporanList.length === 0">
+                                <tr>
+                                    <td colspan="4" class="py-6 text-center text-slate-400">Tidak ada data laporan ditemukan.</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-400">
+                    <span>Total: <strong class="text-slate-700" x-text="laporanList ? laporanList.length : 0"></strong> laporan terdaftar</span>
+                    <button @click="laporanModalOpen = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs transition cursor-pointer">
+                        Tutup
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    </template>
+
+    <!-- ================= MODAL 2: KIRIM PENGINGAT SPESIFIK (FORM REAL BACKEND) ================= -->
+    <template x-teleport="body">
+        <div x-show="pingModalOpen" 
+             class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
+             style="display: none;"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100">
+            
+            <div @click.away="pingModalOpen = false" 
+                 class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-4 text-left border border-slate-200 relative animate-in fade-in zoom-in duration-200">
+                
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">Instruksi Spesifik</span>
+                        <h3 class="text-base font-bold text-slate-900 mt-1">Kirim Pengingat Laporan</h3>
+                    </div>
+                    <button @click="pingModalOpen = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-2xl hover:bg-slate-100 transition cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Detail Laporan Ringkas -->
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 space-y-1 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400 font-medium">Pelapor:</span>
+                        <span class="font-bold text-slate-800" x-text="selectedLaporan?.user?.nama || selectedLaporan?.user?.name || 'Karyawan'"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400 font-medium">Fasilitas / Barang:</span>
+                        <span class="font-bold text-indigo-900" x-text="selectedLaporan?.barang?.nama_barang || selectedLaporan?.barang?.nama || 'Fasilitas Kantor'"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400 font-medium">Lokasi:</span>
+                        <span class="font-semibold text-slate-700" x-text="selectedLaporan?.lokasi || selectedLaporan?.barang?.lokasi || '-'"></span>
+                    </div>
+                </div>
+
+                <!-- Form Pengiriman POST Real ke Backend -->
+                <form action="{{ route('pimpinan.kirim_pengingat') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <!-- Hidden Input ID Laporan (Mencakup id_laporan dan id) -->
+                    <input type="hidden" name="laporan_id" :value="selectedLaporan?.id_laporan || selectedLaporan?.id">
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1.5">Pesan / Instruksi Pimpinan ke Admin</label>
+                        <textarea name="pesan" rows="4" x-model="pingPesanDefault" required
+                                  class="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-indigo-500 transition leading-relaxed"></textarea>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                        <button type="button" @click="pingModalOpen = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs transition cursor-pointer">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-2xl text-xs transition shadow-md shadow-indigo-600/20 cursor-pointer">
+                            Kirim Pengingat
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    <!-- ================= MODAL DAFTAR ASET ================= -->
+    <template x-teleport="body">
+        <div x-show="assetModalOpen" 
+             class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
+             style="display: none;"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100">
+            
+            <div @click.away="assetModalOpen = false" 
+                 class="bg-white rounded-3xl shadow-xl max-w-2xl w-full p-6 space-y-4 text-left border border-slate-200 max-h-[85vh] flex flex-col">
+                
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                        Daftar Inventaris & Aset Kantor Terdaftar
+                    </h3>
+                    <button @click="assetModalOpen = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-2xl hover:bg-slate-100 transition cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div>
+                    <input type="text" 
+                           x-model="searchAsset" 
+                           placeholder="Cari nama barang atau aset..." 
+                           class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-indigo-500 transition">
+                </div>
+
+                <div class="overflow-y-auto flex-1 pr-1 max-h-[50vh]">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase">
+                                <th class="py-2 px-3">Nama Barang / Aset</th>
+                                <th class="py-2 px-3">Kategori</th>
+                                <th class="py-2 px-3">Kondisi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-slate-700">
+                            @forelse($daftarBarang as $barang)
+                            <tr x-show="searchAsset === '' || '{{ strtolower($barang->nama_barang ?? $barang->nama ?? '') }}'.includes(searchAsset.toLowerCase())">
+                                <td class="py-2.5 px-3 font-bold text-slate-900">{{ $barang->nama_barang ?? $barang->nama ?? 'Barang Kantor' }}</td>
+                                <td class="py-2.5 px-3">
+                                    <span class="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[10px] font-bold uppercase">
+                                        {{ $barang->kategori ?? 'Umum' }}
+                                    </span>
+                                </td>
+                                <td class="py-2.5 px-3">
+                                    <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-md text-[10px] font-bold">
+                                        {{ $barang->kondisi ?? 'Baik' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="py-6 text-center text-slate-400">Belum ada data aset terdaftar.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-400">
+                    <span>Total keseluruhan: {{ count($daftarBarang) }} unit terdaftar</span>
+                    <button @click="assetModalOpen = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs transition cursor-pointer">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
 
 </div>
 @endsection
