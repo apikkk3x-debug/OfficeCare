@@ -182,32 +182,42 @@ class KaryawanController extends Controller
         $query = LaporanKerusakan::with(['barang'])
                     ->where('id_user', Auth::id());
 
-        // 1. Filter jika diklik card Status Aktif
-        if ($request->has('filter') && $request->filter == 'aktif') {
-            $query->where('status_laporan', '!=', 'Selesai');
-        }
+        // 1. Filter Quick Card (Status Aktif)
+        $query->when($request->filled('filter') && $request->filter == 'aktif', function ($q) {
+            $q->where('status_laporan', '!=', 'Selesai');
+        });
 
-        // 2. Fitur Pencarian (Search)
-        if ($request->has('search') && $request->search != '') {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('deskripsi_kerusakan', 'like', '%' . $search . '%')
-                ->orWhereHas('barang', function($barangQuery) use ($search) {
-                    $barangQuery->where('nama_barang', 'like', '%' . $search . '%')
-                                ->orWhere('lokasi', 'like', '%' . $search . '%');
-                });
+        // 2. Filter Status Laporan (Dropdown Status)
+        $query->when($request->filled('status'), function ($q) use ($request) {
+            $q->where('status_laporan', $request->status);
+        });
+
+        // 3. Filter Prioritas Laporan (Dropdown Prioritas)
+        $query->when($request->filled('prioritas'), function ($q) use ($request) {
+            $q->where('prioritas', $request->prioritas);
+        });
+
+        // 4. Fitur Pencarian Kata Kunci (Deskripsi, Nama Barang, Lokasi, Kode)
+        $query->when($request->filled('search'), function ($q) use ($request) {
+            $search = trim($request->search);
+            $q->where(function ($sub) use ($search) {
+                $sub->where('deskripsi_kerusakan', 'like', "%{$search}%")
+                    ->orWhereHas('barang', function ($b) use ($search) {
+                        $b->where('nama_barang', 'like', "%{$search}%")
+                            ->orWhere('lokasi', 'like', "%{$search}%")
+                            ->orWhere('kode_barang', 'like', "%{$search}%");
+                    });
             });
-        }
+        });
 
-        // 3. Konfigurasi Paginasi & Batasan Pilihan Per Page
+        // 5. Paginasi & Query String
         $perPage = $request->input('per_page', 10);
         $allowedPerPage = [10, 30, 50, 80, 100];
         if (!in_array($perPage, $allowedPerPage)) {
             $perPage = 10;
         }
 
-        // Menggunakan paginate() menggantikan get()
-        $laporanku = $query->latest()->paginate($perPage)->appends($request->all());
+        $laporanku = $query->latest()->paginate($perPage)->withQueryString();
 
         return view('laporan.index', compact('laporanku', 'perPage'));
     }

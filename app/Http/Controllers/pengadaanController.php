@@ -38,17 +38,40 @@ class PengadaanController extends Controller
 
     return redirect()->route('karyawan.pengadaan.index')->with('success', 'Pengajuan pengadaan barang berhasil dikirim ke Pimpinan.');
 }
-    public function index(Request $request)
-{
-    $perPage = $request->input('per_page', 10);
+        public function index(Request $request)
+    {
+        $query = \App\Models\PengadaanBarang::where('id_user', Auth::id());
 
-    $pengadaanku = \App\Models\PengadaanBarang::where('id_user', Auth::id())
-                        ->latest()
-                        ->paginate($perPage)
-                        ->withQueryString();
+        // 1. Filter Status Pengadaan (misal: Menunggu, Disetujui, Ditolak)
+        $query->when($request->filled('status'), function ($q) use ($request) {
+            $q->where('status', $request->status);
+        });
 
-    return view('karyawan.pengadaan.index', compact('pengadaanku'));
-}
+        // 2. Filter Kategori Barang
+        $query->when($request->filled('kategori'), function ($q) use ($request) {
+            $q->where('kategori_barang', 'like', '%' . $request->kategori . '%');
+        });
+
+        // 3. Pencarian Kata Kunci (Nama Barang / Alasan Pengadaan)
+        $query->when($request->filled('search'), function ($q) use ($request) {
+            $search = trim($request->search);
+            $q->where(function ($sub) use ($search) {
+                $sub->where('nama_barang', 'like', "%{$search}%")
+                    ->orWhere('alasan_pengadaan', 'like', "%{$search}%");
+            });
+        });
+
+        // 4. Konfigurasi Paginasi
+        $perPage = $request->input('per_page', 10);
+        $allowedPerPage = [10, 30, 50, 80, 100];
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 10;
+        }
+
+        $pengadaanku = $query->latest()->paginate($perPage)->withQueryString();
+
+        return view('karyawan.pengadaan.index', compact('pengadaanku', 'perPage'));
+    }
 
 public function show($id)
 {

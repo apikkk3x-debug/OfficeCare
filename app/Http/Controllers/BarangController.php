@@ -7,12 +7,35 @@ use App\Models\BarangFasilitas;
 
 class BarangController extends Controller
 {
-    public function index()
-    {
-        // Ubah variabel menjadi $barangs agar sinkron dengan index.blade.php
-        $barangs = BarangFasilitas::latest()->get();
-        return view('admin.barang.index', compact('barangs'));
-    }
+    public function index(Request $request)
+{
+    $perPage = $request->get('per_page', 10);
+    $query = BarangFasilitas::query();
+
+    // 1. Filter Pencarian Kata Kunci (Kode, Nama Barang, Lokasi)
+    $query->when($request->filled('search'), function ($q) use ($request) {
+        $search = $request->search;
+        $q->where(function ($sub) use ($search) {
+            $sub->where('kode_barang', 'like', "%{$search}%")
+                ->orWhere('nama_barang', 'like', "%{$search}%")
+                ->orWhere('lokasi', 'like', "%{$search}%");
+        });
+    });
+
+    // 2. Filter Kategori Barang
+    $query->when($request->filled('kategori'), function ($q) use ($request) {
+        $q->where('kategori_barang', 'like', '%' . $request->kategori . '%');
+    });
+
+    // 3. Filter Kondisi Barang
+    $query->when($request->filled('kondisi'), function ($q) use ($request) {
+        $q->where('kondisi', $request->kondisi);
+    });
+
+    $barangs = $query->latest()->paginate($perPage)->withQueryString();
+
+    return view('admin.barang.index', compact('barangs'));
+}
 
     public function store(Request $request)
     {

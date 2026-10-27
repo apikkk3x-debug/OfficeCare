@@ -9,6 +9,7 @@ use App\Models\LaporanKomentar;
 use App\Models\LaporanLog;
 use App\Models\User;
 use App\Models\PengadaanBarang;
+use App\Models\Pengingat;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -36,7 +37,12 @@ class AdminController extends Controller
         $pengadaanPending = PengadaanBarang::whereIn('status_approval', ['pending', 'Pending', 'menunggu', 'Menunggu'])->count();
         $totalUsers = User::count();
 
-        // Ambil Pengumuman Terbaru (Aman jika model belum ada)
+        $pengingatMasuk = Pengingat::with(['laporan.user', 'laporan.barang', 'pimpinan'])
+            ->where('is_read', false)
+            ->latest()
+            ->get();
+
+        // Ambil Pengumuman Terbaru
         $pengumumanTerbaru = null;
         if (class_exists('\App\Models\Pengumuman')) {
             $pengumumanTerbaru = \App\Models\Pengumuman::latest()->first();
@@ -57,33 +63,48 @@ class AdminController extends Controller
             'totalAset',
             'pengadaanPending',
             'totalUsers',
-            'pengumumanTerbaru'
+            'pengumumanTerbaru',
+            'pengingatMasuk'
         ));
     }
 
     /**
-     * Menampilkan Halaman Data Laporan Pengaduan
+     * Menampilkan Halaman Data Laporan Pengaduan (Lengkap dengan Filter & Search)
      */
     public function laporan(Request $request)
-    {
-        $perPage = $request->get('per_page', 10);
-        
-        // Mulai query dengan relasi
-        $query = LaporanKerusakan::with(['user', 'barang'])->latest();
+{
+    $perPage = $request->get('per_page', 10);
+    
+    $query = LaporanKerusakan::with(['user', 'barang']);
 
-        // Jika ada filter status dari URL (contoh: ?status=Menunggu)
-        if ($request->has('status') && $request->status != '') {
-            $query->where('status_laporan', $request->status);
-        }
+    // 1. Pencarian Kata Kunci Teks (Nama Barang, Pelapor, atau Deskripsi)
+    $query->when($request->filled('search'), function ($q) use ($request) {
+        $search = $request->search;
+        $q->where(function ($sub) use ($search) {
+            $sub->where('deskripsi_kerusakan', 'like', "%{$search}%")
+                ->orWhereHas('barang', fn($b) => $b->where('nama_barang', 'like', "%{$search}%"))
+                ->orWhereHas('user', fn($u) => $u->where('nama', 'like', "%{$search}%"));
+        });
+    });
 
-        // Ambil data dengan paginasi dan pertahankan query string
-        $laporan = $query->paginate($perPage)->withQueryString();
+    // 2. Filter Status Laporan
+    $query->when($request->filled('status'), function ($q) use ($request) {
+        $q->where('status_laporan', $request->status);
+    });
 
-        return view('admin.laporan', compact('laporan'));
-    }
+    // 3. Filter Tingkat Prioritas
+    $query->when($request->filled('prioritas'), function ($q) use ($request) {
+        $q->where('prioritas', $request->prioritas);
+    });
+
+    // Ambil data dengan paginasi + pertahankan query string URL
+    $laporan = $query->latest()->paginate($perPage)->withQueryString();
+
+    return view('admin.laporan', compact('laporan'));
+}
 
     /**
-     * Memperbarui Status Laporan (Menunggu, Diproses, Dialihkan ke Pengadaan, Selesai, Ditolak)
+     * Memperbarui Status Laporan
      */
     public function updateStatus(Request $request, $id)
     {
@@ -130,20 +151,26 @@ class AdminController extends Controller
             $keteranganLog,
             $request
         ) {
+            $idLaporan = $laporan->id_laporan ?? $laporan->id;
+
             $laporan->update([
                 'status_laporan' => $statusBaru,
             ]);
 
             LaporanLog::create([
-                'id_laporan'        => $laporan->id_laporan ?? $laporan->id,
+                'id_laporan'        => $idLaporan,
                 'status_sebelumnya' => $statusLama,
                 'status_sekarang'   => $statusBaru,
                 'keterangan'        => $keteranganLog,
             ]);
 
-            // Otomatis buat draf pengadaan jika status dialihkan
+            // Tandai pengingat dibaca
+            Pengingat::where('laporan_id', $idLaporan)->update([
+                'is_read' => true,
+            ]);
+
+            // Buat draf pengadaan jika dialihkan
             if ($statusBaru === 'Dialihkan ke Pengadaan') {
-                $idLaporan = $laporan->id_laporan ?? $laporan->id;
                 $pengadaanEksis = PengadaanBarang::where('id_laporan', $idLaporan)->exists();
 
                 if (!$pengadaanEksis) {
@@ -168,10 +195,7 @@ class AdminController extends Controller
             }
         });
 
-        return redirect()->back()->with(
-            'success',
-            'Status laporan berhasil diperbarui!'
-        );
+        return redirect()->back()->with('success', 'Status laporan berhasil diperbarui!');
     }
 
     /**
@@ -184,18 +208,37 @@ class AdminController extends Controller
     }
 
     /**
-     * Menampilkan Halaman Manajemen Pengguna (Dengan Paginasi)
+     * Menampilkan Halaman Manajemen Pengguna (Dilengkapi Filter & Search)
      */
     public function manajemenUser(Request $request)
     {
         $perPage = $request->get('per_page', 10);
-        $users = User::latest()->paginate($perPage)->withQueryString();
+        $query = User::query();
+
+        // Filter Pencarian Teks User
+        $query->when($request->filled('search'), function ($q) use ($request) {
+            $search = $request->search;
+            $q->where(function ($sub) use ($search) {
+                $sub->where('nama', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%")
+                    ->orWhere('divisi', 'like', "%{$search}%");
+            });
+        });
+
+        // Filter Role User
+        $query->when($request->filled('role'), function ($q) use ($request) {
+            $q->where('role', $request->role);
+        });
+
+        $users = $query->latest()->paginate($perPage)->withQueryString();
 
         return view('admin.users', compact('users'));
     }
 
     /**
-     * Menyimpan Pengguna Baru dari Modal Admin
+     * Menyimpan Pengguna Baru
      */
     public function storeUser(Request $request)
     {
@@ -207,19 +250,16 @@ class AdminController extends Controller
             'divisi'   => 'required|string|max:100',
         ]);
 
-        // 1. Membuat NIK Otomatis Berdasarkan Tahun dan Nomor Urut
         $year = date('Y');
         $latestUser = User::whereYear('created_at', $year)->latest('id_user')->first();
         
-        // Ambil 4 digit terakhir dari NIK terakhir tahun ini, lalu tambahkan 1
         $nextNumber = $latestUser ? intval(substr($latestUser->nik, -4)) + 1 : 1;
         $nik = 'GC-' . $year . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
-        // 2. Simpan Data ke Database
         User::create([
             'nama'     => $request->nama,
             'email'    => $request->email,
-            'nik'      => $nik, // NIK otomatis terisi rapi
+            'nik'      => $nik,
             'divisi'   => $request->divisi,
             'password' => Hash::make($request->password),
             'role'     => $request->role,
@@ -230,7 +270,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Menghapus Akun Pengguna dari Sistem
+     * Menghapus Akun Pengguna
      */
     public function hapusUser($id)
     {
@@ -245,7 +285,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Menampilkan Detail Laporan Kerusakan & Riwayat Obrolan / Chat
+     * Menampilkan Detail Laporan Kerusakan
      */
     public function showLaporan($id)
     {
@@ -255,7 +295,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Mengirimkan Tanggapan / Chat pada Laporan Kerusakan
+     * Mengirim Tanggapan / Chat
      */
     public function tanggapiLaporan(Request $request, $id)
     {
@@ -273,7 +313,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Menampilkan Data Manajemen Aset / Barang
+     * Menampilkan Data Manajemen Aset
      */
     public function barangIndex()
     {
@@ -281,15 +321,30 @@ class AdminController extends Controller
         return view('admin.barang.index', compact('barangs'));
     }
     
+    /**
+     * Menampilkan Daftar Pengadaan Barang (Dilengkapi Filter & Search)
+     */
     public function indexPengadaan(Request $request)
     {
         $perPage = $request->get('per_page', 10);
-        
-        // Tambahkan 'laporan.barang' pada eager loading
-        $daftarPengadaan = PengadaanBarang::with(['pemohon', 'laporan.barang'])
-                            ->latest()
-                            ->paginate($perPage)
-                            ->withQueryString();
+        $query = PengadaanBarang::with(['pemohon', 'laporan.barang']);
+
+        // Filter Pencarian Teks Pengadaan
+        $query->when($request->filled('search'), function ($q) use ($request) {
+            $search = $request->search;
+            $q->where(function ($sub) use ($search) {
+                $sub->where('nama_barang_baru', 'like', "%{$search}%")
+                    ->orWhere('alasan_pengadaan', 'like', "%{$search}%")
+                    ->orWhereHas('pemohon', fn($p) => $p->where('nama', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%"));
+            });
+        });
+
+        // Filter Status Approval Pengadaan
+        $query->when($request->filled('status'), function ($q) use ($request) {
+            $q->where('status_approval', $request->status);
+        });
+
+        $daftarPengadaan = $query->latest()->paginate($perPage)->withQueryString();
 
         return view('admin.pengadaan.index', compact('daftarPengadaan'));
     }
@@ -356,7 +411,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Menghapus Data Barang dari Inventaris
+     * Menghapus Data Barang
      */
     public function hapusBarang($id)
     {
@@ -366,85 +421,81 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Data barang berhasil dihapus dari inventaris!');
     }
 
+    /**
+     * Finalisasi Pengadaan (Terbitkan Aset & Apkir Barang Lama)
+     */
     public function selesaikanPengadaan(Request $request, $id)
-{
-    $request->validate([
-        'kategori' => 'required|string|max:255',
-        'lokasi'   => 'required|string|max:255',
-        'kondisi'  => 'required|in:Baik,Perbaikan Ringan,Rusak,Diapkir',
-    ]);
-
-    $pengadaan = PengadaanBarang::findOrFail($id);
-
-    $status = strtolower($pengadaan->status_approval ?? '');
-
-    if ($status !== 'disetujui') {
-        return redirect()->back()->with(
-            'error',
-            'Pengadaan hanya dapat difinalisasi setelah disetujui oleh Pimpinan.'
-        );
-    }
-
-    DB::transaction(function () use ($pengadaan, $request) {
-        // 1. Perbarui status pengadaan menjadi selesai
-        $pengadaan->update([
-            'status_approval' => 'selesai',
+    {
+        $request->validate([
+            'kategori' => 'required|string|max:255',
+            'lokasi'   => 'required|string|max:255',
+            'kondisi'  => 'required|in:Baik,Perbaikan Ringan,Rusak,Diapkir',
         ]);
 
-        // 2. Ambil jumlah unit yang dibeli (default 1 jika kosong)
-        $jumlahUnit = max(1, (int) ($pengadaan->jumlah ?? 1));
+        $pengadaan = PengadaanBarang::findOrFail($id);
+        $status = strtolower($pengadaan->status_approval ?? '');
 
-        // 3. Looping untuk membuat setiap unit barang dengan kode unik tersendiri
-        for ($i = 0; $i < $jumlahUnit; $i++) {
-            do {
-                $kodeBarang = 'BRG-' . date('Ymd') . '-' . rand(1000, 9999);
-            } while (BarangFasilitas::where('kode_barang', $kodeBarang)->exists());
-
-            BarangFasilitas::create([
-                'kode_barang'     => $kodeBarang,
-                'nama_barang'     => $pengadaan->nama_barang_baru ?? $pengadaan->nama_barang,
-                'kategori_barang' => $request->kategori,
-                'lokasi'          => $request->lokasi,
-                'kondisi'         => $request->kondisi,
-            ]);
+        if ($status !== 'disetujui') {
+            return redirect()->back()->with(
+                'error',
+                'Pengadaan hanya dapat difinalisasi setelah disetujui oleh Pimpinan.'
+            );
         }
 
-        // 4. Otomatis selesaikan Laporan Kerusakan asal & update barang lama
-        if (!empty($pengadaan->id_laporan)) {
-            $laporan = LaporanKerusakan::with('barang')->find($pengadaan->id_laporan);
+        DB::transaction(function () use ($pengadaan, $request) {
+            $pengadaan->update([
+                'status_approval' => 'selesai',
+            ]);
 
-            if ($laporan) {
-                // A. Ubah kondisi barang lama menjadi 'Diapkir' agar terarsip
-                if ($laporan->barang) {
-                    $laporan->barang->update([
-                        'kondisi' => 'Diapkir',
-                    ]);
-                }
+            $jumlahUnit = max(1, (int) ($pengadaan->jumlah ?? 1));
 
-                // B. Selesaikan status Laporan Kerusakan
-                if ($laporan->status_laporan !== 'Selesai') {
-                    $statusAwal = $laporan->status_laporan;
+            for ($i = 0; $i < $jumlahUnit; $i++) {
+                do {
+                    $kodeBarang = 'BRG-' . date('Ymd') . '-' . rand(1000, 9999);
+                } while (BarangFasilitas::where('kode_barang', $kodeBarang)->exists());
 
-                    $laporan->update([
-                        'status_laporan' => 'Selesai',
-                    ]);
+                BarangFasilitas::create([
+                    'kode_barang'     => $kodeBarang,
+                    'nama_barang'     => $pengadaan->nama_barang_baru ?? $pengadaan->nama_barang,
+                    'kategori_barang' => $request->kategori,
+                    'lokasi'          => $request->lokasi,
+                    'kondisi'         => $request->kondisi,
+                ]);
+            }
 
-                    LaporanLog::create([
-                        'id_laporan'        => $laporan->id_laporan ?? $laporan->id,
-                        'status_sebelumnya' => $statusAwal,
-                        'status_sekarang'   => 'Selesai',
-                        'keterangan'        => "Laporan diselesaikan secara otomatis. Barang lama telah diapkir dan {$jumlahUnit} unit barang baru pengganti telah didaftarkan ke Master Aset.",
-                    ]);
+            if (!empty($pengadaan->id_laporan)) {
+                $laporan = LaporanKerusakan::with('barang')->find($pengadaan->id_laporan);
+
+                if ($laporan) {
+                    if ($laporan->barang) {
+                        $laporan->barang->update([
+                            'kondisi' => 'Diapkir',
+                        ]);
+                    }
+
+                    if ($laporan->status_laporan !== 'Selesai') {
+                        $statusAwal = $laporan->status_laporan;
+
+                        $laporan->update([
+                            'status_laporan' => 'Selesai',
+                        ]);
+
+                        LaporanLog::create([
+                            'id_laporan'        => $laporan->id_laporan ?? $laporan->id,
+                            'status_sebelumnya' => $statusAwal,
+                            'status_sekarang'   => 'Selesai',
+                            'keterangan'        => "Laporan diselesaikan secara otomatis. Barang lama telah diapkir dan {$jumlahUnit} unit barang baru pengganti telah didaftarkan ke Master Aset.",
+                        ]);
+                    }
                 }
             }
-        }
-    });
+        });
 
-    return redirect()->back()->with(
-        'success',
-        'Barang pengadaan telah dibeli dan resmi terdaftar di Master Aset kantor! Barang lama berhasil diapkir.'
-    );
-}
+        return redirect()->back()->with(
+            'success',
+            'Barang pengadaan telah dibeli dan resmi terdaftar di Master Aset kantor! Barang lama berhasil diapkir.'
+        );
+    }
 
     public function editUser($id)
     {
@@ -484,5 +535,13 @@ class AdminController extends Controller
         ]);
 
         return back()->with('success', 'Status akun berhasil diperbarui!');
+    }
+
+    public function markPengingatRead($id)
+    {
+        $pengingat = Pengingat::findOrFail($id);
+        $pengingat->update(['is_read' => true]);
+
+        return redirect()->back()->with('success', 'Pengingat berhasil ditandai selesai.');
     }
 }

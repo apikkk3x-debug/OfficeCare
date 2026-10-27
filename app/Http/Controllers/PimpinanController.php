@@ -8,6 +8,7 @@ use App\Models\LaporanKerusakan;
 use App\Models\BarangFasilitas;
 use App\Models\PengadaanBarang;
 use App\Models\Pengumuman;
+use App\Models\Pengingat;
 
 class PimpinanController extends Controller
 {
@@ -16,10 +17,21 @@ class PimpinanController extends Controller
         // Mengambil rekapitulasi data laporan untuk pimpinan
         $laporan = LaporanKerusakan::with(['user', 'barang'])->latest()->get();
         
+        // Ambil list laporan spesifik untuk modal rincian di dashboard
+        $laporanMenungguList = LaporanKerusakan::with(['user', 'barang'])
+            ->where('status_laporan', 'Menunggu')
+            ->latest()
+            ->get();
+
+        $laporanDiprosesList = LaporanKerusakan::with(['user', 'barang'])
+            ->where('status_laporan', 'Diproses')
+            ->latest()
+            ->get();
+
         // Statistik ringkas untuk pimpinan
         $totalLaporan = LaporanKerusakan::count();
-        $laporanMenunggu = LaporanKerusakan::where('status_laporan', 'Menunggu')->count();
-        $laporanDiproses = LaporanKerusakan::where('status_laporan', 'Diproses')->count();
+        $laporanMenunggu = $laporanMenungguList->count();
+        $laporanDiproses = $laporanDiprosesList->count();
         $laporanSelesai = LaporanKerusakan::where('status_laporan', 'Selesai')->count();
         
         $totalBarang = BarangFasilitas::count();
@@ -43,7 +55,9 @@ class PimpinanController extends Controller
             'totalBarang',
             'daftarBarang',
             'pengumumans',
-            'pengadaanMenunggu'
+            'pengadaanMenunggu',
+            'laporanMenungguList',
+            'laporanDiprosesList'
         ));
     }
 
@@ -53,19 +67,44 @@ class PimpinanController extends Controller
         return view('pimpinan.print', compact('laporan'));
     }
 
-    public function indexPengadaan(Request $request)
-    {
-        // Mengambil jumlah baris per halaman dari request (default 10)
-        $perPage = $request->input('per_page', 10);
-        
-        // Mengambil data pengajuan barang baru dengan paginasi dan tetap menggunakan $daftarPengadaan
-        $daftarPengadaan = PengadaanBarang::with('pemohon')
-                            ->latest()
-                            ->paginate($perPage)
-                            ->withQueryString();
+ public function indexPengadaan(Request $request)
+{
+    $query = PengadaanBarang::with('pemohon');
 
-        return view('pimpinan.pengadaan.index', compact('daftarPengadaan'));
+    // 1. Filter Status Approval
+    $query->when($request->filled('status'), function ($q) use ($request) {
+        $status = strtolower($request->status);
+        if (in_array($status, ['pending', 'menunggu'])) {
+            $q->whereIn('status_approval', ['pending', 'Pending', 'menunggu', 'Menunggu']);
+        } else {
+            $q->where('status_approval', 'like', "%{$request->status}%");
+        }
+    });
+
+    // 2. Pencarian Kata Kunci (Menggunakan kolom 'nama' pada tabel users)
+    $query->when($request->filled('search'), function ($q) use ($request) {
+        $search = trim($request->search);
+        $q->where(function ($sub) use ($search) {
+            $sub->where('nama_barang_baru', 'like', "%{$search}%")
+                ->orWhere('alasan_pengadaan', 'like', "%{$search}%")
+                ->orWhereHas('pemohon', function ($p) use ($search) {
+                    $p->where('nama', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                });
+        });
+    });
+
+    // 3. Paginasi & Query String
+    $perPage = $request->input('per_page', 10);
+    $allowedPerPage = [10, 25, 50, 100];
+    if (!in_array($perPage, $allowedPerPage)) {
+        $perPage = 10;
     }
+
+    $daftarPengadaan = $query->latest()->paginate($perPage)->withQueryString();
+
+    return view('pimpinan.pengadaan.index', compact('daftarPengadaan', 'perPage'));
+}
 
     public function setujuiPengadaan(Request $request, PengadaanBarang $pengadaan)
     {
@@ -75,7 +114,7 @@ class PimpinanController extends Controller
 
         $status = strtolower($pengadaan->status_approval ?? '');
 
-        if ($status !== 'pending') {
+        if ($status !== 'pending' && $status !== 'menunggu') {
             return redirect()->back()->with(
                 'error',
                 'Pengajuan ini sudah diproses dan tidak dapat disetujui kembali.'
@@ -94,7 +133,8 @@ class PimpinanController extends Controller
             'Pengajuan barang telah disetujui!'
         );
     }
-        public function tolakPengadaan(Request $request, PengadaanBarang $pengadaan)
+
+    public function tolakPengadaan(Request $request, PengadaanBarang $pengadaan)
     {
         $request->validate([
             'catatan_pimpinan' => 'nullable|string|max:1000',
@@ -102,7 +142,7 @@ class PimpinanController extends Controller
 
         $status = strtolower($pengadaan->status_approval ?? '');
 
-        if ($status !== 'pending') {
+        if ($status !== 'pending' && $status !== 'menunggu') {
             return redirect()->back()->with(
                 'error',
                 'Pengajuan ini sudah diproses dan tidak dapat ditolak kembali.'
@@ -136,5 +176,29 @@ class PimpinanController extends Controller
         $laporan = $query->latest()->get();
 
         return view('pimpinan.cetak', compact('laporan', 'statusFilter'));
+    }
+
+    public function kirimPengingat(Request $request)
+    {
+        $request->validate([
+            'laporan_id' => 'required|exists:laporan_kerusakan,id_laporan',
+            'pesan'      => 'required|string',
+        ]);
+
+        // Jika pengingat untuk laporan ini statusnya belum dibaca (is_read = false),
+        // sistem akan memperbarui pesan & waktunya. Jika belum ada, baru buat data baru.
+        Pengingat::updateOrCreate(
+            [
+                'laporan_id' => $request->laporan_id,
+                'is_read'    => false,
+            ],
+            [
+                'pimpinan_id' => Auth::id(),
+                'pesan'       => $request->pesan,
+                'updated_at'  => now(),
+            ]
+        );
+
+        return redirect()->back()->with('success', 'Pengingat berhasil dikirim/diperbarui ke Admin!');
     }
 }
