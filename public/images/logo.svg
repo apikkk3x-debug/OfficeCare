@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="400" height="400">
+      
+    <defs>
+      <linearGradient id="cosmicGrad_jhpp5t" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#3B82F6" />
+        <stop offset="60%" stop-color="#60A5FA" />
+        <stop offset="100%" stop-color="#FFFFFF" />
+      </linearGradient>
+      
+      <filter id="cosmicGlow_xe0w57" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="3" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+      </filter>
+    </defs>
+  
+      <g filter="url(#cosmicGlow_xe0w57)">
+        
+      <!-- KONSEP 1: PURE MINIMAL HORIZON (Sederhana, Bersih, & Bebas Clutter) -->
+      <!-- Menara Gedung Perkantoran (Office Facilities) -->
+      <path d="M 22 48 L 31 42 L 31 70 L 22 70 Z" fill="url(#cosmicGrad_jhpp5t)" opacity="0.85"/>
+      <path d="M 33 30 L 44 24 L 44 70 L 33 70 Z" fill="#FFFFFF"/>
+      
+      <!-- Monitor Komputer Berdampingan (Pengaduan & Pengadaan) -->
+      <!-- Stand Komputer -->
+      <line x1="63" y1="60" x2="63" y2="67" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="57" y1="67" x2="69" y2="67" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+
+      <!-- Bingkai & Layar Monitor -->
+      <rect x="48" y="34" width="30" height="24" rx="3.5" fill="#080E1E" stroke="url(#cosmicGrad_jhpp5t)" stroke-width="2.5"/>
+      <rect x="51" y="37" width="24" height="18" rx="2" fill="#3B82F6" opacity="0.2"/>
+
+      <!-- Centang Solusi Putih Bersih di Layar (✓) -->
+      <path d="M 55 46 L 61 52 L 71 41" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- Busur Tunggal Care Arc (Perlindungan & Kepedulian) -->
+      <path d="M 18 74 Q 48 83 80 72" fill="none" stroke="url(#cosmicGrad_jhpp5t)" stroke-width="3" stroke-linecap="round"/>
+    
+      </g>
+    </svg>
