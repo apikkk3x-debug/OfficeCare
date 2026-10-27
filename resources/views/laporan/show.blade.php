@@ -26,21 +26,47 @@
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2">Informasi Laporan</h3>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-                    <!-- Informasi Barang & Laporan -->
+                    <!-- Informasi Barang, Pelapor & Laporan -->
                     <div class="space-y-3">
+                        <!-- Barang / Fasilitas -->
                         <div>
                             <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Nama Barang / Fasilitas</span>
-                            <h3 class="text-base font-bold text-slate-800 break-words">{{ $laporan->barang->nama_barang ?? 'Barang Dihapus' }}</h3>
+                            <h3 class="text-base font-bold text-slate-800 break-words">
+                                {{ $laporan->barang->nama_barang ?? 'Barang Dihapus' }}
+                                @if(isset($laporan->barang->kode_barang))
+                                    <span class="text-xs text-indigo-600 font-mono font-medium">[{{ $laporan->barang->kode_barang }}]</span>
+                                @endif
+                            </h3>
                         </div>
 
+                        <!-- Pelapor & Divisi -->
                         <div>
-                            <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Lokasi</span>
+                            <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Pelapor</span>
+                            <p class="text-slate-800 text-xs font-semibold break-words">
+                                {{ $laporan->user->nama ?? $laporan->user->name ?? 'Karyawan' }}
+                                @if(isset($laporan->user->divisi))
+                                    <span class="text-slate-500 font-normal">({{ $laporan->user->divisi }})</span>
+                                @endif
+                            </p>
+                        </div>
+
+                        <!-- Lokasi -->
+                        <div>
+                            <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Lokasi Fasilitas</span>
                             <p class="text-slate-700 text-xs font-medium break-words">{{ $laporan->barang->lokasi ?? '-' }}</p>
                         </div>
 
+                        <!-- Tanggal Pengajuan -->
                         <div>
-                            <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Status Laporan</span>
-                            <div class="mt-1">
+                            <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Tanggal Pengajuan</span>
+                            <p class="text-slate-700 text-xs font-medium">{{ $laporan->created_at->format('d M Y, H:i') }} WIB</p>
+                        </div>
+
+                        <!-- Status & Prioritas Grid -->
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <!-- Status Laporan -->
+                            <div>
+                                <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider block mb-1">Status Laporan</span>
                                 <span class="px-2.5 py-1 rounded-full text-[10px] font-bold inline-block
                                     @if($laporan->status_laporan == 'Menunggu') bg-amber-50 text-amber-700 border border-amber-200
                                     @elseif($laporan->status_laporan == 'Diproses') bg-indigo-50 text-indigo-700 border border-indigo-200
@@ -49,11 +75,18 @@
                                     {{ $laporan->status_laporan }}
                                 </span>
                             </div>
-                        </div>
 
-                        <div>
-                            <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Tanggal Pengajuan</span>
-                            <p class="text-slate-700 text-xs font-medium">{{ $laporan->created_at->format('d M Y, H:i') }}</p>
+                            <!-- Tingkat Prioritas Kerusakan -->
+                            <div>
+                                <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider block mb-1">Prioritas</span>
+                                @php $prioritas = $laporan->prioritas ?? 'Sedang'; @endphp
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold inline-block border
+                                    @if($prioritas == 'Darurat' || $prioritas == 'Tinggi') bg-rose-50 text-rose-700 border-rose-200
+                                    @elseif($prioritas == 'Sedang') bg-amber-50 text-amber-700 border-amber-200
+                                    @else bg-sky-50 text-sky-700 border-sky-200 @endif">
+                                    @if($prioritas == 'Darurat' || $prioritas == 'Tinggi') 🚨 @elseif($prioritas == 'Sedang') ⚠️ @else ℹ️ @endif {{ $prioritas }}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -83,7 +116,7 @@
                 <!-- Deskripsi Kerusakan -->
                 <div>
                     <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Deskripsi Pengaduan</span>
-                    <div class="mt-1.5 p-3.5 bg-white rounded-xl border border-slate-200/80 text-slate-700 text-xs leading-relaxed shadow-sm break-words break-all">
+                    <div class="mt-1.5 p-3.5 bg-white rounded-xl border border-slate-200/80 text-slate-700 text-xs leading-relaxed shadow-sm break-words">
                         {{ $laporan->deskripsi_kerusakan }}
                     </div>
                 </div>
@@ -105,22 +138,20 @@
                     </div>
                 </div>
                 
-                <!-- Kotak Daftar Pesan (Gaya Gelembung WhatsApp) - Mengisi penuh ruang secara vertikal -->
+                <!-- Kotak Daftar Pesan (Gaya Gelembung WhatsApp) -->
                 <div class="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-[220px]">
                     @forelse($laporan->komentars as $komentar)
                         @php
                             $isMe = $komentar->id_user == Auth::id();
                         @endphp
                         
-                        <!-- Baris Flex untuk Mengatur Posisi Kiri / Kanan -->
                         <div class="flex {{ $isMe ? 'justify-end' : 'justify-start' }}">
-                            <!-- Gelembung Chat yang Lebarnya Menyesuaikan Teks -->
                             <div class="max-w-[85%] p-3 rounded-2xl shadow-sm text-xs space-y-1 
                                 {{ $isMe ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-sm' }}">
                                 
                                 <div class="flex justify-between items-center gap-4 text-[10px] {{ $isMe ? 'text-indigo-100' : 'text-slate-400' }}">
                                     <span class="font-bold">
-                                        {{ $isMe ? 'Anda' : ($komentar->user->name ?? 'Pengguna') }}
+                                        {{ $isMe ? 'Anda' : ($komentar->user->nama ?? $komentar->user->name ?? 'Pengguna') }}
                                         @if(!$isMe && ($komentar->user->role ?? false))
                                             <span class="opacity-80 font-normal">({{ ucfirst($komentar->user->role) }})</span>
                                         @endif
@@ -128,20 +159,20 @@
                                     <span>{{ $komentar->created_at->format('H:i') }}</span>
                                 </div>
                                 
-                                <p class="leading-relaxed break-words break-all {{ $isMe ? 'text-white' : 'text-slate-700' }}">
+                                <p class="leading-relaxed break-words {{ $isMe ? 'text-white' : 'text-slate-700' }}">
                                     {{ $komentar->pesan }}
                                 </p>
                             </div>
                         </div>
                     @empty
-                        <div class="text-center py-5 bg-white/60 rounded-xl border border-dashed border-slate-300">
+                        <div class="text-center py-8 bg-white/60 rounded-xl border border-dashed border-slate-300">
                             <p class="text-[11px] text-slate-500 italic">Belum ada diskusi. Mulai percakapan di bawah.</p>
                         </div>
                     @endforelse
                 </div>
             </div>
 
-            <!-- Form Kirim Pesan (Menempel rapi di bagian paling bawah) -->
+            <!-- Form Kirim Pesan -->
             <form action="{{ route('laporan.komentar.store', $laporan->id_laporan) }}" method="POST" class="pt-3 mt-3 border-t border-slate-200/60 flex gap-2 shrink-0">
                 @csrf
                 <input type="text" name="pesan" placeholder="Tulis pesan..." class="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm" required>
@@ -153,74 +184,79 @@
 
     </div> <!-- TUTUP GRID 2 KOLOM ATAS -->
 
-   <!-- ================= BAGIAN BAWAH: TIMELINE / LOG RIWAYAT ================= -->
+    <!-- ================= BAGIAN BAWAH: TIMELINE / LOG RIWAYAT ================= -->
+    <div class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 space-y-3 w-full">
 
-<div class="bg-slate-100/80 p-5 rounded-2xl shadow-sm border border-slate-200/90 space-y-3 w-full">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2">Log Riwayat & Status Laporan</h3>
 
-    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2">Log Riwayat & Status Laporan</h3>
+        <div class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
 
-    <div class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+            <div class="relative border-l-2 border-slate-300 ml-3 space-y-4 pt-1 pb-1 overflow-visible">
 
-        <div class="relative border-l-2 border-slate-300 ml-3 space-y-4 pt-1 pb-1 overflow-visible">
+                @forelse($laporan->logs ?? [] as $log)
 
-            @forelse($laporan->logs ?? [] as $log)
+                    @php
+                        $keteranganLog = $log->keterangan;
+                        if (str_ends_with(trim($keteranganLog), 'oleh')) {
+                            $keteranganLog .= ' ' . ($laporan->user->nama ?? $laporan->user->name ?? 'Karyawan');
+                        }
 
-                @php
-                    $keteranganLog = $log->keterangan;
-                    if (str_ends_with(trim($keteranganLog), 'oleh')) {
-                        $keteranganLog .= ' ' . ($laporan->user->name ?? $laporan->user->nama ?? 'Karyawan');
-                    }
-
-                    if ($log->status_sekarang === 'Menunggu') {
-                        $dotColor = 'bg-amber-500';
-                        $statusColor = 'bg-amber-100 text-amber-800';
-                    } elseif ($log->status_sekarang === 'Diproses') {
-                        $dotColor = 'bg-blue-600';
-                        $statusColor = 'bg-blue-100 text-blue-800';
-                    } elseif ($log->status_sekarang === 'Selesai') {
-                        $dotColor = 'bg-emerald-600';
-                        $statusColor = 'bg-emerald-100 text-emerald-800';
-                    } elseif ($log->status_sekarang === 'Ditolak' || $log->status_sekarang === 'Dibatalkan') {
-                        $dotColor = 'bg-slate-500';
-                        $statusColor = 'bg-slate-200 text-slate-700';
-                    } else {
-                        $dotColor = 'bg-slate-500';
-                        $statusColor = 'bg-slate-100 text-slate-700';
-                    }
-                @endphp
-                <div class="relative pl-6 pr-2 py-1 group transition-all duration-300">
-                    <div class="absolute -left-[9px] top-3 h-4 w-4 rounded-full {{ $dotColor }} border-2 border-white shadow-sm z-10 shrink-0"></div>
-                    <!-- Card Log -->
-                    <div id="log-{{ $log->id_log ?? $log->id }}" 
-                        class="bg-white border border-slate-200/80 p-3 rounded-xl shadow-sm transition-all duration-500
-                                target:bg-indigo-100 target:border-indigo-400 target:ring-2 target:ring-indigo-500/50 target:shadow-md target:scale-[1.02]">
-                        <p class="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                            Status: 
-                            <span class="{{ $statusColor }} px-2 py-0.5 rounded font-bold text-[10px]">
-                                {{ $log->status_sekarang }}
-                            </span>
-                        </p>
-                        <p class="text-[11px] text-slate-600 mt-1 leading-relaxed break-words break-all">
-                            {{ $log->created_at->format('d M Y, H:i') }} • {{ $keteranganLog }}
-                        </p>
+                        if ($log->status_sekarang === 'Menunggu') {
+                            $dotColor = 'bg-amber-500';
+                            $statusColor = 'bg-amber-100 text-amber-800';
+                        } elseif ($log->status_sekarang === 'Diproses') {
+                            $dotColor = 'bg-indigo-600';
+                            $statusColor = 'bg-indigo-100 text-indigo-800';
+                        } elseif ($log->status_sekarang === 'Selesai') {
+                            $dotColor = 'bg-emerald-600';
+                            $statusColor = 'bg-emerald-100 text-emerald-800';
+                        } elseif ($log->status_sekarang === 'Ditolak' || $log->status_sekarang === 'Dibatalkan') {
+                            $dotColor = 'bg-slate-500';
+                            $statusColor = 'bg-slate-200 text-slate-700';
+                        } else {
+                            $dotColor = 'bg-slate-500';
+                            $statusColor = 'bg-slate-100 text-slate-700';
+                        }
+                    @endphp
+                    <div class="relative pl-6 pr-2 py-1 group transition-all duration-300">
+                        <div class="absolute -left-[9px] top-3 h-4 w-4 rounded-full {{ $dotColor }} border-2 border-white shadow-sm z-10 shrink-0"></div>
+                        
+                        <!-- Card Log -->
+                        <div id="log-{{ $log->id_log ?? $log->id }}" 
+                            class="bg-white border border-slate-200/80 p-3 rounded-xl shadow-sm transition-all duration-500
+                                   target:bg-indigo-100 target:border-indigo-400 target:ring-2 target:ring-indigo-500/50 target:shadow-md target:scale-[1.02]">
+                            <div class="flex justify-between items-center">
+                                <p class="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                                    Status: 
+                                    <span class="{{ $statusColor }} px-2 py-0.5 rounded font-bold text-[10px]">
+                                        {{ $log->status_sekarang }}
+                                    </span>
+                                </p>
+                                <span class="text-[10px] text-slate-400 font-medium">
+                                    {{ $log->created_at->format('d M Y, H:i') }}
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 mt-1.5 leading-relaxed break-words">
+                                {{ $keteranganLog }}
+                            </p>
+                        </div>
                     </div>
-                </div>
-            @empty
-                <div class="pl-6 py-4">
-                    <p class="text-[11px] text-slate-500 italic">Belum ada catatan riwayat perubahan untuk laporan ini.</p>
-                </div>
-            @endforelse
+                @empty
+                    <div class="pl-6 py-4">
+                        <p class="text-[11px] text-slate-500 italic">Belum ada catatan riwayat perubahan untuk laporan ini.</p>
+                    </div>
+                @endforelse
+            </div>
         </div>
     </div>
 </div>
-</div>
 
-<!-- ================= MODAL MODAL PREVIEW FOTO ================= -->
+<!-- ================= MODAL PREVIEW FOTO ================= -->
 <div id="modalPreviewFoto" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs hidden items-center justify-center z-50 p-4" onclick="tutupModalFoto()">
-    <div class="relative w-fit max-w-full bg-white rounded-3xl p-4 shadow-2xl overflow-hidden border border-slate-400" onclick="event.stopPropagation()">
+    <div class="relative w-fit max-w-full bg-white rounded-3xl p-4 shadow-2xl overflow-hidden border border-slate-200" onclick="event.stopPropagation()">
         
         <!-- Tombol Tutup -->
-        <div class="flex justify-between items-center pb-3 px-1 border-b border-slate-600 mb-3 gap-6">
+        <div class="flex justify-between items-center pb-3 px-1 border-b border-slate-200 mb-3 gap-6">
             <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Pratinjau Foto Kerusakan</span>
             <button type="button" onclick="tutupModalFoto()" class="text-slate-400 hover:text-slate-600 font-bold text-lg px-2 py-1 rounded-full hover:bg-slate-100 transition cursor-pointer">✕</button>
         </div>

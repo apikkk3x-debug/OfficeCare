@@ -82,6 +82,12 @@
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Upload Foto Bukti Kendala / Masalah</label>
                 
+                <!-- Input Galeri & Form Utama -->
+                <input type="file" name="foto" id="inputFileGaleri" accept="image/png, image/jpeg, image/jpg" class="hidden" onchange="tampilkanNamaFile(this)">
+
+                <!-- Input Khusus Kamera HP Bawaan -->
+                <input type="file" id="inputKameraNativeHP" accept="image/*" capture="environment" class="hidden" onchange="prosesFotoKameraHP(this)">
+
                 <!-- Pilihan Tombol Mode -->
                 <div class="grid grid-cols-2 gap-2 mb-3">
                     <label class="py-2.5 px-3 text-xs font-semibold rounded-xl border transition flex items-center justify-center gap-2 bg-indigo-600 text-white border-indigo-600 cursor-pointer hover:bg-indigo-700 shadow-sm">
@@ -89,10 +95,10 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
                         <span>Pilih dari Galeri</span>
-                        <input type="file" name="foto" id="inputFileGaleri" accept="image/png, image/jpeg, image/jpg" class="hidden" onchange="tampilkanNamaFile(this)">
+                        <input type="file" onchange="document.getElementById('inputFileGaleri').files = this.files; tampilkanNamaFile(this);" accept="image/png, image/jpeg, image/jpg" class="hidden">
                     </label>
 
-                    <button type="button" onclick="bukaKameraModal()" class="py-2.5 px-3 text-xs font-semibold rounded-xl border transition flex items-center justify-center gap-2 bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-sm">
+                    <button type="button" onclick="pemicuKamera()" class="py-2.5 px-3 text-xs font-semibold rounded-xl border transition flex items-center justify-center gap-2 bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -130,7 +136,7 @@
 
 </div>
 
-<!-- ================= MODAL KAMERA INTERAKTIF ================= -->
+<!-- ================= MODAL KAMERA INTERAKTIF (DESKTOP/LAPTOP) ================= -->
 <div id="modalKamera" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-lg p-5 rounded-3xl shadow-2xl border border-slate-100 space-y-4 text-center">
         <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -169,9 +175,40 @@
 let mediaStream = null;
 let blobFileFoto = null;
 
+// Deteksi HP atau akses non-HTTPS
+function isMobileOrInsecure() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+        || window.innerWidth <= 768 
+        || !window.isSecureContext;
+}
+
+// Menentukan aksi pemicu kamera berdasarkan perangkat
+function pemicuKamera() {
+    if (isMobileOrInsecure()) {
+        document.getElementById('inputKameraNativeHP').click();
+    } else {
+        bukaKameraModal();
+    }
+}
+
 function tampilkanNamaFile(input) {
     if (input.files && input.files[0]) {
         document.getElementById('teksNamaFile').innerText = "File galeri: " + input.files[0].name;
+        document.getElementById('badgeStatusFoto').classList.remove('hidden');
+    }
+}
+
+// Memproses hasil jepretan dari aplikasi kamera bawaan HP
+function prosesFotoKameraHP(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // Salin file ke input galeri/form utama
+        const container = new DataTransfer();
+        container.items.add(file);
+        document.getElementById('inputFileGaleri').files = container.files;
+
+        document.getElementById('teksNamaFile').innerText = "Foto Kamera HP: " + file.name;
         document.getElementById('badgeStatusFoto').classList.remove('hidden');
     }
 }
@@ -191,11 +228,15 @@ async function bukaKameraModal() {
     panelKonfirm.classList.add('hidden');
 
     try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+        mediaStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: { ideal: 'environment' } }, 
+            audio: false 
+        });
         video.srcObject = mediaStream;
     } catch (err) {
-        alert("Gagal mengaktifkan kamera. Pastikan izin akses kamera diizinkan pada browser Anda.");
+        // Jika gagal membuka modal browser, langsung alihkan ke kamera bawaan HP
         tutupKameraModal();
+        document.getElementById('inputKameraNativeHP').click();
     }
 }
 
