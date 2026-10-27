@@ -202,11 +202,6 @@
                         </div>
                     @endforelse
                 </div>
-
-                <!-- State Kosong Jika Ditutup -->
-                <div id="empty-pengumuman-state" class="text-center py-8 px-4 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 hidden">
-                    <p class="text-xs font-medium text-slate-500">Belum ada informasi pengumuman aktif saat ini.</p>
-                </div>
             </div>
         </div>
 
