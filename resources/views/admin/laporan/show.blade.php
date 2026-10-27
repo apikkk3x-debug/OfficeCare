@@ -27,25 +27,46 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                 <!-- Informasi Barang & Laporan -->
                 <div class="space-y-3">
+                    <!-- Nama Barang -->
                     <div>
                         <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Nama Barang / Fasilitas</span>
-                        <h3 class="text-base font-bold text-slate-800 break-words">{{ $laporan->barang->nama_barang ?? 'Barang Dihapus' }}</h3>
+                        <h3 class="text-base font-bold text-slate-800 break-words">
+                            {{ $laporan->barang->nama_barang ?? 'Barang Dihapus' }}
+                            @if(isset($laporan->barang->kode_barang))
+                                <span class="text-xs text-indigo-600 font-mono font-medium">[{{ $laporan->barang->kode_barang }}]</span>
+                            @endif
+                        </h3>
                     </div>
 
-                    <div>
-                        <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Lokasi</span>
-                        <p class="text-slate-700 text-xs font-medium break-words">{{ $laporan->barang->lokasi ?? '-' }}</p>
-                    </div>
-
+                    <!-- Pelapor -->
                     <div>
                         <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Pelapor</span>
-                        <p class="text-slate-800 text-xs font-bold">{{ $laporan->user->name ?? $laporan->user->nama ?? 'Karyawan' }}</p>
+                        <p class="text-slate-800 text-xs font-bold">
+                            {{ $laporan->user->name ?? $laporan->user->nama ?? 'Karyawan' }}
+                            @if(isset($laporan->user->divisi))
+                                <span class="text-slate-500 font-normal">({{ $laporan->user->divisi }})</span>
+                            @endif
+                        </p>
                         <p class="text-[11px] text-slate-400">{{ $laporan->user->email ?? '-' }}</p>
                     </div>
 
+                    <!-- Lokasi -->
                     <div>
-                        <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Status Saat Ini</span>
-                        <div class="mt-1">
+                        <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Lokasi Fasilitas</span>
+                        <p class="text-slate-700 text-xs font-medium break-words">{{ $laporan->barang->lokasi ?? '-' }}</p>
+                    </div>
+
+                    <!-- Tanggal Pengajuan -->
+                    <div>
+                        <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Tanggal Pengajuan</span>
+                        <p class="text-slate-700 text-xs font-medium">{{ $laporan->created_at->format('d M Y, H:i') }} WIB</p>
+                    </div>
+
+                    <!-- Status & Prioritas Grid -->
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <!-- Status Laporan -->
+                        <div>
+                            <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider block mb-1">Status Saat Ini</span>
                             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold inline-block
                                 @if($laporan->status_laporan == 'Menunggu') bg-amber-50 text-amber-700 border border-amber-200
                                 @elseif($laporan->status_laporan == 'Diproses') bg-indigo-50 text-indigo-700 border border-indigo-200
@@ -55,11 +76,18 @@
                                 {{ $laporan->status_laporan }}
                             </span>
                         </div>
-                    </div>
 
-                    <div>
-                        <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Tanggal Pengajuan</span>
-                        <p class="text-slate-700 text-xs font-medium">{{ $laporan->created_at->format('d M Y, H:i') }}</p>
+                        <!-- Tingkat Prioritas Kerusakan -->
+                        <div>
+                            <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider block mb-1">Prioritas</span>
+                            @php $prioritas = $laporan->prioritas ?? 'Sedang'; @endphp
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold inline-block border
+                                @if($prioritas == 'Darurat' || $prioritas == 'Tinggi') bg-rose-50 text-rose-700 border-rose-200
+                                @elseif($prioritas == 'Sedang') bg-amber-50 text-amber-700 border-amber-200
+                                @else bg-sky-50 text-sky-700 border-sky-200 @endif">
+                                @if($prioritas == 'Darurat' || $prioritas == 'Tinggi') 🚨 @elseif($prioritas == 'Sedang') ⚠️ @else ℹ️ @endif {{ $prioritas }}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -89,7 +117,7 @@
             <!-- Deskripsi Kerusakan -->
             <div>
                 <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Deskripsi Pengaduan</span>
-                <div class="mt-1.5 p-3.5 bg-white rounded-xl border border-slate-200/80 text-slate-700 text-xs leading-relaxed shadow-sm break-words break-all">
+                <div class="mt-1.5 p-3.5 bg-white rounded-xl border border-slate-200/80 text-slate-700 text-xs leading-relaxed shadow-sm break-words">
                     {{ $laporan->deskripsi_kerusakan }}
                 </div>
             </div>
@@ -97,7 +125,7 @@
             <!-- Aksi Cepat Admin -->
             <div class="bg-indigo-50/70 border border-indigo-200/80 p-4 rounded-xl space-y-3 shadow-sm">
                 <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
-                    <span>⚡ Aksi Cepat Admin</span>
+                    <span>Tindak Lanjut Laporan</span>
                 </h4>
                 
                 <form action="{{ route('admin.laporan.updateStatus', $laporan->id_laporan) }}" method="POST" class="space-y-3">
@@ -142,13 +170,12 @@
                         </div>
                     </div>
 
-                    <!-- Area Input Detail Pengadaan (Muncul Otomatis Saat 'Dialihkan ke Pengadaan' Dipilih) -->
+                    <!-- Area Input Detail Pengadaan -->
                     <div id="areaDetailPengadaan" class="hidden space-y-3 p-3.5 bg-purple-50/80 border border-purple-200 rounded-xl mt-3">
                         <span class="block text-[11px] font-bold uppercase tracking-wider text-purple-900">
                             📦 Detail Pengajuan Pengadaan Barang
                         </span>
 
-                        <!-- Input Nama Barang Pengganti -->
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-purple-700 mb-1">Nama Barang Pengganti</label>
                             <input type="text" name="nama_barang_baru" value="{{ $laporan->barang->nama_barang ?? '' }}" 
@@ -157,21 +184,18 @@
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <!-- Input Jumlah Unit -->
                             <div>
                                 <label class="block text-[10px] font-bold uppercase text-purple-700 mb-1">Jumlah Unit</label>
                                 <input type="number" id="inputJumlah" name="jumlah" value="1" min="1" oninput="hitungTotalEstimasi()" 
                                     class="w-full text-xs bg-white border border-purple-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none text-slate-700 shadow-sm">
                             </div>
 
-                            <!-- Input Harga per Unit -->
                             <div>
                                 <label class="block text-[10px] font-bold uppercase text-purple-700 mb-1">Harga Satuan (Rp)</label>
                                 <input type="number" id="inputHargaSatuan" name="harga_satuan" min="0" placeholder="0" oninput="hitungTotalEstimasi()" 
                                     class="w-full text-xs bg-white border border-purple-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none text-slate-700 shadow-sm">
                             </div>
 
-                            <!-- Total Estimasi (Hitung Otomatis) -->
                             <div>
                                 <label class="block text-[10px] font-bold uppercase text-purple-700 mb-1">Total Estimasi (Rp)</label>
                                 <input type="text" id="displayTotalEstimasi" readonly value="Rp 0" 
@@ -179,7 +203,6 @@
                             </div>
                         </div>
 
-                        <!-- Input Link Referensi / Toko -->
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-purple-700 mb-1">Link Referensi / Toko (Opsional)</label>
                             <input type="url" name="link_referensi" placeholder="https://tokopedia.com/contoh-item..." 
@@ -241,7 +264,7 @@
                                     <span>{{ $komentar->created_at->format('H:i') }}</span>
                                 </div>
                                 
-                                <p class="leading-relaxed break-words break-all {{ $isMe ? 'text-white' : 'text-slate-700' }}">
+                                <p class="leading-relaxed break-words {{ $isMe ? 'text-white' : 'text-slate-700' }}">
                                     {{ $komentar->pesan }}
                                 </p>
                             </div>
@@ -308,17 +331,22 @@
                         <!-- Card Log -->
                         <div id="log-{{ $log->id_log ?? $log->id }}" 
                             class="bg-white border border-slate-200/80 p-3 rounded-xl shadow-sm transition-all duration-500
-                                    target:bg-indigo-100 target:border-indigo-400 target:ring-2 target:ring-indigo-500/50 target:shadow-md target:scale-[1.02]">
+                                   target:bg-indigo-100 target:border-indigo-400 target:ring-2 target:ring-indigo-500/50 target:shadow-md target:scale-[1.02]">
 
-                            <p class="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                                Status: 
-                                <span class="{{ $statusColor }} px-2 py-0.5 rounded font-bold text-[10px]">
-                                    {{ $log->status_sekarang }}
+                            <div class="flex justify-between items-center">
+                                <p class="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                                    Status: 
+                                    <span class="{{ $statusColor }} px-2 py-0.5 rounded font-bold text-[10px]">
+                                        {{ $log->status_sekarang }}
+                                    </span>
+                                </p>
+                                <span class="text-[10px] text-slate-400 font-medium">
+                                    {{ $log->created_at->format('d M Y, H:i') }}
                                 </span>
-                            </p>
+                            </div>
 
-                            <p class="text-[11px] text-slate-600 mt-1 leading-relaxed break-words break-all">
-                                {{ $log->created_at->format('d M Y, H:i') }} • {{ $keteranganLog }}
+                            <p class="text-[11px] text-slate-600 mt-1.5 leading-relaxed break-words">
+                                {{ $keteranganLog }}
                             </p>
                         </div>
                     </div>
@@ -336,10 +364,10 @@
 
 <!-- ================= MODAL PREVIEW FOTO ================= -->
 <div id="modalPreviewFoto" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs hidden items-center justify-center z-50 p-4" onclick="tutupModalFoto()">
-    <div class="relative w-fit max-w-full bg-white rounded-3xl p-4 shadow-2xl overflow-hidden border border-slate-400" onclick="event.stopPropagation()">
+    <div class="relative w-fit max-w-full bg-white rounded-3xl p-4 shadow-2xl overflow-hidden border border-slate-200" onclick="event.stopPropagation()">
         
         <!-- Tombol Tutup -->
-        <div class="flex justify-between items-center pb-3 px-1 border-b border-slate-600 mb-3 gap-6">
+        <div class="flex justify-between items-center pb-3 px-1 border-b border-slate-200 mb-3 gap-6">
             <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Pratinjau Foto Kerusakan</span>
             <button type="button" onclick="tutupModalFoto()" class="text-slate-400 hover:text-slate-600 font-bold text-lg px-2 py-1 rounded-full hover:bg-slate-100 transition cursor-pointer">✕</button>
         </div>
