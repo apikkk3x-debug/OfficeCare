@@ -4,7 +4,7 @@
 <div class="space-y-6">
     
     <!-- Banner Header Admin -->
-    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-400/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <span class="inline-block px-2.5 py-0.5 bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-[10px] font-semibold tracking-wider uppercase rounded-md mb-1.5">
                 Panel Admin • Hak Akses & Akun
@@ -21,6 +21,39 @@
         </button>
     </div>
 
+    <!-- Alert Sukses / Eror Notifikasi -->
+    @if(session('success'))
+        <div id="success-alert" class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl text-xs font-medium flex items-center gap-2.5 shadow-sm transition-opacity duration-500">
+            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>{{ session('success') }}</span>
+        </div>
+        <script>
+            setTimeout(() => {
+                const alertBox = document.getElementById('success-alert');
+                if (alertBox) {
+                    alertBox.style.opacity = '0';
+                    setTimeout(() => alertBox.style.display = 'none', 500);
+                }
+            }, 3000);
+        </script>
+    @endif
+
+    @if(session('error'))
+        <div id="error-alert" class="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-2xl text-xs font-medium flex items-center gap-2.5 shadow-sm transition-opacity duration-500">
+            <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>{{ session('error') }}</span>
+        </div>
+        <script>
+            setTimeout(() => {
+                const alertBox = document.getElementById('error-alert');
+                if (alertBox) {
+                    alertBox.style.opacity = '0';
+                    setTimeout(() => alertBox.style.display = 'none', 500);
+                }
+            }, 3000);
+        </script>
+    @endif
+
     <!-- Tabel Kelola Pengguna Modern (Card Pembungkus Utama) -->
     <div class="bg-slate-100/80 p-6 rounded-2xl shadow-sm border border-slate-200/90 space-y-4">
         
@@ -29,6 +62,9 @@
             <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Daftar Akun Pengguna Kantor & Status Verifikasi</h3>
             
             <form method="GET" action="{{ route('admin.users') }}" class="flex items-center gap-2 text-xs text-slate-600">
+                @if(request('search')) <input type="hidden" name="search" value="{{ request('search') }}"> @endif
+                @if(request('role')) <input type="hidden" name="role" value="{{ request('role') }}"> @endif
+
                 <span>Tampilkan</span>
                 <select name="per_page" onchange="this.form.submit()" 
                         class="bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-600 cursor-pointer shadow-sm">
@@ -40,6 +76,42 @@
                 <span>data</span>
             </form>
         </div>
+
+        <!-- ================= BARIS FILTER & PENCARIAN MULTI-KRITERIA ================= -->
+        <form method="GET" action="{{ route('admin.users') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 pb-2 border-b border-slate-200/60">
+            @if(request()->has('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+            @endif
+
+            <!-- Input Pencarian Teks -->
+            <div class="sm:col-span-6">
+                <input type="text" name="search" value="{{ request('search') }}" 
+                       placeholder="Cari NIK, nama, email, atau divisi..." 
+                       class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
+            </div>
+
+            <!-- Dropdown Filter Role -->
+            <div class="sm:col-span-4">
+                <select name="role" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+                    <option value="">-- Semua Role Hak Akses --</option>
+                    <option value="karyawan" {{ request('role') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
+                    <option value="pimpinan" {{ request('role') == 'pimpinan' ? 'selected' : '' }}>Pimpinan</option>
+                    <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin Sarpras</option>
+                </select>
+            </div>
+
+            <!-- Tombol Cari & Reset Filter -->
+            <div class="sm:col-span-2 flex gap-1.5">
+                <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition shadow-sm cursor-pointer py-2">
+                    Cari
+                </button>
+                @if(request()->hasAny(['search', 'role']))
+                    <a href="{{ route('admin.users') }}" title="Reset Filter" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center">
+                        ✕
+                    </a>
+                @endif
+            </div>
+        </form>
 
         <!-- Wrapper Tabel -->
         <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white">
@@ -64,6 +136,8 @@
                                 'pimpinan' => 'bg-amber-50 text-amber-700 border-amber-200',
                                 'karyawan' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
                             ][$role] ?? 'bg-slate-100 text-slate-700 border-slate-200';
+                            
+                            $idUser = $user->id_user ?? $user->id;
                         @endphp
                         <tr class="hover:bg-slate-50/80 transition">
                             <td class="p-3.5 font-semibold text-slate-500">
@@ -82,7 +156,9 @@
                                     </div>
                                     <div>
                                         <div class="font-bold text-slate-800">{{ $user->nama ?? $user->name }}</div>
-                                        <div class="text-[10px] text-slate-400 font-mono">NIK: {{ $user->nik ?? '-' }} • Divisi: {{ $user->divisi ?? '-' }}</div>
+                                        <div class="text-[10px] text-slate-400 font-mono">
+                                            NIK: {{ $user->nik ?? '-' }} • Divisi: {{ $user->divisi ?? '-' }}
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -116,7 +192,7 @@
                                 <div class="flex items-center justify-center gap-1.5">
                                     
                                     @if($user->status == 'pending')
-                                        <form action="{{ route('admin.users.updateStatus', $user->id_user ?? $user->id) }}" method="POST">
+                                        <form action="{{ route('admin.users.updateStatus', $idUser) }}" method="POST">
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="status" value="disetujui">
@@ -125,7 +201,7 @@
                                             </button>
                                         </form>
 
-                                        <form action="{{ route('admin.users.updateStatus', $user->id_user ?? $user->id) }}" method="POST">
+                                        <form action="{{ route('admin.users.updateStatus', $idUser) }}" method="POST">
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="status" value="ditolak">
@@ -154,15 +230,15 @@
                                              class="absolute right-full mr-2 top-1/2 -translate-y-1/2 w-36 bg-white border border-slate-200 rounded-xl shadow-xl z-50 py-1 text-left space-y-1"
                                              style="display: none;">
                                             
-                                            <button type="button" onclick="openEditModal('{{ $user->id_user ?? $user->id }}', '{{ $user->nama }}', '{{ $user->email }}', '{{ $user->role }}')" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition cursor-pointer">
+                                            <button type="button" onclick="openEditModal('{{ $idUser }}', '{{ addslashes($user->nama ?? $user->name) }}', '{{ $user->email }}', '{{ $user->role }}')" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition cursor-pointer">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                 </svg>
                                                 <span>Edit Akun</span>
                                             </button>
 
-                                            @if(Auth::id() !== ($user->id_user ?? $user->id))
-                                                <form action="{{ route('admin.users.hapus', $user->id_user ?? $user->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun {{ $user->email }}?')">
+                                            @if(Auth::id() !== $idUser)
+                                                <form action="{{ route('admin.users.hapus', $idUser) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun {{ $user->email }}?')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition cursor-pointer">
@@ -184,7 +260,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-8 text-slate-400">Belum ada pengguna terdaftar.</td>
+                            <td colspan="7" class="text-center py-8 text-slate-400">Tidak ada data pengguna yang sesuai dengan kriteria pencarian/filter.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -304,7 +380,7 @@
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Role / Hak Akses</label>
                 <select name="role" id="edit_role" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:bg-white" required>
-                    <option value="admin">Admin</option>
+                    <option value="admin">Admin Sarpras</option>
                     <option value="pimpinan">Pimpinan</option>
                     <option value="karyawan">Karyawan</option>
                 </select>

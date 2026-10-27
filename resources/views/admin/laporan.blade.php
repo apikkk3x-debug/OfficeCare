@@ -4,7 +4,7 @@
 <div class="space-y-6">
     
     <!-- Banner Header Admin -->
-    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-400/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl p-5 shadow-md text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <span class="inline-block px-2.5 py-0.5 bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-[10px] font-semibold tracking-wider uppercase rounded-md mb-1.5">
                 Panel Admin • Sarpras System
@@ -29,6 +29,10 @@
             <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Daftar Pengaduan Kerusakan</h3>
             
             <form method="GET" action="{{ route('admin.laporan.index') }}" class="flex items-center gap-2 text-xs text-slate-600">
+                @if(request('search')) <input type="hidden" name="search" value="{{ request('search') }}"> @endif
+                @if(request('status')) <input type="hidden" name="status" value="{{ request('status') }}"> @endif
+                @if(request('prioritas')) <input type="hidden" name="prioritas" value="{{ request('prioritas') }}"> @endif
+                
                 <span>Tampilkan</span>
                 <select name="per_page" onchange="this.form.submit()" 
                         class="bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:border-indigo-600 cursor-pointer shadow-sm">
@@ -40,8 +44,56 @@
                 <span>data</span>
             </form>
         </div>
+
+        <!-- ================= BARIS FILTER & PENCARIAN MULTI-KRITERIA ================= -->
+        <form method="GET" action="{{ route('admin.laporan.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 pb-2 border-b border-slate-200/60">
+            @if(request()->has('per_page'))
+                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+            @endif
+
+            <!-- Input Pencarian Teks -->
+            <div class="sm:col-span-4">
+                <input type="text" name="search" value="{{ request('search') }}" 
+                       placeholder="Cari nama barang, pelapor, deskripsi..." 
+                       class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
+            </div>
+
+            <!-- Dropdown Filter Status -->
+            <div class="sm:col-span-3">
+                <select name="status" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+                    <option value="">-- Semua Status --</option>
+                    <option value="Menunggu" {{ request('status') == 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
+                    <option value="Diproses" {{ request('status') == 'Diproses' ? 'selected' : '' }}>Diproses</option>
+                    <option value="Dialihkan ke Pengadaan" {{ request('status') == 'Dialihkan ke Pengadaan' ? 'selected' : '' }}>Dialihkan ke Pengadaan</option>
+                    <option value="Selesai" {{ request('status') == 'Selesai' ? 'selected' : '' }}>Selesai</option>
+                    <option value="Ditolak" {{ request('status') == 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
+                </select>
+            </div>
+
+            <!-- Dropdown Filter Prioritas -->
+            <div class="sm:col-span-3">
+                <select name="prioritas" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+                    <option value="">-- Semua Prioritas --</option>
+                    <option value="Darurat" {{ request('prioritas') == 'Darurat' ? 'selected' : '' }}>Darurat</option>
+                    <option value="Sedang" {{ request('prioritas') == 'Sedang' ? 'selected' : '' }}>Sedang</option>
+                    <option value="Rendah" {{ request('prioritas') == 'Rendah' ? 'selected' : '' }}>Rendah</option>
+                </select>
+            </div>
+
+            <!-- Tombol Cari & Reset Filter -->
+            <div class="sm:col-span-2 flex gap-1.5">
+                <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition shadow-sm cursor-pointer py-2">
+                    Cari
+                </button>
+                @if(request()->hasAny(['search', 'status', 'prioritas']))
+                    <a href="{{ route('admin.laporan.index') }}" title="Reset Filter" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center">
+                        ✕
+                    </a>
+                @endif
+            </div>
+        </form>
         
-        <!-- Wrapper Tabel Tanpa Scroll Vertikal -->
+        <!-- Wrapper Tabel -->
         <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white">
             <table class="w-full text-left text-xs text-slate-600 border-collapse">
                 <thead class="text-slate-100 bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-800 border-b border-indigo-700/50">
@@ -68,7 +120,6 @@
                             $idLaporan = $item->id_laporan ?? $item->id;
                         @endphp
                         
-                        <!-- Baris Tabel dengan ID Spesifik untuk Highlight Otomatis oleh JavaScript -->
                         <tr id="laporan-{{ $idLaporan }}" class="hover:bg-slate-50/80 transition">
                             
                             <!-- Tanggal -->
@@ -110,6 +161,7 @@
                                     <span class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full border inline-block
                                         @if($status == 'Selesai') bg-emerald-50 text-emerald-700 border-emerald-200
                                         @elseif($status == 'Diproses') bg-indigo-50 text-indigo-700 border-indigo-200
+                                        @elseif($status == 'Dialihkan ke Pengadaan') bg-purple-50 text-purple-700 border-purple-200
                                         @elseif($status == 'Dibatalkan' || $status == 'Ditolak') bg-slate-100 text-slate-500 border-slate-200 line-through
                                         @else bg-amber-50 text-amber-700 border-amber-200 @endif">
                                         {{ $status }}
@@ -119,10 +171,10 @@
                                 <!-- Prioritas Badge -->
                                 <div>
                                     <span class="px-2 py-0.5 text-[9px] font-bold uppercase rounded-md border inline-flex items-center gap-1
-                                        @if($prioritas == 'Darurat') bg-red-50 text-red-700 border-red-200 animate-pulse
+                                        @if($prioritas == 'Darurat' || $prioritas == 'Tinggi') bg-red-50 text-red-700 border-red-200 animate-pulse
                                         @elseif($prioritas == 'Sedang') bg-amber-50 text-amber-700 border-amber-200
                                         @else bg-slate-100 text-slate-600 border-slate-200 @endif">
-                                        ⚡ {{ $prioritas }}
+                                        @if($prioritas == 'Darurat' || $prioritas == 'Tinggi') 🚨 @elseif($prioritas == 'Sedang') ⚠️ @else ℹ️ @endif {{ $prioritas }}
                                     </span>
                                 </div>
                             </td>
@@ -130,12 +182,11 @@
                             <!-- Form Aksi Ubah Status & Tombol Kelola -->
                             <td class="p-3.5 text-center align-middle whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-2">
-                                    <!-- Tombol Menuju Halaman Detail & Ruang Diskusi Terpadu -->
                                     <a href="{{ route('admin.laporan.show', $idLaporan) }}" 
-                                        title="Buka Detail & Ruang Diskusi"
-                                        class="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition border border-indigo-200 shadow-sm">
+                                       title="Buka Detail & Ruang Diskusi"
+                                       class="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition border border-indigo-200 shadow-sm">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.0121 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                         </svg>
                                         <span>Kelola</span>
                                     </a>
@@ -146,7 +197,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="text-center p-8 text-slate-400">
-                                Belum ada data laporan pengaduan masuk.
+                                Belum ada data laporan pengaduan yang sesuai dengan kriteria pencarian/filter.
                             </td>
                         </tr>
                     @endforelse

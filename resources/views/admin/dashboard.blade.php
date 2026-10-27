@@ -13,25 +13,79 @@
             <p class="text-xs text-indigo-100/80 mt-1">Pantau seluruh operasional kantor, inventaris aset, permohonan pengadaan, dan pengaduan real-time.</p>
         </div>
     </div>
+
+    <!-- Banner Instruksi & Pengingat dari Pimpinan -->
+    @if(isset($pengingatMasuk) && count($pengingatMasuk) > 0)
+    <div class="space-y-3">
+        <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-amber-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                </svg>
+                <span>Instruksi & Pengingat Pimpinan ({{ count($pengingatMasuk) }})</span>
+            </h3>
+        </div>
+
+        @foreach($pengingatMasuk as $p)
+        <div class="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 bg-amber-500 text-white font-bold text-[10px] rounded-md uppercase tracking-wider">Prioritas Pimpinan</span>
+                    <span class="text-slate-400 text-[11px]">{{ $p->updated_at ? $p->updated_at->diffForHumans() : ($p->created_at ? $p->created_at->diffForHumans() : '-') }}</span>
+                </div>
+                <p class="font-bold text-slate-800 text-sm mt-1">{{ $p->pesan }}</p>
+                <p class="text-slate-500 text-[11px]">
+                    Fasilitas: <strong class="text-indigo-700">{{ $p->laporan->barang->nama_barang ?? $p->laporan->barang->nama ?? 'Fasilitas Kantor' }}</strong> | 
+                    Pelapor: <span class="font-medium text-slate-700">{{ $p->laporan->user->nama ?? $p->laporan->user->name ?? 'Karyawan' }}</span>
+                </p>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+                <!-- Tombol Tindak Lanjut -->
+                <a href="{{ route('admin.laporan.show', $p->laporan_id) }}" class="inline-flex items-center justify-center px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl text-xs transition shadow-sm gap-1.5">
+                    <span>Tindak Lanjut</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </a>
+
+                <!-- Form Tombol Tandai Selesai / Dibaca -->
+                <form action="{{ route('admin.pengingat.read', $p->id) }}" method="POST">
+                    @csrf
+                    <button type="submit" title="Tandai Selesai / Sembunyikan" class="inline-flex items-center justify-center p-2 bg-white hover:bg-emerald-100 text-slate-500 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 rounded-xl transition cursor-pointer shadow-xs">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @endif
+
     <!-- 6 Kartu Statistik Terpadu (Grid 3 Kolom yang Simetris & Seragam) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         
-        <!-- Card 1: Total Laporan -->
-        <a href="{{ route('admin.laporan.index') }}" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-indigo-400 hover:shadow-md group">
+       <!-- Card 1: Total Laporan (Kartu Informasi Murni) -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition-colors duration-200 hover:border-slate-300 cursor-default">
             <div>
                 <div class="flex justify-between items-start">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Laporan Masuk</span>
-                    <div class="p-2.5 bg-slate-50 text-indigo-600 rounded-xl shadow-sm border border-slate-200/60 group-hover:bg-indigo-600 group-hover:text-white transition">
+                    <div class="p-2.5 bg-slate-50 text-indigo-600 rounded-xl shadow-sm border border-slate-200/60 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     </div>
                 </div>
                 <h4 class="text-3xl font-extrabold text-slate-800 mt-3">{{ $totalLaporan ?? 0 }}</h4>
                 <p class="text-slate-500 text-xs mt-1">Total keseluruhan pengaduan</p>
             </div>
-            <span class="text-xs font-semibold text-indigo-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                Kelola data laporan &rarr;
-            </span>
-        </a>
+
+            <!-- Catatan Status Real-time (Informasi Ringkas) -->
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-medium text-slate-400">
+                <span class="flex items-center gap-1.5 text-indigo-600 font-semibold">
+                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                    Terdata dalam sistem
+                </span>
+            </div>
+        </div>
 
         <!-- Card 2: Status Menunggu -->
        <a href="{{ route('admin.laporan.index', ['status' => 'Menunggu']) }}" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between transition hover:border-amber-400 hover:shadow-md group">
@@ -216,19 +270,6 @@
         </div>
 
     </div>
-
-    <!-- Quick Action Bar -->
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div>
-            <h3 class="text-base font-bold text-slate-800">Butuh Meninjau Seluruh Pengaduan?</h3>
-            <p class="text-slate-500 text-xs mt-0.5">Seluruh data rincian pelapor, foto kerusakan, dan pengubahan status tersedia terpusat di halaman Data Laporan.</p>
-        </div>
-        <a href="{{ route('admin.laporan.index') }}" class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2.5 rounded-xl text-xs transition shadow-md shadow-indigo-600/20 shrink-0">
-            <span>Buka Halaman Data Laporan</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-        </a>
-    </div>
-
 </div>
 
 <!-- Panggil Library Chart.js via CDN -->
