@@ -133,59 +133,74 @@
                                         </form>
                                     </div>
 
-                                    <!-- Modal Detail Pengumuman (Vanilla JS Modal) -->
-                                    <div id="modal-{{ $p->id }}" class="custom-modal hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-                                        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4 text-left border border-slate-200">
-                                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                                                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                                                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                    </svg>
-                                                    Detail Pengumuman Kantor
-                                                </h3>
-                                                <button onclick="closeModal('modal-{{ $p->id }}')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition cursor-pointer">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                    </svg>
+                                    <!-- ================= MODAL DETAIL PENGUMUMAN KANTOR ================= -->
+                                    <div id="modal-{{ $p->id }}" class="custom-modal hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-3 transition-all duration-200" onclick="closeModal('modal-{{ $p->id }}')">
+                                        <div class="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-900 overflow-hidden space-y-0 text-left" onclick="event.stopPropagation()">
+                                            
+                                            <!-- Header Modal Dark Mode -->
+                                            <div class="bg-slate-900 px-4 py-3 text-white flex justify-between items-center border-b border-slate-800">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="p-1 bg-indigo-500/20 text-indigo-300 rounded border border-indigo-400/20">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+                                                    </span>
+                                                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Detail Pengumuman Kantor</h3>
+                                                </div>
+                                                <button type="button" onclick="closeModal('modal-{{ $p->id }}')" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer shrink-0">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                                 </button>
                                             </div>
 
-                                            <div class="space-y-3 text-xs">
-                                                <div>
-                                                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Judul Pengumuman</span>
-                                                    <p class="font-bold text-slate-900 mt-0.5 text-sm">{{ $p->judul }}</p>
+                                            <!-- Body Content -->
+                                            <div class="p-3.5 space-y-2.5 text-xs max-h-[80vh] overflow-y-auto custom-scrollbar">
+
+                                                <!-- Judul Pengumuman -->
+                                                <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-0.5">
+                                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Judul Pengumuman</span>
+                                                    <h4 class="text-xs font-bold text-slate-800 leading-snug break-words">{{ $p->judul }}</h4>
                                                 </div>
 
-                                                <div class="grid grid-cols-2 gap-3">
-                                                    <div>
-                                                        <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Target Role</span>
-                                                        <span class="inline-block mt-1 px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[10px] font-bold uppercase">
-                                                            {{ $p->target_role }}
-                                                        </span>
+                                                <!-- Grid Target Role & Status Publikasi -->
+                                                <div class="grid grid-cols-2 gap-2 text-[11px]">
+                                                    <div class="p-2.5 bg-slate-50 border border-slate-200/70 rounded-xl space-y-0.5">
+                                                        <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Target Role</span>
+                                                        <div class="mt-0.5">
+                                                            <span class="inline-block px-2.5 py-0.5 bg-slate-200 text-slate-800 rounded-md text-[10px] font-bold uppercase shadow-2xs">
+                                                                {{ $p->target_role }}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status Publikasi</span>
-                                                        <span class="inline-block mt-1 px-2 py-0.5 {{ $p->is_active ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200' }} rounded-md text-[10px] font-bold">
-                                                            {{ $p->is_active ? 'Aktif' : 'Non-Aktif' }}
-                                                        </span>
+
+                                                    <div class="p-2.5 bg-slate-50 border border-slate-200/70 rounded-xl space-y-0.5">
+                                                        <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Status Publikasi</span>
+                                                        <div class="mt-0.5">
+                                                            <span class="inline-block px-2.5 py-0.5 {{ $p->is_active ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200' }} rounded-md text-[10px] font-bold uppercase shadow-2xs">
+                                                                {{ $p->is_active ? 'Aktif' : 'Non-Aktif' }}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                <div>
-                                                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Isi Pesan Lengkap</span>
-                                                    <div class="mt-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto">
+                                                <!-- Isi Pesan Lengkap -->
+                                                <div class="p-2.5 bg-slate-50 border border-slate-200/70 rounded-xl space-y-1">
+                                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Isi Pesan Lengkap</span>
+                                                    <p class="text-[11px] text-slate-700 leading-relaxed whitespace-pre-line break-words pl-2 border-l-2 border-indigo-400 max-h-48 overflow-y-auto custom-scrollbar">
                                                         {{ $p->pesan }}
-                                                    </div>
+                                                    </p>
                                                 </div>
 
-                                                <div>
-                                                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Waktu Dibuat</span>
-                                                    <p class="text-slate-600 mt-0.5">{{ $p->created_at->format('d M Y, H:i') }} ({{ $p->created_at->diffForHumans() }})</p>
+                                                <!-- Waktu Dibuat -->
+                                                <div class="p-2.5 bg-slate-50 border border-slate-200/70 rounded-xl space-y-0.5">
+                                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Waktu Dibuat</span>
+                                                    <p class="text-xs font-semibold text-slate-700">
+                                                        {{ $p->created_at->format('d M Y, H:i') }} <span class="text-[10px] text-slate-400 font-normal">({{ $p->created_at->diffForHumans() }})</span>
+                                                    </p>
                                                 </div>
+
                                             </div>
 
-                                            <div class="pt-2 border-t border-slate-100 flex justify-end">
-                                                <button onclick="closeModal('modal-{{ $p->id }}')" class="px-4 py-2 bg-slate-700 hover:bg-slate-900 text-slate-200 font-semibold rounded-xl text-xs transition cursor-pointer">
+                                            <!-- Footer Modal -->
+                                            <div class="px-3.5 py-2.5 bg-slate-50 border-t border-slate-100 flex justify-end">
+                                                <button type="button" onclick="closeModal('modal-{{ $p->id }}')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold transition cursor-pointer active:scale-95">
                                                     Tutup
                                                 </button>
                                             </div>
