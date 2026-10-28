@@ -1,28 +1,29 @@
 @extends('layouts.app')
 
 @section('content')
-<!-- Memaksa tinggi kontainer menutupi penuh layar (h-screen) dan menetralkan margin layout utama -->
-<div class="h-screen w-full -m-6 lg:-m-8 grid grid-cols-1 lg:grid-cols-12 bg-white overflow-hidden">
+<!-- Container Utama: Negative margin (lg:-m-6) HANYA berlaku di desktop agar split-screen penuh -->
+<div class="w-full min-h-screen lg:-m-6 grid grid-cols-1 lg:grid-cols-12 bg-slate-100 items-center justify-center">
     
-    <!-- SISI KIRI: Panel Ilustrasi & Branding (Full Height di Desktop) -->
-    <div class="hidden lg:flex lg:col-span-7 relative p-8 lg:p-16 text-white flex-col justify-between overflow-hidden h-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80')">
+    <!-- SISI KIRI: Panel Ilustrasi & Branding (Desktop Fullscreen) -->
+    <div class="hidden lg:flex lg:col-span-7 relative p-12 lg:p-16 text-white flex-col justify-between min-h-screen bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80')">
         
-        <!-- Lapisan Overlay Gelap Transparan -->
+        <!-- Overlay Gelap -->
         <div class="absolute inset-0 bg-gradient-to-br from-slate-950/85 via-indigo-950/80 to-slate-900/85 backdrop-blur-[1px]"></div>
 
         <!-- Header Logo Desktop -->
         <div class="relative z-10 flex items-center gap-3">
-            <img src="{{ asset('images/logo.svg') }}" alt="OfficeCare Logo" class="w-16 h-16 object-contain drop-shadow-md">
+            <img src="{{ asset('images/logo.svg') }}" alt="OfficeCare Logo" class="w-14 h-14 object-contain drop-shadow-md">
             <span class="text-xl font-extrabold tracking-wider uppercase">
-                <span class="text-white">Office</span><span class="text-blue-500">Care</span>
+                <span class="text-white">Office</span><span class="text-indigo-600">Care</span>
             </span>
         </div>
+
         <!-- Heading & Top Badge -->
-        <div class="relative z-10 max-w-xl space-y-3 my-auto">
+        <div class="relative z-10 max-w-xl space-y-7 my-auto">
             <span class="inline-block px-3 py-1 bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-[10px] font-bold tracking-widest uppercase rounded-lg">
                 OfficeCare System
             </span>
-            <h1 class="text-3xl lg:text-5xl font-extrabold tracking-tight leading-tight">
+            <h1 class="text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight">
                 Bergabung dengan Ekosistem Kerja Digital OfficeCare.
             </h1>
             <p class="text-xs lg:text-sm text-indigo-100/90 leading-relaxed">
@@ -31,7 +32,6 @@
 
             <!-- Kotak Fitur / Status -->
             <div class="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center gap-3 shadow-lg mt-6">
-                <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
                 <p class="text-xs text-slate-200 font-medium">Sistem Verifikasi Admin Aktif & Terintegrasi untuk Keamanan Aset Kantor.</p>
             </div>
         </div>
@@ -43,14 +43,14 @@
         </div>
     </div>
 
-    <!-- SISI KANAN: Formulir Register dengan Card Rapi & Full Height Scrollable -->
-    <div class="lg:col-span-5 p-4 sm:p-8 lg:p-10 flex flex-col justify-center items-center bg-slate-50/60 h-full overflow-y-auto">
+    <!-- SISI KANAN: Form Registrasi (p-4 sm:p-6 Menjaga Jarak Kiri-Kanan di HP) -->
+    <div class="w-full lg:col-span-5 min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
         
-        <div class="max-w-md w-full bg-white border border-slate-200/90 p-6 lg:p-8 rounded-3xl shadow-xl space-y-4 my-auto">
+        <!-- Kartu White Card Registrasi (Presisi di Tengah Layar HP & Desktop) -->
+        <div class="w-full max-w-md bg-white border border-slate-200/90 p-6 sm:p-8 rounded-3xl shadow-xl space-y-4 mx-auto my-auto">
             
-            <!-- Mobile Brand Header (HP / Layar Kecil) -->
+            <!-- Mobile Brand Header (Tampil Hanya di HP) -->
             <div class="flex lg:hidden items-center justify-center gap-2.5 pb-3 border-b border-slate-100">
-                <!-- Kotak Gelap Presisi Pas Badan Logo -->
                 <div class="w-9 h-9 p-1 bg-slate-900 rounded-lg shadow-sm border border-slate-800 flex items-center justify-center shrink-0">
                     <img src="{{ asset('images/logo.svg') }}" alt="OfficeCare Logo" class="w-full h-full object-contain">
                 </div>
@@ -87,7 +87,7 @@
                     </label>
                     <input type="text" name="nama" id="nama" value="{{ old('nama') }}" required autofocus
                            placeholder="Masukkan nama lengkap beserta gelar"
-                           class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
                 </div>
 
                 <!-- Divisi Kerja -->
@@ -97,7 +97,7 @@
                     </label>
                     <input type="text" name="divisi" id="divisi" value="{{ old('divisi') }}" required 
                            placeholder="Operasional / IT"
-                           class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
                 </div>
 
                 <!-- Alamat Email -->
@@ -107,7 +107,7 @@
                     </label>
                     <input type="email" name="email" id="email" value="{{ old('email') }}" required 
                            placeholder="nama@email.com"
-                           class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
                 </div>
 
                 <!-- Grid Password & Konfirmasi -->
@@ -118,7 +118,7 @@
                         </label>
                         <input type="password" name="password" id="password" required 
                                placeholder="Min. 6 karakter"
-                               class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                               class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
                     </div>
 
                     <div>
@@ -127,24 +127,25 @@
                         </label>
                         <input type="password" name="password_confirmation" id="password_confirmation" required 
                                placeholder="Ulangi password"
-                               class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                               class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
                     </div>
                 </div>
 
                 <!-- Tombol Submit -->
                 <div class="pt-2">
                     <button type="submit" 
-                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-xs transition shadow-md shadow-indigo-600/20 cursor-pointer active:scale-[0.99]">
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl text-xs transition shadow-md shadow-indigo-600/20 cursor-pointer active:scale-[0.99]">
                         Kirim Pendaftaran Akun
                     </button>
                 </div>
 
-                <!-- Teks Login -->
-                <div class="text-center pt-2 border-t border-slate-100 mt-2">
+                <!-- Link Login -->
+                <div class="text-center pt-3 border-t border-slate-100 mt-3">
                     <p class="text-xs text-slate-500">Sudah punya akun? <a href="{{ route('login') }}" class="text-indigo-600 font-bold hover:underline">Login &rarr;</a></p>
                 </div>
             </form>
         </div>
+
     </div>
 
 </div>
