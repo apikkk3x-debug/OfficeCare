@@ -21,39 +21,6 @@
         </button>
     </div>
 
-    <!-- Alert Sukses / Eror Notifikasi -->
-    @if(session('success'))
-        <div id="success-alert" class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl text-xs font-medium flex items-center gap-2.5 shadow-sm transition-opacity duration-500">
-            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span>{{ session('success') }}</span>
-        </div>
-        <script>
-            setTimeout(() => {
-                const alertBox = document.getElementById('success-alert');
-                if (alertBox) {
-                    alertBox.style.opacity = '0';
-                    setTimeout(() => alertBox.style.display = 'none', 500);
-                }
-            }, 3000);
-        </script>
-    @endif
-
-    @if(session('error'))
-        <div id="error-alert" class="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-2xl text-xs font-medium flex items-center gap-2.5 shadow-sm transition-opacity duration-500">
-            <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span>{{ session('error') }}</span>
-        </div>
-        <script>
-            setTimeout(() => {
-                const alertBox = document.getElementById('error-alert');
-                if (alertBox) {
-                    alertBox.style.opacity = '0';
-                    setTimeout(() => alertBox.style.display = 'none', 500);
-                }
-            }, 3000);
-        </script>
-    @endif
-
     <!-- Tabel Kelola Pengguna Modern (Card Pembungkus Utama) -->
     <div class="bg-slate-100/80 p-6 rounded-2xl shadow-sm border border-slate-200/90 space-y-4">
         
@@ -77,7 +44,7 @@
             </form>
         </div>
 
-        <!-- ================= BARIS FILTER & PENCARIAN MULTI-KRITERIA ================= -->
+       <!-- ================= BARIS FILTER & PENCARIAN MANAJEMEN USER ================= -->
         <form method="GET" action="{{ route('admin.users') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 pb-2 border-b border-slate-200/60">
             @if(request()->has('per_page'))
                 <input type="hidden" name="per_page" value="{{ request('per_page') }}">
@@ -86,17 +53,17 @@
             <!-- Input Pencarian Teks -->
             <div class="sm:col-span-6">
                 <input type="text" name="search" value="{{ request('search') }}" 
-                       placeholder="Cari NIK, nama, email, atau divisi..." 
-                       class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
+                    placeholder="Cari NIK, nama, email, atau divisi..." 
+                    class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
             </div>
 
-            <!-- Dropdown Filter Role -->
+            <!-- Dropdown Filter Role (onchange Dihapus) -->
             <div class="sm:col-span-4">
-                <select name="role" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+                <select name="role" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
                     <option value="">-- Semua Role Hak Akses --</option>
                     <option value="karyawan" {{ request('role') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
                     <option value="pimpinan" {{ request('role') == 'pimpinan' ? 'selected' : '' }}>Pimpinan</option>
-                    <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin Sarpras</option>
+                    <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                 </select>
             </div>
 
