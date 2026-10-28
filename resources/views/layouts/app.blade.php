@@ -8,8 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js CDN untuk Interaktivitas Dropdown Profil, Toast & Notifikasi -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo1.png') }}">
 </head>
-<body class="bg-slate-50 text-slate-700 font-sans antialiased">
+<body class="bg-slate-100 text-slate-700 font-sans antialiased">
     <!-- ================= GLOBAL TOAST NOTIFIKASI (MUNCUL DI SEMUA HALAMAN) ================= -->
     @if (session('success'))
         <div x-data="{ show: true, progress: 100 }" x-init="setTimeout(() => { show = false }, 3000);
