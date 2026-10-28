@@ -83,7 +83,7 @@
             </form>
         </div>
 
-        <!-- ================= BARIS FILTER & PENCARIAN (GRID SYSTEM SELARAS ADMIN) ================= -->
+        <!-- ================= BARIS FILTER & PENCARIAN ================= -->
         <form method="GET" action="{{ route('karyawan.pengadaan.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 pb-2 border-b border-slate-200/60">
             @if(request()->has('per_page'))
                 <input type="hidden" name="per_page" value="{{ request('per_page') }}">
@@ -92,13 +92,13 @@
             <!-- Input Pencarian Teks -->
             <div class="sm:col-span-6">
                 <input type="text" name="search" value="{{ request('search') }}" 
-                       placeholder="Cari nama barang, alasan kebutuhan..." 
-                       class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
+                    placeholder="Cari nama barang, alasan kebutuhan..." 
+                    class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
             </div>
 
             <!-- Dropdown Filter Status -->
             <div class="sm:col-span-4">
-                <select name="status" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+                <select name="status" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
                     <option value="">-- Semua Status --</option>
                     <option value="pending" {{ request('status') == 'pending' || request('status') == 'Menunggu' ? 'selected' : '' }}>Menunggu Approval</option>
                     <option value="disetujui" {{ request('status') == 'disetujui' || request('status') == 'Disetujui' ? 'selected' : '' }}>Disetujui Pimpinan</option>
@@ -144,10 +144,10 @@
                             $isPending = in_array($rawStatus, ['pending', 'menunggu']);
                             $idPengadaan = $item->id_pengadaan ?? $item->id;
 
-                            // Perhitungan Estimasi Biaya
+                            // Perhitungan Estimasi Biaya (estimasi_harga di DB dianggap sebagai Harga Satuan)
                             $jumlah = max(1, (int) ($item->jumlah ?? 1));
-                            $totalEstimasi = (float) ($item->estimasi_harga ?? 0);
-                            $hargaSatuan = $jumlah > 0 ? ($totalEstimasi / $jumlah) : 0;
+                            $hargaSatuan = (float) ($item->estimasi_harga ?? 0);
+                            $totalEstimasi = $hargaSatuan * $jumlah;
 
                             $statusConfig = [
                                 'pending'   => ['bg' => 'bg-amber-50 text-amber-700 border-amber-200',   'label' => 'Menunggu Approval'],
@@ -287,72 +287,96 @@
 
     </div>
 
-    <!-- Modal Pop-up Detail Pengadaan -->
-    <div x-show="showModal" style="display: none;" 
-         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-        
-        <div @click.outside="showModal = false" 
-             class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg p-6 space-y-4 relative animate-in fade-in zoom-in duration-200">
+    <!-- ================= MODAL POP-UP DETAIL PENGADAAN (ALPINE.JS TELEPORT) ================= -->
+    <template x-teleport="body">
+        <div x-show="showModal" 
+             style="display: none;" 
+             class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-[9999] p-3 transition-all duration-200">
             
-            <div class="flex justify-between items-start border-b border-slate-100 pb-3">
-                <div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-md">Rincian Pengadaan</span>
-                    <h3 class="text-base font-bold text-slate-800 mt-1" x-text="modalData.nama"></h3>
-                </div>
-                <button @click="showModal = false" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 text-xs">
-                <div>
-                    <span class="text-slate-400 block font-medium">Tanggal Pengajuan</span>
-                    <span class="font-bold text-slate-700" x-text="modalData.tanggal"></span>
-                </div>
-                <div>
-                    <span class="text-slate-400 block font-medium">Status Pengajuan</span>
-                    <span class="font-bold text-slate-700" x-text="modalData.status"></span>
-                </div>
-                <div>
-                    <span class="text-slate-400 block font-medium">Jumlah Unit</span>
-                    <span class="font-bold text-slate-700" x-text="modalData.jumlah + ' Unit'"></span>
-                </div>
-                <div>
-                    <span class="text-slate-400 block font-medium">Estimasi Biaya</span>
-                    <span class="font-bold text-slate-700" x-text="modalData.harga"></span>
+            <div @click.outside="showModal = false" 
+                 class="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-700 overflow-hidden space-y-0 text-left">
+                
+                <!-- Header Modal Dark Mode -->
+                <div class="bg-slate-900 px-4 py-3 text-white flex justify-between items-center border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="p-1 bg-indigo-500/20 text-indigo-300 rounded border border-indigo-400/20">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </span>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Rincian Pengadaan Barang</h3>
+                    </div>
+                    <button type="button" @click="showModal = false" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
 
-                <div class="col-span-2">
-                    <span class="text-slate-400 block font-medium mb-1">Tautan Referensi Produk</span>
-                    <template x-if="modalData.link && modalData.link.trim() !== ''">
-                        <a :href="modalData.link" target="_blank" rel="noopener noreferrer" 
-                           class="inline-flex items-center gap-1.5 text-indigo-600 hover:underline font-semibold bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-200">
-                            <span>Buka Link Produk Eksternal</span>
-                            <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                            </svg>
-                        </a>
-                    </template>
-                    <template x-if="!modalData.link || modalData.link.trim() === ''">
-                        <span class="text-slate-400 italic">Tidak ada tautan referensi yang dilampirkan.</span>
-                    </template>
+                <!-- Body Content -->
+                <div class="p-3.5 space-y-2.5 text-xs max-h-[80vh] overflow-y-auto custom-scrollbar">
+
+                    <!-- Nama Barang -->
+                    <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-0.5">
+                        <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Nama Barang</span>
+                        <h4 class="text-xs font-bold text-slate-800 leading-snug break-words" x-text="modalData.nama || '-'"></h4>
+                    </div>
+
+                    <!-- Banner Mini Highlight: Estimasi Biaya & Kuantitas -->
+                    <div class="bg-indigo-50/70 border border-indigo-100/90 rounded-xl p-3 flex items-center justify-between">
+                        <div>
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Estimasi Biaya</span>
+                            <p class="text-base font-extrabold text-indigo-900 tracking-tight" x-text="modalData.harga || 'Rp 0'"></p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Jumlah Unit</span>
+                            <span class="font-bold text-slate-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 text-[11px] shadow-2xs" x-text="(modalData.jumlah || '-') + ' Unit'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Grid Tanggal & Status Pengajuan -->
+                    <div class="grid grid-cols-2 gap-2 text-[11px]">
+                        <div class="p-2.5 bg-slate-50 border border-slate-200/70 rounded-xl space-y-0.5">
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Tanggal Pengajuan</span>
+                            <p class="font-bold text-slate-800 truncate" x-text="modalData.tanggal || '-'"></p>
+                        </div>
+
+                        <div class="p-2.5 bg-slate-50 border border-slate-200/70 rounded-xl space-y-0.5">
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Status Pengajuan</span>
+                            <p class="font-bold text-slate-800 truncate" x-text="modalData.status || '-'"></p>
+                        </div>
+                    </div>
+
+                    <!-- Tautan Referensi Produk -->
+                    <div class="p-2.5 bg-slate-50 border border-slate-200/70 rounded-xl space-y-1">
+                        <span class="text-[9px] font-bold uppercase tracking-wider text-purple-900 block">Tautan Referensi Produk</span>
+                        <template x-if="modalData.link && modalData.link.trim() !== ''">
+                            <a :href="modalData.link" target="_blank" rel="noopener noreferrer" 
+                               class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 hover:underline font-bold text-[11px]">
+                                <span>Buka Link Produk Eksternal</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                            </a>
+                        </template>
+                        <template x-if="!modalData.link || modalData.link.trim() === ''">
+                            <p class="text-[11px] text-slate-400 italic">Tidak ada tautan referensi yang dilampirkan.</p>
+                        </template>
+                    </div>
+
+                    <!-- Alasan / Kebutuhan Pengadaan -->
+                    <div class="p-2.5 bg-slate-50 border border-slate-200/70 rounded-xl space-y-1">
+                        <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Alasan / Kebutuhan Pengadaan</span>
+                        <p class="text-[11px] text-slate-700 leading-snug break-words pl-2 border-l-2 border-indigo-400" x-text="modalData.alasan || '-'"></p>
+                    </div>
+
                 </div>
 
-                <div class="col-span-2">
-                    <span class="text-slate-400 block font-medium mb-1">Alasan / Kebutuhan Pengadaan</span>
-                    <p class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-slate-700 leading-relaxed" x-text="modalData.alasan"></p>
+                <!-- Footer Modal -->
+                <div class="px-3.5 py-2.5 bg-slate-50 border-t border-slate-100 flex justify-end">
+                    <button type="button" @click="showModal = false" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold transition cursor-pointer active:scale-95">
+                        Tutup
+                    </button>
                 </div>
-            </div>
-
-            <div class="flex justify-end pt-3 border-t border-slate-100">
-                <button @click="showModal = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition cursor-pointer">
-                    Tutup
-                </button>
             </div>
         </div>
-    </div>
+    </template>
 
 </div>
 
