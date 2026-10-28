@@ -4,136 +4,200 @@
     <meta charset="UTF-8">
     <title>Laporan Rekapitulasi Kerusakan Fasilitas</title>
     <style>
+        * {
+            box-sizing: border-box !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 15mm 12mm;
+        }
+
         body {
             font-family: Arial, sans-serif;
             font-size: 10pt;
             color: #000;
-            margin: 25px;
+            margin: 0;
+            padding: 0;
             line-height: 1.4;
+            background-color: #f1f5f9;
         }
 
-        /* Styling khusus untuk menyembunyikan tombol saat dicetak */
+        /* Mode Layar Browser (Tampilan Pratinjau Kertas A4) */
+        @media screen {
+            body {
+                padding: 30px 15px;
+            }
+            .page-container {
+                max-width: 210mm; /* Lebar standar kertas A4 */
+                min-height: 297mm;
+                margin: 0 auto;
+                background-color: #ffffff;
+                padding: 15mm;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+                border-radius: 6px;
+            }
+        }
+
+        /* Mode Cetak Printer (Ctrl + P) */
         @media print {
             .no-print {
                 display: none !important;
             }
             body {
+                background-color: #ffffff;
+                padding: 0;
+            }
+            .page-container {
+                max-width: 100%;
                 margin: 0;
+                padding: 0;
+                box-shadow: none;
             }
         }
 
         .header {
             text-align: center;
-            margin-bottom: 25px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 12px;
+            margin-bottom: 20px;
+            border-bottom: 2.5px solid #000;
+            padding-bottom: 10px;
         }
         .header h2 {
             margin: 0 0 4px 0;
-            font-size: 14pt;
+            font-size: 13pt;
             text-transform: uppercase;
+            font-weight: bold;
         }
         .header h3 {
             margin: 0 0 6px 0;
             font-size: 11pt;
             text-transform: uppercase;
+            font-weight: bold;
         }
         .header p {
             margin: 0;
-            font-size: 9pt;
+            font-size: 8.5pt;
             color: #333;
         }
 
-        /* Styling Tabel dengan Garis Gelap Tegas agar Terlihat di Nitro PDF */
+        /* FRAME TABEL UTAMA */
         table {
             width: 100%;
             border-collapse: collapse !important;
-            margin-top: 15px;
-            margin-bottom: 30px;
+            border-spacing: 0 !important;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #000000 !important;
         }
+
         th, td {
-            border: 1.5px solid #333 !important; /* Warna garis lebih gelap dan solid */
-            padding: 8px 10px;
-            font-size: 9.5pt;
-            vertical-align: middle;
-            text-align: left;
+            border: 1px solid #000000 !important;
+            padding: 7px 8px;
+            font-size: 9pt;
+            vertical-align: top;
             color: #000;
         }
+
+        th:first-child, td:first-child {
+            border-left: 2px solid #000000 !important;
+        }
+        th:last-child, td:last-child {
+            border-right: 2px solid #000000 !important;
+        }
+        tbody tr:last-child td {
+            border-bottom: 2px solid #000000 !important;
+        }
+
         th {
-            background-color: #cbd5e1 !important; /* Warna latar header lebih kontras */
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            background-color: #e2e8f0 !important;
             text-transform: uppercase;
             font-weight: bold;
             text-align: center;
         }
 
-        /* Kelas Perataan */
+        thead {
+            display: table-header-group;
+        }
+
+        tbody tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
         .text-center { text-align: center; }
 
         .footer {
             float: right;
             text-align: center;
-            width: 240px;
+            width: 220px;
             page-break-inside: avoid;
             margin-top: 20px;
         }
         .footer p {
-            margin: 4px 0;
+            margin: 3px 0;
+            font-size: 9.5pt;
         }
     </style>
 </head>
 <body onload="window.print()">
 
-    <!-- Tombol Kembali (Hanya tampil di layar, otomatis hilang saat dicetak) -->
-    <div class="no-print" style="margin-bottom: 20px;">
-        <a href="{{ route('pimpinan.rekap') }}" style="display: inline-block; padding: 6px 14px; background-color: #4f46e5; color: #fff; text-decoration: none; border-radius: 6px; font-size: 10pt; font-weight: bold;">
-            &larr; Kembali ke Rekap
-        </a>
-    </div>
+    <div class="page-container">
 
-    <div class="header">
-        <h2>OfficeCare - Manajemen Sarana Prasarana Kantor</h2>
-        <h3>Laporan Resmi Rekapitulasi Kerusakan Fasilitas</h3>
-        <p>Waktu Cetak: {{ date('d/m/Y H:i') }} WIB</p>
-    </div>
+        <!-- Tombol Kembali -->
+        <div class="no-print" style="margin-bottom: 20px;">
+            <a href="{{ route('pimpinan.rekap') }}" style="display: inline-block; padding: 7px 16px; background-color: #0f172a; color: #fff; text-decoration: none; border-radius: 8px; font-size: 9.5pt; font-weight: bold;">
+                &larr; Kembali ke Rekap
+            </a>
+        </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 5%;">No</th>
-                <th style="width: 12%;">Tanggal</th>
-                <th style="width: 15%;">Pelapor</th>
-                <th style="width: 20%;">Nama Barang</th>
-                <th style="width: 15%;">Lokasi</th>
-                <th style="width: 23%;">Kerusakan</th>
-                <th style="width: 10%;">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($laporan as $index => $lap)
-            <tr>
-                <td class="text-center">{{ $index + 1 }}</td>
-                <td class="text-center">{{ $lap->created_at->format('d/m/Y') }}</td>
-                <td>{{ $lap->user->nama ?? $lap->user->name ?? '-' }}</td>
-                <td>{{ $lap->barang->nama_barang ?? '-' }}</td>
-                <td>{{ $lap->barang->lokasi ?? '-' }}</td>
-                <td>{{ $lap->deskripsi_kerusakan }}</td>
-                <td class="text-center">{{ $lap->status_laporan }}</td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 20px; color: #666;">Belum ada data laporan kerusakan fasilitas.</td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
+        <div class="header">
+            <h2>OfficeCare - Manajemen Sarana Prasarana Kantor</h2>
+            <h3>Laporan Resmi Rekapitulasi Kerusakan Fasilitas</h3>
+            <p>Waktu Cetak: {{ date('d/m/Y H:i') }} WIB</p>
+        </div>
 
-    <div class="footer">
-        <p>Pekanbaru, {{ date('d F Y') }}</p>
-        <p>Mengetahui,<br><strong>Pimpinan / Manager</strong></p>
-        <br><br><br>
-        <p><strong>( ___________________ )</strong></p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 12%;">Tanggal</th>
+                    <th style="width: 15%;">Pelapor</th>
+                    <th style="width: 20%;">Nama Barang</th>
+                    <th style="width: 15%;">Lokasi</th>
+                    <th style="width: 23%;">Kerusakan</th>
+                    <th style="width: 10%;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($laporan as $index => $lap)
+                <tr>
+                    <td class="text-center">{{ $index + 1 }}</td>
+                    <td class="text-center">{{ $lap->created_at->format('d/m/Y') }}</td>
+                    <td style="font-weight: bold;">{{ $lap->user->nama ?? $lap->user->name ?? '-' }}</td>
+                    <td>{{ $lap->barang->nama_barang ?? '-' }}</td>
+                    <td>{{ $lap->barang->lokasi ?? '-' }}</td>
+                    <td>{{ $lap->deskripsi_kerusakan }}</td>
+                    <td class="text-center" style="font-weight: bold;">{{ $lap->status_laporan }}</td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="7" class="text-center" style="padding: 20px; color: #666; font-style: italic;">
+                        Belum ada data laporan kerusakan fasilitas.
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+
+        <div class="footer">
+            <p>Pekanbaru, {{ date('d F Y') }}</p>
+            <p>Mengetahui,<br><strong>Pimpinan / Manager</strong></p>
+            <br><br><br>
+            <p><strong>( ___________________ )</strong></p>
+        </div>
+
     </div>
 
 </body>
