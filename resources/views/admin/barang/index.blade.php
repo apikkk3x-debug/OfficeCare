@@ -21,21 +21,6 @@
         </button>
     </div>
 
-    <!-- Alert Notifikasi -->
-    @if(session('success'))
-        <div id="success-alert" class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl text-xs font-medium flex items-center gap-2.5 shadow-sm transition-opacity duration-500">
-            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div id="error-alert" class="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-2xl text-xs font-medium flex items-center gap-2.5 shadow-sm transition-opacity duration-500">
-            <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
-
     <!-- Tabel Daftar Aset Kantor (Card Pembungkus Utama) -->
     <div class="bg-slate-100/80 p-6 rounded-2xl shadow-sm border border-slate-200/90 space-y-4">
         
@@ -61,52 +46,53 @@
         </div>
 
         <!-- ================= BARIS FILTER & PENCARIAN MULTI-KRITERIA ================= -->
-        <form method="GET" action="{{ route('admin.barang.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 pb-2 border-b border-slate-200/60">
-            @if(request()->has('per_page'))
-                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
-            @endif
+     <!-- ================= BARIS FILTER & PENCARIAN MANAJEMEN BARANG ================= -->
+<form method="GET" action="{{ route('admin.barang.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 pb-2 border-b border-slate-200/60">
+    @if(request()->has('per_page'))
+        <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+    @endif
 
-            <!-- Input Pencarian Teks -->
-            <div class="sm:col-span-5">
-                <input type="text" name="search" value="{{ request('search') }}" 
-                       placeholder="Cari kode aset, nama barang, lokasi..." 
-                       class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
-            </div>
+    <!-- Input Pencarian Teks -->
+    <div class="sm:col-span-5">
+        <input type="text" name="search" value="{{ request('search') }}" 
+               placeholder="Cari kode aset, nama barang, lokasi..." 
+               class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
+    </div>
 
-            <!-- Dropdown Filter Kategori -->
-            <div class="sm:col-span-3">
-                <select name="kategori" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
-                    <option value="">-- Semua Kategori --</option>
-                    <option value="Furnitur" {{ request('kategori') == 'Furnitur' ? 'selected' : '' }}>Furnitur & Mebel</option>
-                    <option value="Elektronik" {{ request('kategori') == 'Elektronik' ? 'selected' : '' }}>Perangkat IT & Elektronik</option>
-                    <option value="Kantor" {{ request('kategori') == 'Kantor' ? 'selected' : '' }}>Peralatan Kantor</option>
-                    <option value="Fasilitas Umum" {{ request('kategori') == 'Fasilitas Umum' ? 'selected' : '' }}>Fasilitas Umum</option>
-                </select>
-            </div>
+    <!-- Dropdown Filter Kategori (onchange Dihapus) -->
+    <div class="sm:col-span-3">
+        <select name="kategori" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+            <option value="">-- Semua Kategori --</option>
+            <option value="Furnitur" {{ request('kategori') == 'Furnitur' ? 'selected' : '' }}>Furnitur & Mebel</option>
+            <option value="Elektronik" {{ request('kategori') == 'Elektronik' ? 'selected' : '' }}>Perangkat IT & Elektronik</option>
+            <option value="Kantor" {{ request('kategori') == 'Kantor' ? 'selected' : '' }}>Peralatan Kantor</option>
+            <option value="Fasilitas Umum" {{ request('kategori') == 'Fasilitas Umum' ? 'selected' : '' }}>Fasilitas Umum</option>
+        </select>
+    </div>
 
-            <!-- Dropdown Filter Kondisi -->
-            <div class="sm:col-span-2">
-                <select name="kondisi" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
-                    <option value="">-- Semua Kondisi --</option>
-                    <option value="Baik" {{ request('kondisi') == 'Baik' ? 'selected' : '' }}>Baik</option>
-                    <option value="Perbaikan Ringan" {{ request('kondisi') == 'Perbaikan Ringan' ? 'selected' : '' }}>Perbaikan Ringan</option>
-                    <option value="Rusak" {{ request('kondisi') == 'Rusak' ? 'selected' : '' }}>Rusak</option>
-                    <option value="Diapkir" {{ request('kondisi') == 'Diapkir' ? 'selected' : '' }}>Diapkir</option>
-                </select>
-            </div>
+    <!-- Dropdown Filter Kondisi (onchange Dihapus) -->
+    <div class="sm:col-span-2">
+        <select name="kondisi" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+            <option value="">-- Semua Kondisi --</option>
+            <option value="Baik" {{ request('kondisi') == 'Baik' ? 'selected' : '' }}>Baik</option>
+            <option value="Perbaikan Ringan" {{ request('kondisi') == 'Perbaikan Ringan' ? 'selected' : '' }}>Perbaikan Ringan</option>
+            <option value="Rusak" {{ request('kondisi') == 'Rusak' ? 'selected' : '' }}>Rusak</option>
+            <option value="Diapkir" {{ request('kondisi') == 'Diapkir' ? 'selected' : '' }}>Diapkir</option>
+        </select>
+    </div>
 
-            <!-- Tombol Cari & Reset Filter -->
-            <div class="sm:col-span-2 flex gap-1.5">
-                <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition shadow-sm cursor-pointer py-2">
-                    Cari
-                </button>
-                @if(request()->hasAny(['search', 'kategori', 'kondisi']))
-                    <a href="{{ route('admin.barang.index') }}" title="Reset Filter" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center">
-                        ✕
-                    </a>
-                @endif
-            </div>
-        </form>
+    <!-- Tombol Cari & Reset Filter -->
+    <div class="sm:col-span-2 flex gap-1.5">
+        <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition shadow-sm cursor-pointer py-2">
+            Cari
+        </button>
+        @if(request()->hasAny(['search', 'kategori', 'kondisi']))
+            <a href="{{ route('admin.barang.index') }}" title="Reset Filter" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center">
+                ✕
+            </a>
+        @endif
+    </div>
+</form>
 
         <!-- Wrapper Tabel -->
         <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white">
@@ -241,61 +227,70 @@
     </div>
 </div>
 
-<!-- ================= MODAL DETAIL ASET ================= -->
-<div id="barangDetailModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs hidden items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-md p-6 rounded-2xl shadow-xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-200">
-        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-            <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-base font-bold text-slate-800">Detail Rincian Aset</h3>
-                    <p class="text-[11px] text-slate-400">Informasi lengkap inventaris fasilitas kantor</p>
-                </div>
+<!-- ================= MODAL DETAIL RINCIAN ASET / BARANG ================= -->
+<div id="barangDetailModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs hidden items-center justify-center z-50 p-3 transition-all duration-200" onclick="toggleDetailModal(false)">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-700 overflow-hidden space-y-0" onclick="event.stopPropagation()">
+        
+        <!-- Header Modal Dark Mode -->
+        <div class="bg-slate-900 px-4 py-3 text-white flex justify-between items-center border-b border-slate-800">
+            <div class="flex items-center gap-2">
+                <span class="p-1 bg-indigo-500/20 text-indigo-300 rounded border border-indigo-400/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                </span>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Detail Rincian Aset</h3>
             </div>
-            <button type="button" onclick="toggleDetailModal(false)" class="text-slate-400 hover:text-slate-600 font-bold text-xl cursor-pointer">&times;</button>
+            <button type="button" onclick="toggleDetailModal(false)" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
         </div>
 
-        <div class="space-y-3 text-xs text-slate-600">
-            <div>
-                <span class="block text-[10px] font-bold uppercase text-slate-400">Kode Barang / Aset</span>
-                <p id="detailKode" class="font-mono text-indigo-700 font-semibold text-sm mt-0.5 bg-indigo-50/50 border border-indigo-100/60 px-3 py-1.5 rounded-xl inline-block"></p>
+        <!-- Body Content -->
+        <div class="p-3.5 space-y-2.5 text-xs max-h-[80vh] overflow-y-auto custom-scrollbar">
+
+            <!-- Nama Barang / Aset -->
+            <div class="p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-0.5">
+                <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Nama Barang / Aset</span>
+                <h4 id="detailNama" class="text-xs font-bold text-slate-800 leading-snug break-words">-</h4>
             </div>
 
-            <div>
-                <span class="block text-[10px] font-bold uppercase text-slate-400">Nama Barang</span>
-                <p id="detailNama" class="font-bold text-slate-800 text-sm mt-0.5"></p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2">
+            <!-- Banner Mini Highlight: Kode Aset & Kondisi -->
+            <div class="bg-indigo-50/70 border border-indigo-100/90 rounded-xl p-3 flex items-center justify-between">
                 <div>
-                    <span class="block text-[10px] font-bold uppercase text-slate-400">Kategori</span>
-                    <p id="detailKategori" class="font-medium text-slate-700 mt-0.5"></p>
+                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Kode Barang / Aset</span>
+                    <p id="detailKode" class="text-sm font-extrabold font-mono text-indigo-900 tracking-tight">-</p>
                 </div>
-                <div>
-                    <span class="block text-[10px] font-bold uppercase text-slate-400">Kondisi Aset</span>
-                    <div class="mt-0.5">
-                        <span id="detailKondisi" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase inline-block"></span>
-                    </div>
+                <div class="text-right">
+                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Kondisi Aset</span>
+                    <span id="detailKondisi" class="px-2.5 py-1 rounded-lg border border-slate-200/80 text-[10px] font-bold uppercase inline-block shadow-2xs">
+                        -
+                    </span>
                 </div>
             </div>
 
-            <div>
-                <span class="block text-[10px] font-bold uppercase text-slate-400">Lokasi Penempatan</span>
-                <p id="detailLokasi" class="font-medium text-slate-700 mt-0.5"></p>
+            <!-- Grid Kategori & Lokasi Penempatan -->
+            <div class="grid grid-cols-2 gap-2 text-[11px]">
+                <div class="p-2.5 bg-slate-50 border border-slate-200/70 rounded-xl space-y-0.5">
+                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Kategori</span>
+                    <p id="detailKategori" class="font-bold text-slate-800 truncate">-</p>
+                </div>
+
+                <div class="p-2.5 bg-slate-50 border border-slate-200/70 rounded-xl space-y-0.5">
+                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Lokasi Penempatan</span>
+                    <p id="detailLokasi" class="font-bold text-slate-800 truncate">-</p>
+                </div>
             </div>
 
-            <div>
-                <span class="block text-[10px] font-bold uppercase text-slate-400">Tanggal Terdaftar</span>
-                <p id="detailTanggal" class="font-medium text-slate-600 mt-0.5"></p>
+            <!-- Tanggal Terdaftar -->
+            <div class="p-2.5 bg-slate-50 border border-slate-200/70 rounded-xl space-y-0.5">
+                <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Tanggal Terdaftar</span>
+                <p id="detailTanggal" class="font-semibold text-slate-700 leading-snug">-</p>
             </div>
+
         </div>
 
-        <div class="flex justify-end pt-3 border-t border-slate-100">
-            <button type="button" onclick="toggleDetailModal(false)" class="px-4 py-2.5 bg-slate-800 text-white rounded-xl text-xs font-semibold hover:bg-slate-700 transition cursor-pointer">
+        <!-- Footer Modal -->
+        <div class="px-3.5 py-2.5 bg-slate-50 border-t border-slate-100 flex justify-end">
+            <button type="button" onclick="toggleDetailModal(false)" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold transition cursor-pointer active:scale-95">
                 Tutup
             </button>
         </div>
