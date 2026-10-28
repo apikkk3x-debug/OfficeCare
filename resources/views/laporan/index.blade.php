@@ -58,13 +58,13 @@
             <!-- 1. Input Pencarian Teks -->
             <div class="sm:col-span-5">
                 <input type="text" name="search" value="{{ request('search') }}" 
-                       placeholder="Cari nama barang, lokasi, deskripsi..." 
-                       class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
+                    placeholder="Cari nama barang, lokasi, deskripsi..." 
+                    class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
             </div>
 
-            <!-- 2. Dropdown Filter Status -->
+            <!-- 2. Dropdown Filter Status (onchange Dihapus) -->
             <div class="sm:col-span-3">
-                <select name="status" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+                <select name="status" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
                     <option value="">-- Semua Status --</option>
                     <option value="Menunggu" {{ request('status') == 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
                     <option value="Diproses" {{ request('status') == 'Diproses' ? 'selected' : '' }}>Diproses</option>
@@ -73,9 +73,9 @@
                 </select>
             </div>
 
-            <!-- 3. Dropdown Filter Prioritas -->
+            <!-- 3. Dropdown Filter Prioritas (onchange Dihapus) -->
             <div class="sm:col-span-2">
-                <select name="prioritas" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+                <select name="prioritas" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
                     <option value="">-- Prioritas --</option>
                     <option value="Darurat" {{ request('prioritas') == 'Darurat' ? 'selected' : '' }}>Darurat</option>
                     <option value="Sedang" {{ request('prioritas') == 'Sedang' ? 'selected' : '' }}>Sedang</option>
@@ -164,7 +164,7 @@
                                         @if($prioritas == 'Darurat' || $prioritas == 'Tinggi') bg-red-50 text-red-700 border-red-200 animate-pulse
                                         @elseif($prioritas == 'Sedang') bg-amber-50 text-amber-700 border-amber-200
                                         @else bg-slate-100 text-slate-600 border-slate-200 @endif">
-                                        @if($prioritas == 'Darurat' || $prioritas == 'Tinggi') 🚨 @elseif($prioritas == 'Sedang') ⚠️ @else ℹ️ @endif {{ $prioritas }}
+                                        @if($prioritas == 'Darurat' || $prioritas == 'Tinggi') @elseif($prioritas == 'Sedang') @else  @endif {{ $prioritas }}
                                     </span>
                                 </div>
                             </td>
