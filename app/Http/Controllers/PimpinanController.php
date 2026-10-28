@@ -61,50 +61,97 @@ class PimpinanController extends Controller
         ));
     }
 
-    public function cetakLaporan()
+    /**
+     * Helper Private Method untuk Menangani Logika Filter Data
+     */
+    private function getFilteredLaporan(Request $request)
     {
-        $laporan = LaporanKerusakan::with(['user', 'barang'])->latest()->get();
+        $query = LaporanKerusakan::with(['user', 'barang']);
+
+        // 1. Filter Tanggal Mulai
+        if ($request->filled('tanggal_mulai')) {
+            $query->whereDate('created_at', '>=', $request->tanggal_mulai);
+        }
+
+        // 2. Filter Tanggal Selesai
+        if ($request->filled('tanggal_selesai')) {
+            $query->whereDate('created_at', '<=', $request->tanggal_selesai);
+        }
+
+        // 3. Filter Status Laporan (Menangani 'status_laporan' atau 'status')
+        $status = $request->input('status_laporan') ?? $request->input('status');
+        if ($status && $status !== 'semua') {
+            $query->where('status_laporan', $status);
+        }
+
+        // 4. Urutkan Terbaru
+        $query->latest();
+
+        // 5. Limit Data
+        $limit = $request->input('limit', '100');
+        if ($limit && $limit !== 'semua') {
+            return $query->take((int)$limit)->get();
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * Halaman Web Rekap Laporan Kerusakan (View: pimpinan.cetak)
+     */
+    public function rekapLaporan(Request $request)
+    {
+        $laporan = $this->getFilteredLaporan($request);
+        return view('pimpinan.cetak', compact('laporan'));
+    }
+
+    /**
+     * Halaman Cetak Dokumen PDF (View: pimpinan.print)
+     */
+    public function cetakLaporan(Request $request)
+    {
+        $laporan = $this->getFilteredLaporan($request);
         return view('pimpinan.print', compact('laporan'));
     }
 
- public function indexPengadaan(Request $request)
-{
-    $query = PengadaanBarang::with('pemohon');
+    public function indexPengadaan(Request $request)
+    {
+        $query = PengadaanBarang::with('pemohon');
 
-    // 1. Filter Status Approval
-    $query->when($request->filled('status'), function ($q) use ($request) {
-        $status = strtolower($request->status);
-        if (in_array($status, ['pending', 'menunggu'])) {
-            $q->whereIn('status_approval', ['pending', 'Pending', 'menunggu', 'Menunggu']);
-        } else {
-            $q->where('status_approval', 'like', "%{$request->status}%");
-        }
-    });
-
-    // 2. Pencarian Kata Kunci (Menggunakan kolom 'nama' pada tabel users)
-    $query->when($request->filled('search'), function ($q) use ($request) {
-        $search = trim($request->search);
-        $q->where(function ($sub) use ($search) {
-            $sub->where('nama_barang_baru', 'like', "%{$search}%")
-                ->orWhere('alasan_pengadaan', 'like', "%{$search}%")
-                ->orWhereHas('pemohon', function ($p) use ($search) {
-                    $p->where('nama', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
-                });
+        // 1. Filter Status Approval
+        $query->when($request->filled('status'), function ($q) use ($request) {
+            $status = strtolower($request->status);
+            if (in_array($status, ['pending', 'menunggu'])) {
+                $q->whereIn('status_approval', ['pending', 'Pending', 'menunggu', 'Menunggu']);
+            } else {
+                $q->where('status_approval', 'like', "%{$request->status}%");
+            }
         });
-    });
 
-    // 3. Paginasi & Query String
-    $perPage = $request->input('per_page', 10);
-    $allowedPerPage = [10, 25, 50, 100];
-    if (!in_array($perPage, $allowedPerPage)) {
-        $perPage = 10;
+        // 2. Pencarian Kata Kunci (Menggunakan kolom 'nama' pada tabel users)
+        $query->when($request->filled('search'), function ($q) use ($request) {
+            $search = trim($request->search);
+            $q->where(function ($sub) use ($search) {
+                $sub->where('nama_barang_baru', 'like', "%{$search}%")
+                    ->orWhere('alasan_pengadaan', 'like', "%{$search}%")
+                    ->orWhereHas('pemohon', function ($p) use ($search) {
+                        $p->where('nama', 'like', "%{$search}%")
+                          ->orWhere('email', 'like', "%{$search}%");
+                    });
+            });
+        });
+
+        // 3. Paginasi & Query String
+        $perPage = $request->input('per_page', 10);
+        $allowedPerPage = [10, 25, 50, 100];
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 10;
+        }
+
+        $daftarPengadaan = $query->latest()->paginate($perPage)->withQueryString();
+
+        return view('pimpinan.pengadaan.index', compact('daftarPengadaan', 'perPage'));
     }
-
-    $daftarPengadaan = $query->latest()->paginate($perPage)->withQueryString();
-
-    return view('pimpinan.pengadaan.index', compact('daftarPengadaan', 'perPage'));
-}
 
     public function setujuiPengadaan(Request $request, PengadaanBarang $pengadaan)
     {
@@ -162,22 +209,6 @@ class PimpinanController extends Controller
         );
     }
 
-    public function rekapLaporan(Request $request)
-    {
-        // Ambil status dari query parameter (jika ada)
-        $statusFilter = $request->input('status');
-
-        $query = LaporanKerusakan::with(['user', 'barang']);
-
-        if ($statusFilter) {
-            $query->where('status_laporan', $statusFilter);
-        }
-
-        $laporan = $query->latest()->get();
-
-        return view('pimpinan.cetak', compact('laporan', 'statusFilter'));
-    }
-
     public function kirimPengingat(Request $request)
     {
         $request->validate([
@@ -185,8 +216,6 @@ class PimpinanController extends Controller
             'pesan'      => 'required|string',
         ]);
 
-        // Jika pengingat untuk laporan ini statusnya belum dibaca (is_read = false),
-        // sistem akan memperbarui pesan & waktunya. Jika belum ada, baru buat data baru.
         Pengingat::updateOrCreate(
             [
                 'laporan_id' => $request->laporan_id,

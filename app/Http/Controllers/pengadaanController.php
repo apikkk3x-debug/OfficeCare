@@ -44,8 +44,10 @@ class PengadaanController extends Controller
 
         // 1. Filter Status Pengadaan (misal: Menunggu, Disetujui, Ditolak)
         $query->when($request->filled('status'), function ($q) use ($request) {
-            $q->where('status', $request->status);
-        });
+    if ($request->status !== 'semua') {
+        $q->where('status_approval', $request->status); // Gunakan nama kolom status_approval
+    }
+});
 
         // 2. Filter Kategori Barang
         $query->when($request->filled('kategori'), function ($q) use ($request) {
@@ -54,12 +56,15 @@ class PengadaanController extends Controller
 
         // 3. Pencarian Kata Kunci (Nama Barang / Alasan Pengadaan)
         $query->when($request->filled('search'), function ($q) use ($request) {
-            $search = trim($request->search);
-            $q->where(function ($sub) use ($search) {
-                $sub->where('nama_barang', 'like', "%{$search}%")
-                    ->orWhere('alasan_pengadaan', 'like', "%{$search}%");
+    $search = trim($request->search);
+    $q->where(function ($sub) use ($search) {
+        $sub->where('nama_barang_baru', 'like', "%{$search}%") // Gunakan nama_barang_baru
+            ->orWhere('alasan_pengadaan', 'like', "%{$search}%")
+            ->orWhereHas('laporan.barang', function ($b) use ($search) {
+                $b->where('nama_barang', 'like', "%{$search}%");
             });
-        });
+    });
+});
 
         // 4. Konfigurasi Paginasi
         $perPage = $request->input('per_page', 10);

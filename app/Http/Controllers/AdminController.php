@@ -10,6 +10,7 @@ use App\Models\LaporanLog;
 use App\Models\User;
 use App\Models\PengadaanBarang;
 use App\Models\Pengingat;
+use App\Models\Perbaikan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -69,141 +70,191 @@ class AdminController extends Controller
     }
 
     /**
+     * Private Helper: Konsistensi Query Filtering Laporan Kerusakan (Web & PDF)
+     */
+    private function getFilteredLaporan(Request $request)
+    {
+        $query = LaporanKerusakan::with(['user', 'barang']);
+
+        // 1. Pencarian Kata Kunci Teks (Search: Nama Barang, Pelapor, Email, Deskripsi, Lokasi)
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($sub) use ($search) {
+                $sub->where('deskripsi_kerusakan', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($u) use ($search) {
+                        $u->where('nama', 'like', "%{$search}%")
+                          ->orWhere('name', 'like', "%{$search}%")
+                          ->orWhere('email', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('barang', function ($b) use ($search) {
+                        $b->where('nama_barang', 'like', "%{$search}%")
+                          ->orWhere('lokasi', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // 2. Filter Status Laporan
+        $status = $request->input('status') ?? $request->input('status_laporan');
+        if ($status && $status !== 'semua') {
+            $query->where('status_laporan', $status);
+        }
+
+        // 3. Filter Prioritas
+        if ($request->filled('prioritas') && $request->prioritas !== 'semua') {
+            $query->where('prioritas', $request->prioritas);
+        }
+
+        // 4. Filter Tanggal Mulai & Tanggal Selesai
+        if ($request->filled('tanggal_mulai')) {
+            $query->whereDate('created_at', '>=', $request->tanggal_mulai);
+        }
+        if ($request->filled('tanggal_selesai')) {
+            $query->whereDate('created_at', '<=', $request->tanggal_selesai);
+        }
+
+        return $query->latest();
+    }
+
+    /**
      * Menampilkan Halaman Data Laporan Pengaduan (Lengkap dengan Filter & Search)
      */
     public function laporan(Request $request)
-{
-    $perPage = $request->get('per_page', 10);
-    
-    $query = LaporanKerusakan::with(['user', 'barang']);
+    {
+        $perPage = $request->get('per_page', 10);
+        $laporan = $this->getFilteredLaporan($request)->paginate($perPage)->withQueryString();
 
-    // 1. Pencarian Kata Kunci Teks (Nama Barang, Pelapor, atau Deskripsi)
-    $query->when($request->filled('search'), function ($q) use ($request) {
-        $search = $request->search;
-        $q->where(function ($sub) use ($search) {
-            $sub->where('deskripsi_kerusakan', 'like', "%{$search}%")
-                ->orWhereHas('barang', fn($b) => $b->where('nama_barang', 'like', "%{$search}%"))
-                ->orWhereHas('user', fn($u) => $u->where('nama', 'like', "%{$search}%"));
-        });
-    });
-
-    // 2. Filter Status Laporan
-    $query->when($request->filled('status'), function ($q) use ($request) {
-        $q->where('status_laporan', $request->status);
-    });
-
-    // 3. Filter Tingkat Prioritas
-    $query->when($request->filled('prioritas'), function ($q) use ($request) {
-        $q->where('prioritas', $request->prioritas);
-    });
-
-    // Ambil data dengan paginasi + pertahankan query string URL
-    $laporan = $query->latest()->paginate($perPage)->withQueryString();
-
-    return view('admin.laporan', compact('laporan'));
-}
+        return view('admin.laporan', compact('laporan'));
+    }
 
     /**
      * Memperbarui Status Laporan
      */
-    public function updateStatus(Request $request, $id)
-    {
-        $request->validate([
-            'status_laporan'   => 'required|in:Menunggu,Diproses,Dialihkan ke Pengadaan,Selesai,Ditolak',
-            'keterangan'       => 'nullable|string|max:500',
-            'nama_barang_baru' => 'nullable|string|max:255',
-            'jumlah'           => 'nullable|integer|min:1',
-            'harga_satuan'     => 'nullable|numeric|min:0',
-            'link_referensi'   => 'nullable|url|max:255',
+   public function updateStatus(Request $request, $id)
+{
+    $request->validate([
+        'status_laporan'   => 'required|in:Menunggu,Diproses,Dialihkan ke Pengadaan,Selesai,Ditolak',
+        'keterangan'       => 'nullable|string|max:500',
+        'nama_barang_baru' => 'nullable|string|max:255',
+        'jumlah'           => 'nullable|integer|min:1',
+        'harga_satuan'     => 'nullable|numeric|min:0',
+        'link_referensi'   => 'nullable|url|max:255',
+    ]);
+
+    $laporan = LaporanKerusakan::with('barang')->findOrFail($id);
+
+    $statusLama = $laporan->status_laporan;
+    $statusBaru = $request->status_laporan;
+
+    $transisiDiizinkan = [
+        'Menunggu'               => ['Diproses', 'Ditolak', 'Dialihkan ke Pengadaan'],
+        'Diproses'               => ['Selesai', 'Dialihkan ke Pengadaan'],
+        'Dialihkan ke Pengadaan' => ['Selesai', 'Ditolak'],
+        'Selesai'                => [],
+        'Ditolak'                => [],
+    ];
+
+    if (!in_array($statusBaru, $transisiDiizinkan[$statusLama] ?? [], true)) {
+        return redirect()->back()->with(
+            'error',
+            "Status tidak dapat diubah dari '{$statusLama}' menjadi '{$statusBaru}'."
+        );
+    }
+
+    $user = Auth::user();
+    $namaAdmin = $user->nama ?? $user->name ?? $user->username ?? 'Admin';
+
+    $keteranganLog = $request->filled('keterangan')
+        ? $request->keterangan . " (Oleh Admin: {$namaAdmin})"
+        : "Status diperbarui menjadi '{$statusBaru}' oleh Admin ({$namaAdmin})";
+
+    DB::transaction(function () use (
+        $laporan,
+        $statusLama,
+        $statusBaru,
+        $keteranganLog,
+        $request
+    ) {
+        $idLaporan = $laporan->id_laporan ?? $laporan->id;
+
+        $laporan->update([
+            'status_laporan' => $statusBaru,
         ]);
 
-        $laporan = LaporanKerusakan::with('barang')->findOrFail($id);
+        LaporanLog::create([
+            'id_laporan'        => $idLaporan,
+            'status_sebelumnya' => $statusLama,
+            'status_sekarang'   => $statusBaru,
+            'keterangan'        => $keteranganLog,
+        ]);
 
-        $statusLama = $laporan->status_laporan;
-        $statusBaru = $request->status_laporan;
+        // Tandai pengingat dibaca
+        Pengingat::where('laporan_id', $idLaporan)->update([
+            'is_read' => true,
+        ]);
 
-        $transisiDiizinkan = [
-            'Menunggu'               => ['Diproses', 'Ditolak', 'Dialihkan ke Pengadaan'],
-            'Diproses'               => ['Selesai', 'Dialihkan ke Pengadaan'],
-            'Dialihkan ke Pengadaan' => ['Selesai', 'Ditolak'],
-            'Selesai'                => [],
-            'Ditolak'                => [],
-        ];
+        // =========================================================================
+        // 1. BUAT RECORD PERBAIKAN OTOMATIS JIKA STATUS DIUBAH KE "DIPROSES"
+        // =========================================================================
+        if ($statusBaru === 'Diproses') {
+            $perbaikanEksis = Perbaikan::where('id_laporan', $idLaporan)->exists();
 
-        if (!in_array($statusBaru, $transisiDiizinkan[$statusLama] ?? [], true)) {
-            return redirect()->back()->with(
-                'error',
-                "Status tidak dapat diubah dari '{$statusLama}' menjadi '{$statusBaru}'."
-            );
+            if (!$perbaikanEksis) {
+                Perbaikan::create([
+                    'id_laporan'      => $idLaporan,
+                    'id_admin'        => Auth::id(),
+                    'tanggal_mulai'   => now(),
+                    'tanggal_selesai' => null,
+                    'catatan_teknisi' => $request->input('keterangan') ?: 'Laporan dalam penanganan teknisi/servis.',
+                    'biaya_perbaikan' => 0,
+                ]);
+            }
         }
 
-        $user = Auth::user();
-        $namaAdmin = $user->nama ?? $user->name ?? $user->username ?? 'Admin';
+        // =========================================================================
+        // 2. BUAT DRAF PENGADAAN JIKA DIALIHKAN KE PENGADAAN
+        // =========================================================================
+        if ($statusBaru === 'Dialihkan ke Pengadaan') {
+            $pengadaanEksis = PengadaanBarang::where('id_laporan', $idLaporan)->exists();
 
-        $keteranganLog = $request->filled('keterangan')
-            ? $request->keterangan . " (Oleh Admin: {$namaAdmin})"
-            : "Status diperbarui menjadi '{$statusBaru}' oleh Admin ({$namaAdmin})";
+            if (!$pengadaanEksis) {
+                $jumlah = (int) $request->input('jumlah', 1);
+                $hargaSatuan = (float) $request->input('harga_satuan', 0);
+                $totalEstimasi = $jumlah * $hargaSatuan;
 
-        DB::transaction(function () use (
-            $laporan,
-            $statusLama,
-            $statusBaru,
-            $keteranganLog,
-            $request
-        ) {
-            $idLaporan = $laporan->id_laporan ?? $laporan->id;
+                $namaBarang = $request->input('nama_barang_baru')
+                    ?: ($laporan->barang->nama_barang ?? 'Barang Pengganti');
 
-            $laporan->update([
-                'status_laporan' => $statusBaru,
-            ]);
-
-            LaporanLog::create([
-                'id_laporan'        => $idLaporan,
-                'status_sebelumnya' => $statusLama,
-                'status_sekarang'   => $statusBaru,
-                'keterangan'        => $keteranganLog,
-            ]);
-
-            // Tandai pengingat dibaca
-            Pengingat::where('laporan_id', $idLaporan)->update([
-                'is_read' => true,
-            ]);
-
-            // Buat draf pengadaan jika dialihkan
-            if ($statusBaru === 'Dialihkan ke Pengadaan') {
-                $pengadaanEksis = PengadaanBarang::where('id_laporan', $idLaporan)->exists();
-
-                if (!$pengadaanEksis) {
-                    $jumlah = (int) $request->input('jumlah', 1);
-                    $hargaSatuan = (float) $request->input('harga_satuan', 0);
-                    $totalEstimasi = $jumlah * $hargaSatuan;
-
-                    $namaBarang = $request->input('nama_barang_baru')
-                        ?: ($laporan->barang->nama_barang ?? 'Barang Pengganti');
-
-                    PengadaanBarang::create([
-                        'id_laporan'       => $idLaporan,
-                        'id_user'          => Auth::id(),
-                        'nama_barang_baru' => $namaBarang,
-                        'jumlah'           => $jumlah,
-                        'alasan_pengadaan' => "Pengalihan dari Laporan Kerusakan #" . $idLaporan . ": " . $laporan->deskripsi_kerusakan,
-                        'estimasi_harga'   => $totalEstimasi,
-                        'link_referensi'   => $request->input('link_referensi'),
-                        'status_approval'  => 'Pending',
-                    ]);
-                }
+                PengadaanBarang::create([
+                    'id_laporan'       => $idLaporan,
+                    'id_user'          => Auth::id(),
+                    'nama_barang_baru' => $namaBarang,
+                    'jumlah'           => $jumlah,
+                    'alasan_pengadaan' => "Pengalihan dari Laporan Kerusakan #" . $idLaporan . ": " . $laporan->deskripsi_kerusakan,
+                    'estimasi_harga'   => $totalEstimasi,
+                    'link_referensi'   => $request->input('link_referensi'),
+                    'status_approval'  => 'Pending',
+                ]);
             }
-        });
+        }
+    });
 
-        return redirect()->back()->with('success', 'Status laporan berhasil diperbarui!');
-    }
+    return redirect()->back()->with('success', 'Status laporan berhasil diperbarui!');
+}
 
     /**
      * Menampilkan Halaman Cetak Laporan PDF / Print
      */
-    public function cetakLaporan()
+    public function cetakLaporan(Request $request)
     {
-        $laporan = LaporanKerusakan::with(['user', 'barang'])->latest()->get();
+        $query = $this->getFilteredLaporan($request);
+
+        $limit = $request->input('per_page') ?? $request->input('limit');
+        if ($limit && $limit !== 'semua') {
+            $laporan = $query->take((int)$limit)->get();
+        } else {
+            $laporan = $query->get();
+        }
+
         return view('admin.cetak', compact('laporan'));
     }
 
@@ -220,7 +271,6 @@ class AdminController extends Controller
             $search = $request->search;
             $q->where(function ($sub) use ($search) {
                 $sub->where('nama', 'like', "%{$search}%")
-                    ->orWhere('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
                     ->orWhere('nik', 'like', "%{$search}%")
                     ->orWhere('divisi', 'like', "%{$search}%");
@@ -335,7 +385,7 @@ class AdminController extends Controller
             $q->where(function ($sub) use ($search) {
                 $sub->where('nama_barang_baru', 'like', "%{$search}%")
                     ->orWhere('alasan_pengadaan', 'like', "%{$search}%")
-                    ->orWhereHas('pemohon', fn($p) => $p->where('nama', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%"));
+                    ->orWhereHas('pemohon', fn($p) => $p->where('nama', 'like', "%{$search}%")->orWhere('nama', 'like', "%{$search}%"));
             });
         });
 
