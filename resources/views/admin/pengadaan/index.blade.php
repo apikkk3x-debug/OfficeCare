@@ -17,25 +17,6 @@
         </span>
     </div>
 
-    <!-- Alert Sukses Notifikasi -->
-    @if(session('success'))
-        <div id="success-alert" class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl text-xs font-medium flex items-center gap-2.5 shadow-sm transition-opacity duration-500">
-            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <span>{{ session('success') }}</span>
-        </div>
-        <script>
-            setTimeout(() => {
-                const alertBox = document.getElementById('success-alert');
-                if (alertBox) {
-                    alertBox.style.opacity = '0';
-                    setTimeout(() => alertBox.style.display = 'none', 500);
-                }
-            }, 3000);
-        </script>
-    @endif
-
     <!-- Stat Cards Ringkasan Eksekusi Pengadaan -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
@@ -98,43 +79,42 @@
             </form>
         </div>
 
-        <!-- ================= BARIS FILTER & PENCARIAN MULTI-KRITERIA ================= -->
-        <form method="GET" action="{{ route('admin.pengadaan.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 pb-2 border-b border-slate-200/60">
-            @if(request()->has('per_page'))
-                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+    <!-- ================= BARIS FILTER & PENCARIAN PENGADAAN ================= -->
+    <form method="GET" action="{{ route('admin.pengadaan.index') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 pb-2 border-b border-slate-200/60">
+        @if(request()->has('per_page'))
+            <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+        @endif
+
+        <!-- Input Pencarian Teks -->
+        <div class="sm:col-span-6">
+            <input type="text" name="search" value="{{ request('search') }}" 
+                placeholder="Cari nama barang pengganti, pemohon, alasan..." 
+                class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
+        </div>
+
+        <!-- Dropdown Filter Status Progress (onchange Dihapus) -->
+        <div class="sm:col-span-4">
+            <select name="status" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
+                <option value="">-- Semua Status Progress --</option>
+                <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Menunggu ACC</option>
+                <option value="Disetujui" {{ request('status') == 'Disetujui' ? 'selected' : '' }}>Siap Dibeli</option>
+                <option value="Selesai" {{ request('status') == 'Selesai' ? 'selected' : '' }}>Selesai & Terdaftar</option>
+                <option value="Ditolak" {{ request('status') == 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
+            </select>
+        </div>
+
+        <!-- Tombol Cari & Reset Filter -->
+        <div class="sm:col-span-2 flex gap-1.5">
+            <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition shadow-sm cursor-pointer py-2">
+                Cari
+            </button>
+            @if(request()->hasAny(['search', 'status']))
+                <a href="{{ route('admin.pengadaan.index') }}" title="Reset Filter" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center">
+                    ✕
+                </a>
             @endif
-
-            <!-- Input Pencarian Teks -->
-            <div class="sm:col-span-6">
-                <input type="text" name="search" value="{{ request('search') }}" 
-                       placeholder="Cari nama barang pengganti, pemohon, alasan..." 
-                       class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 shadow-sm">
-            </div>
-
-            <!-- Dropdown Filter Status Progress -->
-            <div class="sm:col-span-4">
-                <select name="status" onchange="this.form.submit()" class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 shadow-sm cursor-pointer focus:outline-none focus:border-indigo-600">
-                    <option value="">-- Semua Status Progress --</option>
-                    <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Menunggu ACC</option>
-                    <option value="Disetujui" {{ request('status') == 'Disetujui' ? 'selected' : '' }}>Siap Dibeli</option>
-                    <option value="Selesai" {{ request('status') == 'Selesai' ? 'selected' : '' }}>Selesai & Terdaftar</option>
-                    <option value="Ditolak" {{ request('status') == 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
-                </select>
-            </div>
-
-            <!-- Tombol Cari & Reset Filter -->
-            <div class="sm:col-span-2 flex gap-1.5">
-                <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition shadow-sm cursor-pointer py-2">
-                    Cari
-                </button>
-                @if(request()->hasAny(['search', 'status']))
-                    <a href="{{ route('admin.pengadaan.index') }}" title="Reset Filter" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-center">
-                        ✕
-                    </a>
-                @endif
-            </div>
-        </form>
-
+        </div>
+    </form>
         <!-- Wrapper Tabel -->
         <div class="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white shadow-xs">
             <table class="w-full text-left text-xs text-slate-600 border-collapse">
@@ -156,10 +136,10 @@
                             $status = strtolower($item->status_approval ?? $item->status ?? 'pending');
                             $idPengadaan = $item->id_pengadaan ?? $item->id;
 
-                            // Perhitungan Estimasi Biaya
-                            $jumlah = max(1, (int) ($item->jumlah ?? 1));
-                            $totalEstimasi = (float) ($item->estimasi_harga ?? 0);
-                            $hargaSatuan = $jumlah > 0 ? ($totalEstimasi / $jumlah) : 0;
+                     // Perhitungan Estimasi Biaya (estimasi_harga di DB dianggap sebagai Harga Satuan)
+                    $jumlah = max(1, (int) ($item->jumlah ?? 1));
+                    $hargaSatuan = (float) ($item->estimasi_harga ?? 0);
+                    $totalEstimasi = $hargaSatuan * $jumlah;
                         @endphp
                         
                         <tr class="{{ request('highlight_pengadaan') == $idPengadaan ? 'bg-indigo-50/90 ring-2 ring-indigo-400/50 transition-all duration-700 animate-pulse' : 'hover:bg-slate-50/80' }} transition">
@@ -277,7 +257,7 @@
 
 <!-- ================= MODAL DETAIL RINCIAN PENGADAAN ================= -->
 <div id="modalDetailPengadaan" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs hidden items-center justify-center z-50 p-3 transition-all duration-200" onclick="toggleDetailModal(false)">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-200 overflow-hidden space-y-0" onclick="event.stopPropagation()">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-800 overflow-hidden space-y-0" onclick="event.stopPropagation()">
         
         <!-- Header Modal -->
         <div class="bg-slate-900 px-4 py-3 text-white flex justify-between items-center border-b border-slate-800">
